@@ -31,6 +31,13 @@ Pour lancer le projet, taper cette commande dans votre terminal :
 make run
 ```
 
+## Tester l'application
+
+Pour lancer les tests de l'application, lancer la commande suivante dans votre terminal :
+```bash
+make tests
+```
+
 ## 🧑‍💻 À propos de moi
 Je suis Romain, je suis ingénieur logiciel et j'aime construire des solutions.
 

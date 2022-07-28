@@ -53,7 +53,7 @@ WORKDIR /var/www/outside
 
 RUN touch application.log
 
-RUN composer install
+RUN composer install --no-dev --no-progress
 
 RUN chown -R www-data:www-data /var/www/outside
 
