@@ -9,7 +9,7 @@
                 <li class="collection-item avatar">
                     <a href="?page=profile&id=<?= $participant->getID() ?>">
                         <img src="<?= $participant->getPicture() ?>" alt="" class="circle">
-                        <span class="title"><?= $participant->getLastname() . " list.php" . $participant->getFirstname() ?></span>
+                        <span class="title"><?= $participant->getLastname() . " " . $participant->getFirstname() ?></span>
                     </a>
                     <?php if($event->isParticipantWait($participant)): ?>
                         <?php if( ( $event->isCreator($_SESSION['USER_DATA']) || $event->isOrganizer($_SESSION['USER_DATA']) ) && !$event->isStarted() && !$event->isOver() ): ?>
