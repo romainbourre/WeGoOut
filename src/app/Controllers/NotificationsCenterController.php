@@ -82,14 +82,7 @@ namespace App\Controllers
                          * An user send a participant request to an event
                          */
                         case Notifications::CATEGORY_EVENT_REQUEST:
-                            if ($notification->getTargetUser()->isPro())
-                            {
-                                $notification->setMessage($notification->getTargetUser()->get_name() . " demande a participer à " . $notification->getTargetEvent()->getTitle());
-                            }
-                            else
-                            {
-                                $notification->setMessage($notification->getTargetUser()->getFirstname() . " demande a participer à " . $notification->getTargetEvent()->getTitle());
-                            }
+                            $notification->setMessage($notification->getTargetUser()->getFirstname() . " demande a participer à " . $notification->getTargetEvent()->getTitle());
                             $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
                             return true;
 
@@ -97,14 +90,7 @@ namespace App\Controllers
                          * An creator or organiser accept a participant request to an event
                          */
                         case Notifications::CATEGORY_EVENT_ACCEPT:
-                            if ($notification->getTargetUser()->isPro())
-                            {
-                                $notification->setMessage($notification->getTargetUser()->get_name() . " a accepté votre demande de participation à " . $notification->getTargetEvent()->getTitle());
-                            }
-                            else
-                            {
-                                $notification->setMessage($notification->getTargetUser()->getFirstname() . " a accepté votre demande de participation à " . $notification->getTargetEvent()->getTitle());
-                            }
+                            $notification->setMessage($notification->getTargetUser()->getFirstname() . " a accepté votre demande de participation à " . $notification->getTargetEvent()->getTitle());
                             $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
                             return true;
 
@@ -112,14 +98,7 @@ namespace App\Controllers
                          * An user subscribe to an event
                          */
                         case Notifications::CATEGORY_EVENT_SUBSCRIBE:
-                            if ($notification->getTargetUser()->isPro())
-                            {
-                                $notification->setMessage($notification->getTargetUser()->get_name() . " participe à " . $notification->getTargetEvent()->getTitle());
-                            }
-                            else
-                            {
-                                $notification->setMessage($notification->getTargetUser()->getFirstname() . " participe à " . $notification->getTargetEvent()->getTitle());
-                            }
+                            $notification->setMessage($notification->getTargetUser()->getFirstname() . " participe à " . $notification->getTargetEvent()->getTitle());
                             $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
                             return true;
 
@@ -127,14 +106,7 @@ namespace App\Controllers
                          * An user un-subscribe from an event
                          */
                         case Notifications::CATEGORY_EVENT_UNSUBSCRIBE:
-                            if ($notification->getTargetUser()->isPro())
-                            {
-                                $notification->setMessage($notification->getTargetUser()->get_name() . " ne participe plus à " . $notification->getTargetEvent()->getTitle());
-                            }
-                            else
-                            {
-                                $notification->setMessage($notification->getTargetUser()->getFirstname() . " ne participe plus à " . $notification->getTargetEvent()->getTitle());
-                            }
+                            $notification->setMessage($notification->getTargetUser()->getFirstname() . " ne participe plus à " . $notification->getTargetEvent()->getTitle());
                             $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
                             return true;
 
@@ -167,14 +139,7 @@ namespace App\Controllers
                          * An user send a friend request
                          */
                         case Notifications::CATEGORY_USER_REQUEST:
-                            if ($notification->getTargetUser()->isPro())
-                            {
-                                $notification->setMessage($notification->getTargetUser()->get_name() . " vous a envoyé une demande d'ami");
-                            }
-                            else
-                            {
-                                $notification->setMessage($notification->getTargetUser()->getFirstname() . " vous a envoyé une demande d'ami");
-                            }
+                            $notification->setMessage($notification->getTargetUser()->getFirstname() . " vous a envoyé une demande d'ami");
                             $notification->setAction("?page=profile");
                             return true;
 
@@ -182,14 +147,7 @@ namespace App\Controllers
                          * An user accept a friend request
                          */
                         case Notifications::CATEGORY_USER_ACCEPT:
-                            if ($notification->getTargetUser()->isPro())
-                            {
-                                $notification->setMessage($notification->getTargetUser()->get_name() . " a accepté votre demande d'ami");
-                            }
-                            else
-                            {
-                                $notification->setMessage($notification->getTargetUser()->getFirstname() . " a accepté votre demande d'ami");
-                            }
+                            $notification->setMessage($notification->getTargetUser()->getFirstname() . " a accepté votre demande d'ami");
                             $notification->setAction("?page=profile&id=" . $notification->getTargetUser()->getID());
                             return true;
 
@@ -215,14 +173,7 @@ namespace App\Controllers
                          */
                         case Notifications::CATEGORY_PUBLICATION_PUBLICATION:
                             $event = $notification->getTargetEvent();
-                            if ($notification->getTargetUser()->isPro())
-                            {
-                                $notification->setMessage($notification->getTargetUser()->get_name() . " a publié dans " . $event->getTitle());
-                            }
-                            else
-                            {
-                                $notification->setMessage($notification->getTargetUser()->getFirstname() . " a publié dans " . $event->getTitle());
-                            }
+                            $notification->setMessage($notification->getTargetUser()->getFirstname() . " a publié dans " . $event->getTitle());
                             $notification->setAction("?page=event&id=" . $event->getID());
                             return true;
 
@@ -245,14 +196,7 @@ namespace App\Controllers
                          */
                         case Notifications::CATEGORY_REVIEW_REVIEW:
                             $event = $notification->getTargetEvent();
-                            if ($notification->getTargetUser()->isPro())
-                            {
-                                $notification->setMessage($notification->getTargetUser()->get_name() . " a laissé un avis dans " . $event->getTitle());
-                            }
-                            else
-                            {
-                                $notification->setMessage($notification->getTargetUser()->getFirstname() . " a laissé un avis dans " . $event->getTitle());
-                            }
+                            $notification->setMessage($notification->getTargetUser()->getFirstname() . " a laissé un avis dans " . $event->getTitle());
                             $notification->setAction("?page=event&id=" . $event->getID());
                             return true;
 
@@ -279,14 +223,7 @@ namespace App\Controllers
                          */
                         case Notifications::CATEGORY_ENJOY_WELCOME:
                             $user = $notification->getRecipient();
-                            if ($user->isPro())
-                            {
-                                $name = $user->get_name();
-                            }
-                            else
-                            {
-                                $name = $user->getFirstname();
-                            }
+                            $name = $user->getFirstname();
                             $notification->setMessage("Bienvenue sur " . CONF['Application:Name'] . " $name. regardez les évènements près de vous et/ou créez en un ! Bonne découverte !");
                             return true;
 
