@@ -1,0 +1,242 @@
+body {
+    background: rgb(240, 240, 240);
+}
+
+.label-date {
+    font-size: 2em;
+    margin-top: 75px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #6B7275;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.121569);
+    text-shadow:1px 1px 1px 1px white;
+}
+
+.label-no-event {
+    font-size: 2em;
+    margin-top: 75px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #6B7275;
+    text-shadow:1px 1px 1px 1px white;
+    line-height: 1.7em;
+}
+
+
+#list_events {
+    margin-bottom: 400px;
+}
+
+.preloader-wrapper {
+    margin-top: 120px;
+}
+
+
+/*----------------------- FORM FILTER -------------------------*/
+
+#list_form_filter {
+    border-bottom: 2px solid rgb(234, 234, 234);
+    padding-bottom: 15px;
+}
+
+#list_form_filter .input-field {
+    padding-left: 0 !important;
+    padding-right: 0;
+}
+
+#list_form_filter #list_input_date, #list_form_filter #list_select_category, #list_form_filter #list_input_city {
+
+    display: inline-block;
+    border: none;
+    margin: 0 !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border-radius: 0;
+    height: 100%;
+    width: 100%;
+    padding: 0px 5px 0px 5px;
+
+}
+
+#list_form_filter input::placeholder {
+    color: rgb(153, 153, 153);
+}
+
+#list_form_filter input:focus, #list_form_filter select {
+    outline: none;
+}
+
+.input-container {
+
+    display: flex;
+    border: 2px solid rgb(234, 234, 234);
+    border-right: none;
+    height: 40px;
+    width: 100%;
+
+}
+
+.input-container i {
+    height: 36px;
+    float: right;
+    line-height: 36px;
+    color: rgb(119, 119, 119);
+}
+
+.distance-container {
+    height: 40px;
+    width: 100%;
+}
+
+.distance-container div {
+    height: 100%;
+    line-height: 40px;
+}
+
+.close-input-container {
+
+    border-right: 2px solid rgb(234, 234, 234);
+
+}
+
+#list_input_date {
+    text-align: center;
+}
+
+.no-margin {
+    margin-bottom: 15px;
+}
+
+.range-field {
+    margin: 0;
+    height: 40px;
+}
+
+#filter_select_down {
+    cursor: pointer;
+}
+
+#filter_date_clear {
+    display: none;
+    cursor: pointer;
+}
+
+#filter_city_clear {
+    display: none;
+    cursor: pointer;
+}
+
+
+/* ------------------------------------- CARD EVENT ------------------------------- */
+
+.card-event {
+
+    padding: 5px 0px 0px 0px !important;
+    /*box-shadow: 1px 1px 5px black;*/
+
+}
+
+.card-event-int {
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgb(234, 234, 234);
+}
+
+.card-event-user {
+    display: flex;
+    height: 40px;
+}
+
+.card-event-user img {
+
+    width: 40px;
+    margin-right: 10px;
+    float: left;
+
+}
+
+.card-event-user a {
+
+    display: block;
+    height: 100%;
+    line-height: 40px;
+
+}
+
+.card-event-category {
+    display: block;
+    height: 40px;
+    line-height: 40px;
+    font-size: 16px;
+    text-transform: uppercase;
+
+}
+
+.card-event-category i {
+    float: right;
+    height: 40px;
+    line-height: 40px;
+    margin-left: 10px;
+    font-size: 18px;
+}
+
+.card-content {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.card-event-title a {
+    margin-top: 15px;
+    margin-bottom: 0px;
+    padding: 0px 10px 0px 10px;
+}
+
+.card-event-datelocation {
+    margin: 0;
+    padding-bottom: 5px !important;
+}
+
+.card-event-datelocation p {
+    margin: 0;
+    padding: 0px 10px 0px 10px;
+    height: 100%;
+}
+
+.card-event-datelocation small {
+    display: inline-block;
+    float:left;
+    height: 15px !important;
+    line-height: 15px;
+    vertical-align: top;
+    font-size: 13px;
+}
+
+.card-event-datelocation i {
+    font-size: 12px;
+    height: 100%;
+    line-height: 15px;
+}
+
+.card-event-price p {
+    margin: 0;
+    font-size: 25px;
+    height: 37px;
+    font-weight: bold;
+}
+
+.card-event-part p {
+    margin: 0;
+}
+
+.card-event-part i {
+    font-size: 20px;
+    float: left;
+    margin-right: 5px;
+}
+
+.card-event .row {
+    margin: 0;
+}
+
+.super-card {
+    border: 1px solid rgb(234, 234, 234);
+}

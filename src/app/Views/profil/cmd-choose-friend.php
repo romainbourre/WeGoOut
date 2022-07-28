@@ -1,0 +1,1 @@
+<a class="user_accept waves-effect waves-light btn green"><i class="left material-icons">done</i>Accepter</a><a class="user_refuse waves-effect waves-light btn red"><i class="left material-icons">close</i>Refuser</a>

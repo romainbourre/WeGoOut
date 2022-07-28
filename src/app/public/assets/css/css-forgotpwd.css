@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css?family=Saira+Condensed');
+@import url('https://fonts.googleapis.com/css?family=Dosis');
+
+body {
+    background: rgb(240, 240, 240);
+    background-image: url('https://static.pexels.com/photos/5156/people-eiffel-tower-lights-night.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#forgot-password-form button {
+    display: block !important;
+    margin-top: 34px;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+}
+
+#forgot-password-form {
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
+    margin-top: 75px;
+}
+
+
+.input-field label, .forgot-password-email-bloc label {
+    color: #546e7a;
+}
+
+.forgot-password-email-bloc {
+    margin-bottom: 0 !important;
+}
+
+#forgot-password-form .intro {
+    margin-left: 0 !important;
+}
+
+#forgot-password-form .intro h4 {
+    font-family: 'Saira Condensed', sans-serif;
+}
+
+#forgot-password-form .intro .helper {
+    font-family: 'Dosis', sans-serif;
+}

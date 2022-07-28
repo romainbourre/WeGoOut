@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css?family=Saira+Condensed');
+@import url('https://fonts.googleapis.com/css?family=Dosis');
+
+#create-event-modal-window {
+    max-height: none;
+    overflow: hidden !important;
+    top: 0 !important;
+    height: 100%;
+}
+
+#create-event-modal-window .modal-content {
+    display: block;
+    height: auto;
+    overflow: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.input-field label, .switch label {
+    color: #546e7a;
+}
+
+#create-event-circle-group {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+#create-event-circle-group label {
+    color: #546e7a;
+}
+
+#create-event-datetime-group .row {
+    margin-bottom: 0 !important;
+}
+
+
+
+#create-event-modal-window .character-counter {
+    margin-top: -18px;
+}
+
+#create-event-modal-window .intro {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+#create-event-modal-window h4 {
+    font-family: 'Saira Condensed', sans-serif;
+}
+
+#create-event-modal-window .helper {
+    font-family: 'Dosis', sans-serif;
+}
+
+#create-event-modal-tabs {
+    display: none;
+}
+
+#create-event-modal-tabs .collapsible-body {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+#create-event-modal-tabs .collapsible-body {
+    background-color: rgb(250, 250, 250);
+}
+
+#form_group_pub {
+    margin-bottom: 30px;
+}
+
+#create-event-datetimeEnd-bloc {
+    display: none;
+}
+
+#create_add_datetime_end {
+    cursor: pointer;
+}
+
+
+
+.modal-footer {
+    z-index: 1051 !important;
+}
+
+.no-padding {
+    padding: 0px 0px 0px 0px;
+}
+
+.modal {
+
+}
+
+.pac-container {
+    z-index: 1051 !important;
+}
+
+.picker__frame {
+
+    width: auto;
+
+}
+
+.link {
+    cursor: pointer;
+    margin-bottom: 20px;
+}

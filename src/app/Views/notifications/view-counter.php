@@ -1,0 +1,1 @@
+<span class="new badge red" data-badge-caption=""><?= $notificationsNumber ?></span>

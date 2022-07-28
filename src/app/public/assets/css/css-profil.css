@@ -1,0 +1,102 @@
+.profile-head {
+    margin-bottom: 0;
+}
+
+.profile-head .global {
+    height: 250px;
+    box-shadow: 0px -2px 5px black inset;
+    padding: 0 !important;
+}
+
+.profile-head .layer {
+    background: rgba(0, 0, 0, 0.5);
+    width: 100%;
+    height: 100%;
+}
+
+.profile-head .head-user {
+    margin-top: 200px;
+    padding-left: 50px !important;
+    padding-right: 50px !important;
+    height: 100px;
+    line-height: 45px;
+}
+
+.profile-head .head-user span {
+    font-size: 40px;
+    margin-left: 30px;
+    text-shadow: 1px 1px 5px black;
+}
+
+.profile-head .head-user img {
+    float: left;
+    height: 100px;
+
+}
+
+.profile-head .head-user p {
+    display: inline;
+    float: right;
+    margin: 0 !important;
+}
+
+.profile-head .head-user p a {
+    margin-left: 5px;
+}
+
+.profile-content {
+
+}
+
+.panel-top {
+    height: 86px;
+    line-height: 50px;
+    padding-left: 150px !important;
+}
+
+.profile-details .row {
+    margin: 0;
+}
+
+.profile-details .collection-item .col {
+    min-height: 24px;
+    line-height: 24px;
+}
+
+.panel-top-card {
+    height: 86px;
+}
+
+.panel-top-card .card-content {
+    font-size: 24px;
+    margin: 0 !important;
+}
+
+.panel-top-card .card-title {
+    display: block;
+    height: 36px;
+    line-height: 25px !important;
+    font-size: 15px;
+}
+
+.friends-list .collection-item {
+    min-height: 0px !important;
+}
+
+.friends-list .collection-item a {
+    cursor: pointer;
+}
+
+.friends-list div {
+    display: inline-block; !important;
+    height: 100% !important;
+}
+
+.friends-list .city, .friends-list .title {
+    display: block !important;
+}
+
+.friends-list-choice {
+    margin-top: 4px;
+    float: right;
+}

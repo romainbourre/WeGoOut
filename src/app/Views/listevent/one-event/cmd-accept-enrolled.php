@@ -1,0 +1,1 @@
+<button id="sheet_event_cmd_wait" class="waves-effect waves-light btn green"><i class="material-icons left">done</i>Inscrit</button>

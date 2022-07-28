@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway');
+
+.sheet-event {
+    margin-top: 25px;
+    /*padding: 0 !important;
+    height: 100% !important;*/
+}
+
+.sheet-event .row {
+    /*margin: 0;*/
+}
+
+.sheet-event-panel {
+    /*padding: 0 !important;*/
+    margin-bottom: 25px;
+    height: 100%;
+    border: 1px solid rgb(234, 234, 234);
+}
+
+.layer {
+    width: 100%;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.sheet-event-head {
+    margin-top: 11.25px;
+    padding: 0 !important;
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100%;
+}
+
+.sheet-event-category {
+    padding: 0 !important;
+}
+
+.sheet-event-category span {
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+    text-transform: uppercase;
+    padding: 0px 10px 0px 10px;
+}
+
+.sheet-event-category i {
+    float: right;
+    height: 40px;
+    line-height: 40px;
+    margin-left: 10px;
+}
+
+.sheet-event-global-title {
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+}
+
+.sheet-event-title {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-family: 'Raleway', sans-serif;
+}
+
+.sheet-event-user {
+    display: block;
+    height: 40px;
+    margin-bottom: 0;
+}
+
+.sheet-event-user img {
+    width: 40px;
+    margin-right: 10px;
+    float: left;
+}
+
+.sheet-event-user a {
+    line-height: 40px;
+}
+
+.sheet-event-price p {
+    display: inline-block;
+    padding: 10px 10px 10px 10px;
+    border-radius: 5px;
+    font-size: 25px;
+    font-weight: bold;
+    margin-right: 20px;
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.sheet-event-details {
+    margin-top: 0;
+}
+
+.sheet-event-details .item {
+
+    border-bottom: 1px solid rgb(234, 234, 234);
+    margin: 0;
+    padding: 10px 0 10px 0;
+
+}
+
+.sheet-event-details .last-item {
+    margin: 0;
+    padding: 10px 0 10px 0;
+}
+
+.sheet-event-details .item div i, .sheet-event-details .last-item div i {
+    float: left;
+    margin-right: 10px;
+}
+
+.sheet-event-part p {
+    margin: 0;
+}
+
+.sheet-event-desc {
+    border-top: 1px solid rgb(234, 234, 234);
+}
+
+.sheet-event-desc div {
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+    font-style: italic;
+}
+
+.sheet-event-cmd {
+    margin: 0;
+}
+
+.sheet-event-window {
+    /*margin-top: 25px;*/
+}
+
+.sheet-avg-rating {
+    margin-top: 25px !important;
+    margin-bottom: 0 !important;
+
+}
+
+.sheet-avg-rating i {
+    font-size: 30px;
+    float: none !important;
+}
+
+.sheet-avg-rating .text-note {
+    font-size: 20px;
+}
+
+/* ------------------------------------- PUBLICATION CARD ----------------------------------- */
+
+.tabs-content {
+    margin-top: 25px;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0 !important;
+}
+

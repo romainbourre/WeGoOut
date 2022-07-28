@@ -1,0 +1,82 @@
+html {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
+main {
+    min-height: calc(100vh - 64px);
+    padding-top: auto;
+    padding-bottom: auto;
+}
+
+.brand-logo {
+    margin-left: 10px;
+}
+
+.sail {
+    background: rgba(0, 0, 0, 0.5);
+    display: block !important;
+    min-height: calc(100vh - 64px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.feedback {
+    color: crimson;
+    font-size: 0.8em;
+    margin-top: -20px;
+    float: left;
+}
+
+.form-control-feedback {
+
+}
+
+#dropdown_user_menu {
+    width: auto !important;
+}
+
+.full-height {
+    height: 100% !important;
+}
+
+.no-margin {
+    margin: 0px 0px 0px 0px !important;
+}
+
+.no-border {
+    border: none !important;
+}
+
+.toast .toast-action {
+    color: #eeff41;
+    font-weight: 500;
+    margin-right: -25px;
+    margin-left: 3rem
+}
+
+.testromain * {
+    display: flex !important;
+    width: auto;
+}
+
+.side-nav {
+
+    overflow-x: hidden !important;
+
+}
+
+.autocomplete-result {
+    visibility: hidden;
+    position: absolute;
+    z-index: 10000;
+}
+.collection-item:hover {
+    cursor: pointer;
+    background-color: darkgrey;
+}

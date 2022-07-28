@@ -1,0 +1,55 @@
+li.collection-item.avatar {
+    height: 62px !important;
+    line-height: 42px;
+    min-height: 0px !important;
+}
+
+.collection-item .btn, .collection-item .btn-flat {
+    float: right;
+    margin-top: 3px !important;
+}
+
+.collection-item .btn {
+    margin-left: 5px !important;
+}
+
+.part-filter-select {
+    margin-top: 20px;
+}
+
+.part-filter-select a {
+    padding: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 5px;
+}
+
+.part-filter-select a .badge {
+    border-radius: 5px;
+    margin-top: 7px;
+    background: darkgrey;
+}
+
+.nobody {
+    padding-left: 20px !important;
+}
+
+.on {
+    background: darkgrey;
+    color: white;
+}
+
+.sheet-about {
+    padding-bottom: 25px !important;
+}
+
+.sheet-about .row {
+    padding-top: 25px;
+}
+
+.about-msg {
+    border-radius: 5px;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    border: 1px solid rgb(234, 234, 234);
+}

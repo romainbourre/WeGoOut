@@ -1,0 +1,9 @@
+{
+  "Version": "0.0.0",
+  "Logging": {
+    "Level": "Trace"
+  },
+  "Application": {
+    "Name": "WeGoOut"
+  }
+}

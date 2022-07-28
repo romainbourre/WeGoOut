@@ -1,0 +1,18 @@
+#notifications-down {
+    width: 406px !important;
+    height: 400px;
+    overflow-y: scroll;
+}
+
+#notifications-down a span {
+    display: inline-block !important;
+}
+
+#notifications-down a i {
+    margin-top: calc((45px - 22px) / 2);
+    margin-bottom: auto;
+}
+
+.notification-msg {
+    width: calc(100% - 72px - 16px);
+}

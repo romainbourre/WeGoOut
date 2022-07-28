@@ -1,0 +1,45 @@
+li.collection-item.avatar {
+    min-height: 62px !important;
+    line-height: 42px;
+}
+
+.collection-item .btn, .collection-item .btn-flat {
+    float: right;
+    margin-top: 3px !important;
+}
+
+.collection-item .btn {
+    margin-left: 5px !important;
+}
+
+.part-filter-select {
+    display: inline-flex;
+    margin-top: 20px;
+    width: 100%;
+    height: 36px;
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
+
+.part-filter-select a {
+    display: inline-block;
+    padding: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 5px;
+}
+
+.part-filter-select a .badge {
+    border-radius: 5px;
+    margin-top: 7px;
+    background: darkgrey;
+}
+
+.nobody {
+    padding-left: 20px !important;
+}
+
+.on {
+    background: darkgrey;
+    color: white;
+}

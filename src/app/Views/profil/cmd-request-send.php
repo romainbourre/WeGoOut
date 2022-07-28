@@ -1,0 +1,1 @@
+<a id="user_cancel_send" class="waves-effect waves-light grey lighten-2 grey-text btn"><i class="left material-icons">send</i>Demande envoyée</a>

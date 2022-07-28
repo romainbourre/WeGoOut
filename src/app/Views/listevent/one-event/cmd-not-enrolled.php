@@ -1,0 +1,1 @@
+<a id="sheet_event_cmd_registration" class="waves-effect waves-light indigo darken-3 btn"><i class="material-icons left">add</i>je m'inscrit</a>

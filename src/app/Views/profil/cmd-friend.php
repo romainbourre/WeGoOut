@@ -1,0 +1,1 @@
+<a id="user_delete" class="waves-effect waves-light btn green user_delete"><i class="left material-icons">done</i>Amis</a>

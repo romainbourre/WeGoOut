@@ -1,0 +1,108 @@
+.picker__date-display {
+    display: none !important;
+}
+
+#tab-task-content {
+    padding: 0 !important;
+}
+
+.tab-task-list {
+    padding-top: 30px;
+    padding-bottom: 50px;
+}
+
+.task-item {
+    display:flex;
+    margin-top: 10px;
+    border:1px solid rgb(234, 234, 234);
+    border-radius:5px;
+    height:50px;
+    line-height:50px;
+    padding-left:10px;
+    padding-right:10px;
+    box-sizing: content-box;
+    cursor: pointer;
+}
+
+.task-name {
+    flex: 1;
+}
+
+.task-deadline {
+    width:120px;
+    box-sizing:border-box;
+    padding-left:20px;
+    padding-right:20px;
+}
+
+.task-actor {
+    margin:0;
+    padding-left:20px;
+    padding-right:20px;
+    width:200px
+}
+
+.task-actor a {
+    height:36px;
+    line-height:36px;
+    display:inline-block;
+    vertical-align:top;
+    margin-top:calc((50px - 36px)/2);
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.task-checkbox {
+    margin:0;
+    padding-top: calc((50px - 30px)/2) !important;
+    height: 100%;
+    line-height: 50px;
+    box-sizing: border-box;
+
+}
+
+.task-checkbox label {
+    height:30px !important;
+}
+
+.task-checkbox label:after {
+    width:30px !important;
+    height: 30px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.task-checkbox label:before {
+    width:13px !important;
+    height: 20px !important;
+}
+
+/* SLIDE-OUT TASK ---------------------------------------------- */
+
+#task-slide-cmd a {
+    font-size: 30px;
+    cursor: pointer !important;
+}
+
+#task-slide-name {
+    display: flex !important;
+}
+
+.task-slide-chapter {
+    margin-top:20px;
+    margin-bottom:20px;
+}
+
+#task-slide-note {
+    margin-bottom:50px !important;
+}
+
+#task-slide-note textarea {
+    height:250px !important;
+    padding:20px 20px 20px 20px !important;
+    -webkit-box-sizing: border-box !important;
+    -moz-box-sizing: border-box !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    border:none;
+}

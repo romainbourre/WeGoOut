@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css?family=Saira+Condensed');
+@import url('https://fonts.googleapis.com/css?family=Dosis');
+
+body {
+    background: rgb(240, 240, 240);
+    background-image: url('https://static.pexels.com/photos/52578/pexels-photo-52578.jpeg');
+    background-repeat: repeat-y;
+    background-size: cover;
+}
+
+.validation-information {
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
+    margin-top: 75px;
+    margin-bottom: 75px;
+}
+
+.validation-information .intro h4 {
+    font-family: 'Saira Condensed', sans-serif;
+}
+
+.validation-information .helper {
+    font-family: 'Dosis', sans-serif;
+}

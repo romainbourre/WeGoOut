@@ -1,0 +1,1 @@
+<a href="/events/<?= $event->getID() ?>/edit" id="sheet_event_cmd_edit" class="waves-effect waves-light indigo darken-3 btn"><i class="material-icons left">edit</i>Modifier</a>

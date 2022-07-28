@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css?family=Saira+Condensed');
+@import url('https://fonts.googleapis.com/css?family=Dosis');
+
+body {
+    background: rgb(240, 240, 240);
+    background-image: url('../img/people-eiffel-tower-lights-night.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.forgot-pwd-label {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+}
+
+#login-user-form button {
+    display: block !important;
+    margin-top: 34px;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+}
+
+#login-user-form {
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
+    margin-top: 75px;
+}
+
+
+.input-field label, .login-user-remember-bloc label {
+    color: #546e7a;
+}
+
+.login-user-connect-bloc {
+    margin-bottom: 0 !important;
+}
+
+.login-user-remember-bloc p {
+    margin-top: 0;
+}
+
+#login-user-form .intro {
+    margin-left: 0 !important;
+}
+
+#login-user-form .intro h4 {
+    font-family: 'Saira Condensed', sans-serif;
+}
