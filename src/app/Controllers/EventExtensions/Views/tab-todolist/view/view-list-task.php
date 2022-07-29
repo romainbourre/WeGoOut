@@ -15,7 +15,7 @@
                 <span>Tout le monde</span>
             <?php endif; ?>
         </p>
-        <p class="task-checkbox"><input class="filled-in" type="checkbox" data-task="<?= $task->getId() ?>" id="check-<?= $task->getId() ?>" <?php if($task->isCheck($_SESSION['USER_DATA'])) echo "checked" ?>><label for="check-<?= $task->getId() ?>"></label></p>
+        <p class="task-checkbox"><input class="filled-in" type="checkbox" data-task="<?= $task->getId() ?>" id="check-<?= $task->getId() ?>" <?php if($task->isCheck($connectedUser)) echo "checked" ?>><label for="check-<?= $task->getId() ?>"></label></p>
     </div>
 
 <?php endforeach; ?>

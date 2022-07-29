@@ -404,18 +404,10 @@ namespace Domain\Entities
             return 0;
         }
 
-        /**
-         * Get the events to which the user organized
-         * @param $level int Level of displaying data
-         * @return iterable|null
-         */
-        public function getEventsOrganisation(int $level = 0): ?iterable
+        public function getOrganizedEvents(UserCli $userThatAsk, int $level = 0): ?iterable
         {
             $bdd = Database::getDB();
-
-            $me = $_SESSION['USER_DATA'];
-
-            if ($me->equals($this)) {
+            if ($userThatAsk->equals($this)) {
                 if ($level == 1) {
                     $SQL2 = 'OR ( event_circle = 2 AND ( event_guest_only = 0 OR event_guest_only is null ) )';
                 } else {

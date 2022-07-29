@@ -1,13 +1,13 @@
 <?php use Domain\Entities\Task;
 
-$event = $task->getEvent(); $me = $_SESSION['USER_DATA'] ?>
+$event = $task->getEvent(); ?>
 <ul id="task-slide-out" data-activates="task-slide-out" class="side-nav">
 
     <form id="task-form-edit" data-task="<?= $task->getId() ?>" class="left-align">
 
         <div id="task-slide-cmd" class="row">
             <div class="right-align col s12">
-                <?php if($event->isCreator($me) || $event->isOrganizer($me)): ?>
+                <?php if($event->isCreator($connectedUser) || $event->isOrganizer($connectedUser)): ?>
                     <a id="task-delete" class="red-text"><i class="material-icons">delete</i></a>
                 <?php endif; ?>
                 <a id="task-close" data-activates="task-slide-out" class="grey-text"><i class="material-icons">close</i></a>
@@ -18,10 +18,10 @@ $event = $task->getEvent(); $me = $_SESSION['USER_DATA'] ?>
 
             <div id="task-slide-name" class="col s12">
                 <p>
-                    <input class="browser-default" type="checkbox" name="task-check" id="task-check" <?php if($task->isCheck($_SESSION['USER_DATA'])) echo "checked" ?>>
+                    <input class="browser-default" type="checkbox" name="task-check" id="task-check" <?php if($task->isCheck($connectedUser)) echo "checked" ?>>
                     <label for="task-check"></label>
                 </p>
-                <input placeholder="Tâche" id="task-label" name="task-label" type="text" class="validate" value="<?= $task->getLabel() ?>" <?php if(!$event->isCreator($me) && !$event->isOrganizer($me)) echo "readonly" ?>>
+                <input placeholder="Tâche" id="task-label" name="task-label" type="text" class="validate" value="<?= $task->getLabel() ?>" <?php if(!$event->isCreator($connectedUser) && !$event->isOrganizer($connectedUser)) echo "readonly" ?>>
             </div>
 
             <div class="task-slide-chapter col s12 left-align">
@@ -29,7 +29,7 @@ $event = $task->getEvent(); $me = $_SESSION['USER_DATA'] ?>
             </div>
 
             <div class="input-field col s12">
-                <select id="task-category" name="task-category" <?php if(!$event->isCreator($me) && !$event->isOrganizer($me)) echo "disabled" ?>>
+                <select id="task-category" name="task-category" <?php if(!$event->isCreator($connectedUser) && !$event->isOrganizer($connectedUser)) echo "disabled" ?>>
                     <?php foreach (Task::getCategories() as $key => $label): ?>
                         <option value="<?= $key ?>" <?php if(!is_null($category = $task->getCategory()) && $category == $key) echo "selected" ?>><?= $label ?></option>
                     <?php endforeach; ?>
@@ -39,12 +39,12 @@ $event = $task->getEvent(); $me = $_SESSION['USER_DATA'] ?>
             </div>
 
             <div class="input-field col s12">
-                <input id="task-deadline" name="task-deadline" type="text" placeholder="JJ/MM/AAAA" class="validate datepicker" value="<?php if(!is_null($deadline = $task->getDatetimeDeadline())) echo $deadline->format('d/m/Y') ?>"  <?php if(!$event->isCreator($me) && !$event->isOrganizer($me)) echo "disabled" ?>>
+                <input id="task-deadline" name="task-deadline" type="text" placeholder="JJ/MM/AAAA" class="validate datepicker" value="<?php if(!is_null($deadline = $task->getDatetimeDeadline())) echo $deadline->format('d/m/Y') ?>"  <?php if(!$event->isCreator($connectedUser) && !$event->isOrganizer($connectedUser)) echo "disabled" ?>>
                 <label class="active" for="echeance">Échéance</label>
             </div>
 
             <div class="input-field col s12">
-                <select id="task-visibility" name="task-visibility"  <?php if(!$event->isCreator($me) && !$event->isOrganizer($me)) echo "disabled" ?>>
+                <select id="task-visibility" name="task-visibility"  <?php if(!$event->isCreator($connectedUser) && !$event->isOrganizer($connectedUser)) echo "disabled" ?>>
                     <option value="<?= Task::VISIBILITY_ORGANIZER ?>" <?php if($task->getVisibility() == Task::VISIBILITY_ORGANIZER) echo "selected" ?>>Organisateurs</option>
                     <option value="<?= Task::VISIBILITY_ALL ?>" <?php if($task->getVisibility() == Task::VISIBILITY_ALL) echo "selected" ?>>Tout le monde</option>
                 </select>
@@ -98,7 +98,7 @@ $event = $task->getEvent(); $me = $_SESSION['USER_DATA'] ?>
             </div>
 
             <div id="task-slide-note" class="col s12">
-                <textarea id="task-notes" name="task-notes" class="yellow lighten-4 materialize-textarea" placeholder="Notez des informations ou des consignes particulières" <?php if(!$event->isCreator($me) && !$event->isOrganizer($me)) echo "readonly" ?>><?= $task->getNote() ?></textarea>
+                <textarea id="task-notes" name="task-notes" class="yellow lighten-4 materialize-textarea" placeholder="Notez des informations ou des consignes particulières" <?php if(!$event->isCreator($connectedUser) && !$event->isOrganizer($connectedUser)) echo "readonly" ?>><?= $task->getNote() ?></textarea>
             </div>
 
         </div>

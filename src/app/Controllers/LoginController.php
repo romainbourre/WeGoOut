@@ -4,6 +4,9 @@ namespace App\Controllers
 {
 
 
+    use App\Authentication\AuthenticationConstants;
+    use App\Authentication\AuthenticationContext;
+    use App\Exceptions\NotConnectedUserException;
     use Domain\Exceptions\UserIncorrectPasswordException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Entities\Alert;
@@ -22,43 +25,32 @@ namespace App\Controllers
      */
     class LoginController extends AppController
     {
-        /**
-         * @var ILogger logger
-         */
-        private ILogger $logger;
 
-        /**
-         * @var IAccountService account service
-         */
-        private IAccountService $accountService;
-
-        /**
-         * LoginController constructor.
-         * @param ILogger $logger
-         * @param IAccountService $accountService
-         */
-        public function __construct(ILogger $logger, IAccountService $accountService)
-        {
+        public function __construct(
+            private readonly ILogger $logger,
+            private readonly IAccountService $accountService,
+            private readonly AuthenticationContext $authenticationGateway
+        ) {
             parent::__construct();
-            $this->logger = $logger;
-            $this->accountService = $accountService;
         }
 
         /**
          * View display of login page
+         * @throws NotConnectedUserException
          */
         public function getView(Request $request): Response
         {
             $this->addCssStyle('css-login.css');
             $this->addJsScript('js-login.js');
 
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $titleWebPage = CONF['Application']['Name'] . " - Connexion";
 
             $navItems = self::render('login.navitems');
 
             $content = self::render('login.view-login');
 
-            $view = self::render('templates.template', compact('titleWebPage', 'navItems', 'content'));
+            $view = self::render('templates.template', compact('titleWebPage', 'navItems', 'content', 'connectedUser'));
 
             return $this->ok($view);
         }
@@ -71,18 +63,14 @@ namespace App\Controllers
          */
         public function login(Request $request): Response
         {
-            try
-            {
+            try {
+                $connectedUser = $this->authenticationGateway;
 
-                $connectedUser = $this->getConnectedUser();
-
-                if (!is_null($connectedUser))
-                {
+                if (!is_null($connectedUser)) {
                     return $this->unauthorized();
                 }
 
-                if (!$cleaned_data = $this->getData($request))
-                {
+                if (!$cleaned_data = $this->getData($request)) {
                     return $this->badRequest();
                 }
 
@@ -91,21 +79,16 @@ namespace App\Controllers
                 $loginRequest = new LoginRequest($email, $password);
                 $user = $this->accountService->login($loginRequest);
 
-                $_SESSION['USER_DATA'] = $user;
+                $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user;
 
                 $this->logger->logTrace("user with id {$user->getID()} is now connected.");
 
                 return $this->ok()->withRedirectTo('/');
-
-            }
-            catch (UserNotExistException | UserIncorrectPasswordException $e)
-            {
+            } catch (UserNotExistException|UserIncorrectPasswordException $e) {
                 $this->logger->logWarning($e->getMessage());
                 Alert::addAlert($e->getMessage(), 2);
                 return $this->badRequest()->withRedirectTo('/login');
-            }
-            catch (Exception $e)
-            {
+            } catch (Exception $e) {
                 $this->logger->logCritical($e->getMessage());
                 Alert::addAlert('Une erreur est survenue. Rééssayez plus tard.', 3);
                 return $this->internalServerError()->withRedirectTo('/login');
@@ -121,11 +104,8 @@ namespace App\Controllers
         {
             $params = $request->getParsedBody();
 
-            if (isset($params['login-user-email-field']) && isset($params['login-user-password-field']))
-            {
-
-                if (!empty($params['login-user-email-field']) && !empty($params['login-user-password-field']))
-                {
+            if (isset($params['login-user-email-field']) && isset($params['login-user-password-field'])) {
+                if (!empty($params['login-user-email-field']) && !empty($params['login-user-password-field'])) {
                     $login_email = htmlspecialchars($params['login-user-email-field']);
                     $login_password = htmlspecialchars($params['login-user-password-field']);
 

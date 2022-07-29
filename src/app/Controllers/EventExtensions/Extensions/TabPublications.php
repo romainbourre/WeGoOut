@@ -4,15 +4,14 @@ namespace App\Controllers\EventExtensions\Extensions
 {
 
 
+    use App\Authentication\AuthenticationContext;
     use App\Controllers\EventExtensions\EventExtension;
     use App\Controllers\EventExtensions\IEventExtension;
+    use App\Exceptions\NotConnectedUserException;
     use App\Librairies\Emitter;
     use Domain\Entities\Event;
     use Domain\Entities\Publication;
-    use Domain\Exceptions\EventCanceledException;
-    use Domain\Exceptions\EventDeletedException;
     use Domain\Exceptions\EventNotExistException;
-    use Domain\Exceptions\EventSignaledException;
 
     class TabPublications extends EventExtension implements IEventExtension
     {
@@ -21,11 +20,8 @@ namespace App\Controllers\EventExtensions\Extensions
 
         private int $eventID;
 
-        /**
-         * TabPublications constructor.
-         * @param Event $event event
-         */
-        public function __construct(Event $event)
+
+        public function __construct(private readonly AuthenticationContext $authenticationGateway, Event $event)
         {
             parent::__construct('publications');
             $this->eventID = $event->getID();
@@ -73,16 +69,14 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Check the global confidentiality for the tab
          * @return bool
-         * @throws EventCanceledException
-         * @throws EventDeletedException
          * @throws EventNotExistException
-         * @throws EventSignaledException
+         * @throws NotConnectedUserException
          */
         public function isActivated(): bool
         {
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $event = new Event($this->eventID);
-            return ($event->isPublic() || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend($me)) || ($event->isPrivate() && $event->isGuestOnly() && $event->isInvited($me)) || $event->isCreator($me) || $event->isOrganizer($me) || $event->isParticipantValid($me));
+            return ($event->isPublic() || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend($connectedUser)) || ($event->isPrivate() && $event->isGuestOnly() && $event->isInvited($connectedUser)) || $event->isCreator($connectedUser) || $event->isOrganizer($connectedUser) || $event->isParticipantValid($connectedUser));
         }
 
         /**
@@ -99,23 +93,21 @@ namespace App\Controllers\EventExtensions\Extensions
          * Save a new publication for the event
          * @param array $args
          * @return bool
-         * @throws EventCanceledException
-         * @throws EventDeletedException
          * @throws EventNotExistException
-         * @throws EventSignaledException
+         * @throws NotConnectedUserException
          */
         public function setAjaxNewPublication($args = array()): bool
         {
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             if ($this->isActivated())
             {
                 if ($cleaned_data = $this->getDataNewPublication())
                 {
                     list($textPublication, $eventId) = $cleaned_data;
-                    if (Publication::saveNewPublication($_SESSION['USER_DATA'], $eventId, $textPublication))
+                    if (Publication::saveNewPublication($connectedUser, $eventId, $textPublication))
                     {
                         $emitter = Emitter::getInstance();
-                        $emitter->emit('event.pub.add', new Event($this->eventID), $me);
+                        $emitter->emit('event.pub.add', new Event($this->eventID), $connectedUser);
                     }
                 }
             }

@@ -3,6 +3,7 @@
 namespace App\Controllers
 {
 
+    use App\Authentication\AuthenticationContext;
     use Domain\Entities\Notifications;
 
     /**
@@ -12,6 +13,10 @@ namespace App\Controllers
      */
     class NotificationsCenterController extends AppController
     {
+        public function __construct(private readonly AuthenticationContext $authenticationGateway)
+        {
+            parent::__construct();
+        }
 
         /**
          * Load js and css script of notifications center
@@ -29,7 +34,7 @@ namespace App\Controllers
         private function getViewNotifications(): string
         {
 
-            $me = $_SESSION['USER_DATA'];
+            $me = $this->authenticationGateway->getConnectedUser();
 
             // LOAD NOTIFICATIONS CENTER
             $notifications = Notifications::manager($me)->load(100);
@@ -261,10 +266,10 @@ namespace App\Controllers
         private function getViewCounterNotifications(): string
         {
 
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
 
             // LOAD ALL NOTIFICATIONS
-            $loader = Notifications::manager($me);
+            $loader = Notifications::manager($connectedUser);
             $loader->load();
 
             // RECOVER NUMBER OF NOTIFICATIONS

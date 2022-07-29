@@ -5,6 +5,8 @@ namespace App\Routing
 {
 
 
+    use App\Authentication\AuthenticationContext;
+    use App\Authentication\Middlewares\AuthenticationMiddleware;
     use App\Controllers\CreateEventController;
     use App\Controllers\EditEventController;
     use App\Controllers\EventController;
@@ -48,7 +50,8 @@ namespace App\Routing
     {
         private ILogger         $logger;
         private IEventService   $eventService;
-        private IAccountService $accountService;
+        private IAccountService       $accountService;
+        private AuthenticationContext $authenticationGateway;
 
         /**
          * Router constructor.
@@ -73,7 +76,8 @@ namespace App\Routing
             $emailSender = new SendGridAdapter($configuration['SendGrid:ApiKey'], $this->logger);
             $emailTemplateRenderer = new TwigRendererAdapter(ROOT . '/domain/Templates/Emails');
 
-            $this->eventService = new EventService($eventRepository, Emitter::getInstance());
+            $this->authenticationGateway = new AuthenticationContext();
+            $this->eventService = new EventService($this->authenticationGateway, $eventRepository, Emitter::getInstance());
             $this->accountService = new AccountService($userRepository, $emailSender, $emailTemplateRenderer);
         }
 
@@ -85,12 +89,12 @@ namespace App\Routing
             {
                 $group->get('login', function (Request $request)
                 {
-                    return (new LoginController($this->logger, $this->accountService))->getView($request);
+                    return (new LoginController($this->logger, $this->accountService, $this->authenticationGateway))->getView($request);
                 });
 
                 $group->post('login', function (Request $request)
                 {
-                    return (new LoginController($this->logger, $this->accountService))->login($request);
+                    return (new LoginController($this->logger, $this->accountService, $this->authenticationGateway))->login($request);
                 });
 
                 $group->get('sign-up', function (Request $request)
@@ -112,7 +116,7 @@ namespace App\Routing
                 {
                     return (new ForgotPasswordController($this->logger, $this->accountService))->resetPassword($request);
                 });
-            })->addMiddleware(new NonAuthenticatedUserGuardMiddleware())->addMiddleware(new AlertDisplayMiddleware())->addMiddleware(new ErrorManagerMiddleware($this->logger));
+            })->addMiddleware(new NonAuthenticatedUserGuardMiddleware($this->authenticationGateway))->addMiddleware(new AlertDisplayMiddleware())->addMiddleware(new ErrorManagerMiddleware($this->logger));
 
             $routeCollectorProxy->group('/', function (RouteCollectorProxy $group) use ($configuration)
             {
@@ -121,9 +125,9 @@ namespace App\Routing
 
                 $group->post('events', function (Request $request)
                 {
-                    return (new CreateEventController($this->logger, $this->eventService))->createEvent($request);
+                    return (new CreateEventController($this->logger, $this->eventService, $this->authenticationGateway))->createEvent($request);
 
-                })->add(new AccountValidatedGuardMiddleware());
+                })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->get('events[/{id:[0-9]*}]', function ($request, $response, array $args) use ($configuration)
                 {
@@ -131,12 +135,12 @@ namespace App\Routing
 
                     if (!is_null($eventId))
                     {
-                        return (new OneEventController($this->logger, $this->eventService))->getView($eventId);
+                        return (new OneEventController($this->logger, $this->eventService, $this->authenticationGateway))->getView($eventId);
                     }
 
-                    return (new EventController($configuration, $this->logger, $this->eventService))->getView();
+                    return (new EventController($configuration, $this->logger, $this->eventService, $this->authenticationGateway))->getView();
 
-                })->add(new AccountValidatedGuardMiddleware());
+                })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->put('events/{id:[0-9]*}/register', function ($request, $response, array $args) use ($configuration)
                 {
@@ -147,8 +151,8 @@ namespace App\Routing
                         return new BadRequestResponse("uri argument id not found.");
                     }
 
-                    return (new OneEventController($this->logger, $this->eventService))->subscribeToEvent($eventId);
-                })->add(new AccountValidatedGuardMiddleware());
+                    return (new OneEventController($this->logger, $this->eventService, $this->authenticationGateway))->subscribeToEvent($eventId);
+                })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->get('events/{id:[0-9]*}/edit', function ($request, $response, array $args) use ($configuration)
                 {
@@ -159,36 +163,36 @@ namespace App\Routing
                         return (new EditEventController($this->logger, $this->eventService))->getView($eventId);
                     }
 
-                    return (new EventController($configuration, $this->logger, $this->eventService))->getView();
+                    return (new EventController($configuration, $this->logger, $this->eventService, $this->authenticationGateway))->getView();
 
-                })->add(new AccountValidatedGuardMiddleware());
+                })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->get('events/create-form', function () {
-                    $controller = new CreateEventController($this->logger, $this->eventService);
+                    $controller = new CreateEventController($this->logger, $this->eventService, $this->authenticationGateway);
                     return $controller->getCreateEventForm();
-                })->add(new AccountValidatedGuardMiddleware());
+                })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->post('events/view', function (Request $request) use ($configuration)
                 {
-                    $controller = new EventController($configuration, $this->logger, $this->eventService);
+                    $controller = new EventController($configuration, $this->logger, $this->eventService, $this->authenticationGateway);
                     return $controller->searchEvents($request);
-                })->add(new AccountValidatedGuardMiddleware());
+                })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->any('profile[/{id}]', function (Request $request, Response $response, array $args)
                 {
                     $id = $args['id'] ?? null;
-                    return (new ProfileController($this->logger))->getView($id);
-                })->add(new AccountValidatedGuardMiddleware());
+                    return (new ProfileController($this->logger, $this->authenticationGateway))->getView($id);
+                })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->get('validation', function (Request $request)
                 {
-                    return (new ValidationController($this->logger, $this->accountService))->getView($request);
-                })->add(new AccountNotValidatedGuardMiddleware());
+                    return (new ValidationController($this->logger, $this->accountService, $this->authenticationGateway))->getView($request);
+                })->add(new AccountNotValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->get('validation/new-token', function ()
                 {
-                    return (new ValidationController($this->logger, $this->accountService))->askNewValidationToken();
-                })->add(new AccountNotValidatedGuardMiddleware());
+                    return (new ValidationController($this->logger, $this->accountService, $this->authenticationGateway))->askNewValidationToken();
+                })->add(new AccountNotValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->get('disconnect', function (Request $request, Response $response)
                 {
@@ -198,10 +202,11 @@ namespace App\Routing
 
             })
                                 ->addMiddleware(new AlertDisplayMiddleware())
-                                ->addMiddleware(new NotificationDisplayMiddleware())
+                                ->addMiddleware(new NotificationDisplayMiddleware($this->authenticationGateway))
                                 ->addMiddleware(new SearchResultsDisplayMiddleware())
-                                ->addMiddleware(new CreateEventMiddleware($this->logger, $this->eventService))
-                                ->addMiddleware(new AuthenticatedUserGuardMiddleware())
+                                ->addMiddleware(new CreateEventMiddleware($this->logger, $this->eventService, $this->authenticationGateway))
+                                ->addMiddleware(new AuthenticationMiddleware($this->authenticationGateway))
+                                ->addMiddleware(new AuthenticatedUserGuardMiddleware($this->authenticationGateway))
                                 ->addMiddleware(new ErrorManagerMiddleware($this->logger));
         }
     }

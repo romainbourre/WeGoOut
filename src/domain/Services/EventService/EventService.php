@@ -5,6 +5,7 @@ namespace Domain\Services\EventService
 {
 
 
+    use App\Authentication\AuthenticationContext;
     use App\Librairies\AppSettings;
     use App\Librairies\Emitter;
     use DateTime;
@@ -29,18 +30,13 @@ namespace Domain\Services\EventService
 
     class EventService implements IEventService
     {
-        private IEventRepository $eventRepository;
-        private Emitter $emitter;
 
-        /**
-         * EventService constructor.
-         * @param IEventRepository $eventRepository
-         * @param Emitter $emitter
-         */
-        public function __construct(IEventRepository $eventRepository, Emitter $emitter)
-        {
-            $this->eventRepository = $eventRepository;
-            $this->emitter = $emitter;
+
+        public function __construct(
+            private readonly AuthenticationContext $authenticationGateway,
+            private readonly IEventRepository $eventRepository,
+            private readonly Emitter $emitter
+        ) {
         }
 
         /**
@@ -50,8 +46,7 @@ namespace Domain\Services\EventService
         {
             $event = $this->eventRepository->getEvent($eventId);
 
-            if (is_null($event))
-            {
+            if (is_null($event)) {
                 throw new ResourceNotFound("event with id $eventId not found.");
             }
 
@@ -66,10 +61,13 @@ namespace Domain\Services\EventService
             $this->checkCreateEventRequest($createEventRequest);
 
             $userHadAlreadyEventsForDate = $this->eventRepository
-                    ->findUserEventsNumberForDates($userId, $createEventRequest->startedDatetime, $createEventRequest->finishedDatetime) > 0;
+                    ->findUserEventsNumberForDates(
+                        $userId,
+                        $createEventRequest->startedDatetime,
+                        $createEventRequest->finishedDatetime
+                    ) > 0;
 
-            if ($userHadAlreadyEventsForDate)
-            {
+            if ($userHadAlreadyEventsForDate) {
                 throw new UserHadAlreadyEventsException();
             }
 
@@ -103,58 +101,54 @@ namespace Domain\Services\EventService
          */
         private function checkCreateEventRequest(CreateEventRequest $createEventRequest)
         {
-            if ($createEventRequest->target != 1 && $createEventRequest->target != 2)
-            {
+            if ($createEventRequest->target != 1 && $createEventRequest->target != 2) {
                 throw new BadArgumentException("please select good target to create event");
             }
 
             $eventTitleMaximumCharacter = 65;
-            if (strlen($createEventRequest->title) > $eventTitleMaximumCharacter)
-            {
+            if (strlen($createEventRequest->title) > $eventTitleMaximumCharacter) {
                 throw new BadArgumentException("event title cannot exceed ${eventTitleMaximumCharacter}");
             }
 
             $numberOfCategory = count(Event::getAllCategory());
-            if ($createEventRequest->category < 0 || $createEventRequest->category > $numberOfCategory)
-            {
-                throw new BadArgumentException("please select a correct category to create event ($createEventRequest->category)");
+            if ($createEventRequest->category < 0 || $createEventRequest->category > $numberOfCategory) {
+                throw new BadArgumentException(
+                    "please select a correct category to create event ($createEventRequest->category)"
+                );
             }
 
             $minimumParticipantsNumber = (new AppSettings())->getParticipantMinNumber();
             $maximumParticipantsNumber = (new AppSettings())->getParticipantMaxNumber();
             if ($createEventRequest->participantsNumber < $minimumParticipantsNumber ||
-                $createEventRequest->participantsNumber > $maximumParticipantsNumber)
-            {
-                throw new BadArgumentException("please choose a correct number of participants for your event (between ${minimumParticipantsNumber} and ${maximumParticipantsNumber} participants)");
+                $createEventRequest->participantsNumber > $maximumParticipantsNumber) {
+                throw new BadArgumentException(
+                    "please choose a correct number of participants for your event (between ${minimumParticipantsNumber} and ${maximumParticipantsNumber} participants)"
+                );
             }
 
-            if ($createEventRequest->target == CreateEventRequest::TARGET_PUBLIC && $createEventRequest->isGuestOnly == true)
-            {
+            if ($createEventRequest->target == CreateEventRequest::TARGET_PUBLIC && $createEventRequest->isGuestOnly == true) {
                 throw new BadArgumentException("guest only argument cannot be true when event is public");
             }
 
-            if ($createEventRequest->target == CreateEventRequest::TARGET_PRIVATE && $createEventRequest->isGuestOnly == true)
-            {
-                if ($createEventRequest->participantsNumber != null)
-                {
+            if ($createEventRequest->target == CreateEventRequest::TARGET_PRIVATE && $createEventRequest->isGuestOnly == true) {
+                if ($createEventRequest->participantsNumber != null) {
                     throw new BadArgumentException("number of participant must be null when event is private");
                 }
             }
 
-            if ($createEventRequest->startedDatetime <= new DateTime())
-            {
+            if ($createEventRequest->startedDatetime <= new DateTime()) {
                 throw new BadArgumentException("event cannot be start before actual date");
             }
 
-            if ($createEventRequest->finishedDatetime != null && $createEventRequest->finishedDatetime <= $createEventRequest->startedDatetime)
-            {
+            if ($createEventRequest->finishedDatetime != null && $createEventRequest->finishedDatetime <= $createEventRequest->startedDatetime) {
                 throw new BadArgumentException("end date of event must be after of start date");
             }
 
             $maximumLocationDetailsCharacters = 100;
-            if (strlen($createEventRequest->locationDetails) > $maximumLocationDetailsCharacters)
-            {
-                throw new BadArgumentException("location details cannot exceed ${maximumLocationDetailsCharacters} characters");
+            if (strlen($createEventRequest->locationDetails) > $maximumLocationDetailsCharacters) {
+                throw new BadArgumentException(
+                    "location details cannot exceed ${maximumLocationDetailsCharacters} characters"
+                );
             }
         }
 
@@ -173,15 +167,16 @@ namespace Domain\Services\EventService
             $user = UserCli::loadUserById($userId);
             $kilometersRadius = $searchEventsRequest->kilometersRadius ?? (new AppSettings())->getDefaultDistance();
             $latitude = $searchEventsRequest->latitude ?? $user->getLocation()->getLatitude();
-            $longitude = $searchEventsRequest->longitude ?? $user->getLocation()->getLongitude();
-;
-            $events = $this->eventRepository->searchEventsForUser($userId,
-                                                                  $searchEventsRequest->categoryId,
-                                                                  $searchEventsRequest->fromDate);
+            $longitude = $searchEventsRequest->longitude ?? $user->getLocation()->getLongitude();;
+            $events = $this->eventRepository->searchEventsForUser(
+                $userId,
+                $searchEventsRequest->categoryId,
+                $searchEventsRequest->fromDate
+            );
 
             $location = new Location($latitude, $longitude);
-            $events = $events->where(function (Event $event) use ($kilometersRadius, $searchEventsRequest, $location) {
-
+            $events = $events->where(function (Event $event) use ($kilometersRadius, $searchEventsRequest, $location)
+            {
                 $eventLocation = $event->getLocation();
                 $distance = $location->getDistance($eventLocation);
 
@@ -189,7 +184,7 @@ namespace Domain\Services\EventService
             });
 
             $eventsByDate = [];
-            $events->forEach(function(Event $event) use (&$eventsByDate)
+            $events->forEach(function (Event $event) use (&$eventsByDate)
             {
                 $eventsByDate[$event->getDatetimeBegin()][] = $event;
             });
@@ -212,47 +207,44 @@ namespace Domain\Services\EventService
          */
         public function changeRegistrationOfUSerToEvent(int $userId, int $eventId): void
         {
-            $user = User::loadUserById($userId);
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            $userToChangeRegistration = User::loadUserById($userId);
 
-            if (is_null($user))
-            {
+            if (is_null($userToChangeRegistration)) {
                 throw new ResourceNotFound("user with id $userId not found.");
             }
 
             $event = $this->getEvent($eventId);
 
-            if ($event->isCreator($user) || $event->isOrganizer($user))
-            {
-                throw new NotAuthorizedException("creator or organizer user with id $userId cannot change him participation.");
+            if ($event->isCreator($userToChangeRegistration) || $event->isOrganizer($userToChangeRegistration)) {
+                throw new NotAuthorizedException(
+                    "creator or organizer user with id $userId cannot change him participation."
+                );
             }
 
-            $isParticipantWaitingValidation = $event->isParticipantWait($user);
-            $isAcceptedParticipant = $event->isParticipantValid($user);
-            if ($isAcceptedParticipant || $isParticipantWaitingValidation)
-            {
-                if ($isAcceptedParticipant)
-                {
-                    $this->emitter->emit('event.user.unsubscribe', $event, $user);
+            $isParticipantWaitingValidation = $event->isParticipantWait($userToChangeRegistration);
+            $isAcceptedParticipant = $event->isParticipantValid($userToChangeRegistration);
+            if ($isAcceptedParticipant || $isParticipantWaitingValidation) {
+                if ($isAcceptedParticipant) {
+                    $this->emitter->emit('event.user.unsubscribe', $event, $userToChangeRegistration);
                 }
 
-                if ($isParticipantWaitingValidation)
-                {
-                    $this->emitter->emit('event.user.unrequest', $event, $user);
+                if ($isParticipantWaitingValidation) {
+                    $this->emitter->emit('event.user.unrequest', $event, $userToChangeRegistration);
                 }
 
-                $event->unsetRegistration($user);
+                $event->cancelRegistrationOfUser($connectedUser, $userToChangeRegistration);
                 return;
             }
 
-            if ($event->isInvited($user))
-            {
-                $event->setParticipantAsValid($user);
-                $this->emitter->emit('event.user.subscribe', $event, $user);
+            if ($event->isInvited($userToChangeRegistration)) {
+                $event->validateParticipant($connectedUser, $userToChangeRegistration);
+                $this->emitter->emit('event.user.subscribe', $event, $userToChangeRegistration);
                 return;
             }
 
-            $event->sendRegistrationAsk($user);
-            $this->emitter->emit('event.user.ask', $event, $user);
+            $event->sendRegistrationAsk($userToChangeRegistration);
+            $this->emitter->emit('event.user.ask', $event, $userToChangeRegistration);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 use Domain\Entities\Date;
 
-$me = $_SESSION['USER_DATA'] ?>
+ ?>
 <?php if(!empty($list)): ?>
 
     <?php foreach ($list as $date => $event): ?>
@@ -19,8 +19,8 @@ $me = $_SESSION['USER_DATA'] ?>
 
             <?php
 
-            $participants = $element->getParticipants();
-            $friends = $me->getFriends();
+            $participants = $element->getParticipants($connectedUser);
+            $friends = $connectedUser->getFriends();
             $friendsParticipant = array();
             foreach($participants as $participant) {
                 foreach($friends as $friend) {
@@ -29,14 +29,14 @@ $me = $_SESSION['USER_DATA'] ?>
             }
             $numberFriends = count($friendsParticipant);
 
-            $superCard = ($element->getUser()->getID() == $me->getID() || $element->isParticipant($me) || $element->isInvited($me) || $numberFriends > 0);
+            $superCard = ($element->getUser()->getID() == $connectedUser->getID() || $element->isParticipant($connectedUser) || $element->isInvited($connectedUser) || $numberFriends > 0);
 
             if($superCard) {
                 $cardSize = "s12";
                 $superCardMsg = "";
-                if($element->getUser()->getID() == $me->getID()) { if($element->isOver()) $superCardMsg = "Vous avez organisé"; else $superCardMsg = "Vous organisez"; }
-                else if($element->isParticipant($me)) { if($element->isOver()) $superCardMsg = "Vous avez participé"; else $superCardMsg = "Vous participez"; }
-                else if($element->isInvited($me)) { if(!$element->isOver()) $superCardMsg = "Vous êtes invité"; }
+                if($element->getUser()->getID() == $connectedUser->getID()) { if($element->isOver()) $superCardMsg = "Vous avez organisé"; else $superCardMsg = "Vous organisez"; }
+                else if($element->isParticipant($connectedUser)) { if($element->isOver()) $superCardMsg = "Vous avez participé"; else $superCardMsg = "Vous participez"; }
+                else if($element->isInvited($connectedUser)) { if(!$element->isOver()) $superCardMsg = "Vous êtes invité"; }
                 else if($numberFriends > 0) {
                     $maxDisplayFriends = 2;
                     $diff = $numberFriends - $maxDisplayFriends;

@@ -3,17 +3,16 @@
 namespace App\Controllers\EventExtensions\Extensions
 {
 
-    
+
+    use App\Authentication\AuthenticationContext;
     use App\Controllers\EventExtensions\EventExtension;
     use App\Controllers\EventExtensions\IEventExtension;
+    use App\Exceptions\NotConnectedUserException;
     use DateTime;
     use Domain\Entities\Event;
     use Domain\Entities\Task;
     use Domain\Entities\User;
-    use Domain\Exceptions\EventCanceledException;
-    use Domain\Exceptions\EventDeletedException;
     use Domain\Exceptions\EventNotExistException;
-    use Domain\Exceptions\EventSignaledException;
     use Domain\Exceptions\TaskNotExistException;
     use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserNotExistException;
@@ -25,27 +24,24 @@ namespace App\Controllers\EventExtensions\Extensions
         private const TAB_EXTENSION_NAME = "To Do List";
         public const ORDER = 3;
 
-        private Event $event;
 
         /**
-         * TabParticipants constructor.
-         * @param Event $event event
-         * @throws EventCanceledException
-         * @throws EventDeletedException
          * @throws EventNotExistException
-         * @throws EventSignaledException
          */
-        public function __construct(Event $event)
+        public function __construct(private readonly AuthenticationContext $authenticationGateway, private Event $event)
         {
             parent::__construct('todolist');
             $this->event = new Event($event->getID());
         }
 
 
+        /**
+         * @throws NotConnectedUserException
+         */
         public function active(): bool
         {
-            $me = $_SESSION['USER_DATA'];
-            return (($this->event->isCreator($me) || $this->event->isCreator($me)) || ($this->event->isParticipantValid($me) && Task::getEventTasksForUser($this->event, $me)));
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            return (($this->event->isCreator($connectedUser) || $this->event->isCreator($connectedUser)) || ($this->event->isParticipantValid($connectedUser) && Task::getEventTasksForUser($this->event, $connectedUser)));
         }
 
         /**
@@ -69,10 +65,11 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Generate global content view of the tab
          * @return string global content
+         * @throws NotConnectedUserException
          */
         public function getContent(): string
         {
-            $me = $_SESSION['USER_DATA'];
+            $me = $this->authenticationGateway->getConnectedUserOrThrow();
             $event = $this->event;
             $taskForm = $this->getAddOnFormView();
             $tasksList = $this->getTasksListView();
@@ -81,29 +78,33 @@ namespace App\Controllers\EventExtensions\Extensions
 
         /**
          * Get a form for add task
-         * @return string
+         * @return string|null
+         * @throws NotConnectedUserException
          */
         private function getAddOnFormView(): ?string
         {
-            $me = $_SESSION['USER_DATA'];
-            if ($this->event->isCreator($me) || $this->event->isOrganizer($me)) return $this->render('view-form-task');
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser)) return $this->render('view-form-task');
             return null;
         }
 
         /**
          * Get list of tasks for the event
          * @return string
+         * @throws NotConnectedUserException
          */
         public function getTasksListView(): string
         {
             $event = $this->event;
             $tasksList = Task::getEventTasksForUser($event, Host::getMe());
-            return $this->render('view-list-task', compact('tasksList'));
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            return $this->render('view-list-task', compact('tasksList', 'connectedUser'));
         }
 
         /**
          * Get view of a task slider
-         * @return string
+         * @return string|null
+         * @throws NotConnectedUserException
          */
         protected function getSlideTaskView(): ?string
         {
@@ -112,7 +113,8 @@ namespace App\Controllers\EventExtensions\Extensions
                 try
                 {
                     $task = new Task((int)$_POST['task']);
-                    return $this->render("slide-task", compact('task'));
+                    $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+                    return $this->render("slide-task", compact('task', 'connectedUser'));
                 }
                 catch (TaskNotExistException $e)
                 {
@@ -123,11 +125,12 @@ namespace App\Controllers\EventExtensions\Extensions
 
         /**
          * Add task in event
+         * @throws NotConnectedUserException
          */
         protected function addTask(): bool
         {
-            $me = $_SESSION['USER_DATA'];
-            if (isset($_POST['task-add-label']) && ($this->event->isCreator($me) || $this->event->isOrganizer($me)))
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            if (isset($_POST['task-add-label']) && ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser)))
             {
                 return $this->event->addTask(htmlspecialchars($_POST['task-add-label']));
             }
@@ -137,14 +140,15 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Set user designated as me
          * @return bool
+         * @throws NotConnectedUserException
          */
         protected function setUserDesignated(): bool
         {
             try
             {
                 $task = new Task((int)$_POST['task']);
-                $me = $_SESSION['USER_DATA'];
-                return $task->setUserDesignated($me);
+                $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+                return $task->setUserDesignated($connectedUser);
             }
             catch (TaskNotExistException $e)
             {
@@ -155,15 +159,16 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Check task
          * @return bool
+         * @throws NotConnectedUserException
          */
         protected function checkTask(): bool
         {
             try
             {
                 $task = new Task((int)$_POST['task']);
-                $me = $_SESSION['USER_DATA'];
-                if (!$task->isCheck($me)) return $task->check($me);
-                else return $task->uncheck($me);
+                $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+                if (!$task->isCheck($connectedUser)) return $task->check($connectedUser);
+                else return $task->uncheck($connectedUser);
             }
             catch (TaskNotExistException $e)
             {
@@ -174,11 +179,12 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Delete task of event
          * @return bool
+         * @throws NotConnectedUserException
          */
         protected function deleteTask(): bool
         {
-            $me = $_SESSION['USER_DATA'];
-            if ($this->event->isCreator($me) || $this->event->isOrganizer($me))
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser))
             {
                 try
                 {
@@ -194,6 +200,7 @@ namespace App\Controllers\EventExtensions\Extensions
 
         /**
          * Save edited data of task
+         * @throws NotConnectedUserException
          */
         protected function saveFormTask()
         {
@@ -202,16 +209,16 @@ namespace App\Controllers\EventExtensions\Extensions
             {
 
                 $task = new Task((int)$_POST['task']);
-                $me = $_SESSION['USER_DATA'];
+                $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
 
                 if ($this->event->equals($task->getEvent()))
                 {
 
                     // SAVE CHECK
-                    if (isset($_POST['task-check'])) $task->check($me);
-                    else $task->uncheck($me);
+                    if (isset($_POST['task-check'])) $task->check($connectedUser);
+                    else $task->uncheck($connectedUser);
 
-                    if ($this->event->isCreator($me) || $this->event->isOrganizer($me))
+                    if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser))
                     {
 
                         // SAVE LABEL
@@ -299,10 +306,14 @@ namespace App\Controllers\EventExtensions\Extensions
             }
         }
 
+        /**
+         * @throws NotConnectedUserException
+         */
         public function isActivated(): bool
         {
             $event = $this->event;
-            return ($event->isCreator($_SESSION['USER_DATA']) || $event->isOrganizer($_SESSION['USER_DATA']) || $event->isParticipantValid($_SESSION['USER_DATA']) || $event->isInvited($_SESSION['USER_DATA']));
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            return ($event->isCreator($connectedUser) || $event->isOrganizer($connectedUser) || $event->isParticipantValid($connectedUser) || $event->isInvited($connectedUser));
         }
     }
 }

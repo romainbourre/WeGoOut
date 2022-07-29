@@ -26,7 +26,7 @@
                                         <?php if(($profilPicture = $event->getUser()->getPicture()) != ""): ?> <img src="<?= $profilPicture ?>" alt="..." class="circle responsive-img"><?php endif; ?>
                                         <?= $event->getUser()->getLastname(
                                         ) . " " . $event->getUser()->getFirstname() ?>
-                                        <?php if($event->isInvited($_SESSION['USER_DATA'])): ?><small class=""> vous a invité à participer</small><?php endif; ?>
+                                        <?php if($event->isInvited($connectedUser)): ?><small class=""> vous a invité à participer</small><?php endif; ?>
                                     </a>
                                 </p>
                             </div>
