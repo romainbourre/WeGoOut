@@ -23,7 +23,8 @@ namespace App\Middleware
         public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
         {
             $connectedUser = $this->authenticationGateway->getConnectedUser();
-            if (is_null($connectedUser)) {
+            if (!is_null($connectedUser))
+            {
                 return RedirectedResponse::to('/');
             }
             return $handler->handle($request);

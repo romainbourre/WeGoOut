@@ -6,7 +6,6 @@ namespace App\Controllers
 
     use App\Authentication\AuthenticationConstants;
     use App\Authentication\AuthenticationContext;
-    use App\Exceptions\NotConnectedUserException;
     use Domain\Exceptions\UserIncorrectPasswordException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Entities\Alert;
@@ -36,14 +35,16 @@ namespace App\Controllers
 
         /**
          * View display of login page
-         * @throws NotConnectedUserException
+         * @param Request $request
+         * @return Response
+         * @throws Exception
          */
         public function getView(Request $request): Response
         {
             $this->addCssStyle('css-login.css');
             $this->addJsScript('js-login.js');
 
-            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
             $titleWebPage = CONF['Application']['Name'] . " - Connexion";
 
             $navItems = self::render('login.navitems');
@@ -64,7 +65,7 @@ namespace App\Controllers
         public function login(Request $request): Response
         {
             try {
-                $connectedUser = $this->authenticationGateway;
+                $connectedUser = $this->authenticationGateway->getConnectedUser();
 
                 if (!is_null($connectedUser)) {
                     return $this->unauthorized();
