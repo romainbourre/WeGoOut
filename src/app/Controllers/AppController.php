@@ -29,32 +29,6 @@ namespace App\Controllers
         }
 
         /**
-         * Get connected user
-         * @return User|null
-         */
-        public function getConnectedUser(): ?User {
-            return $_SESSION['USER_DATA'] ?? null;
-        }
-
-        /**
-         * Return connected user, else throw exception
-         * @return User
-         * @throws NotConnectedUserException
-         */
-        public function getConnectedUserOrThrow(): User {
-            $user = $this->getConnectedUser();
-
-            if (!is_null($user))
-            {
-                return $user;
-            }
-
-            throw new NotConnectedUserException();
-        }
-
-
-
-        /**
          * Load listener of web application
          */
         private function initListeners()
@@ -101,7 +75,7 @@ namespace App\Controllers
 
                 // TODO : $organizer = send notification to organizer
 
-                $participants = $event->getParticipants(1);
+                $participants = $event->getParticipants($userWhoLeavePub, 1);
 
                 foreach ($participants as $participant)
                 {
@@ -117,7 +91,7 @@ namespace App\Controllers
 
                 if (!$userWhoLeaveReview->equals($event->getUser())) Notifications::manager($event->getUser())->add()->review("review", $event, $userWhoLeaveReview);
 
-                $participants = $event->getParticipants(1);
+                $participants = $event->getParticipants($userWhoLeaveReview, 1);
 
                 // TODO : $organizer = send notification to organizer
 

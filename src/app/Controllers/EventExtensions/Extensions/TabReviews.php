@@ -4,15 +4,14 @@ namespace App\Controllers\EventExtensions\Extensions
 {
 
 
+    use App\Authentication\AuthenticationContext;
     use App\Controllers\EventExtensions\EventExtension;
     use App\Controllers\EventExtensions\IEventExtension;
+    use App\Exceptions\NotConnectedUserException;
     use App\Librairies\Emitter;
     use Domain\Entities\Event;
     use Domain\Entities\Review;
-    use Domain\Exceptions\EventCanceledException;
-    use Domain\Exceptions\EventDeletedException;
     use Domain\Exceptions\EventNotExistException;
-    use Domain\Exceptions\EventSignaledException;
     use Exception;
 
     class TabReviews extends EventExtension implements IEventExtension
@@ -20,17 +19,11 @@ namespace App\Controllers\EventExtensions\Extensions
         private const TAB_EXTENSION_NAME = "Avis";
         private const ORDER = 5;
 
-        private Event $event;
 
         /**
-         * TabParticipants constructor.
-         * @param Event $event event
-         * @throws EventCanceledException
-         * @throws EventDeletedException
          * @throws EventNotExistException
-         * @throws EventSignaledException
          */
-        public function __construct(Event $event)
+        public function __construct(private readonly AuthenticationContext $authenticationGateway, private Event $event)
         {
             parent::__construct('reviews');
             $this->event = new Event($event->getID());
@@ -92,14 +85,15 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Generate view of form
          * @return null|string view of form
+         * @throws NotConnectedUserException
          */
         public function getViewReviewsForm(): ?string
         {
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $event = $this->event;
             if ($event->isOver() && $this->isActivated())
             {
-                if (!Review::checkUserPostReview($me, $this->event))
+                if (!Review::checkUserPostReview($connectedUser, $this->event))
                 {
                     return $this->render('reviews-form');
                 }
@@ -111,12 +105,13 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Generate view of list of reviews for the event
          * @return null|string view of list of reviews
+         * @throws NotConnectedUserException
          */
         public function getViewReviewsList(): ?string
         {
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $event = $this->event;
-            if ($event->isPublic() || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend($me)) || $this->isActivated())
+            if ($event->isPublic() || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend($connectedUser)) || $this->isActivated())
             {
                 $reviewsContent = $this->event->getReviews();
                 if (!is_null($reviewsContent) && !empty($reviewsContent)) return $this->render('review', compact('reviewsContent'));
@@ -132,8 +127,8 @@ namespace App\Controllers\EventExtensions\Extensions
          */
         public function saveNewReview(): ?bool
         {
-            $me = $_SESSION['USER_DATA'];
-            if ($this->event->isOver() && $this->isActivated() && !Review::checkUserPostReview($me, $this->event))
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            if ($this->event->isOver() && $this->isActivated() && !Review::checkUserPostReview($connectedUser, $this->event))
             {
                 if (isset($_POST['form_new_review_note']) && isset($_POST['form_new_review_text']))
                 {
@@ -150,10 +145,10 @@ namespace App\Controllers\EventExtensions\Extensions
                     }
                     if ($run)
                     {
-                        if ($this->event->setNewReview($reviewNote, $reviewText))
+                        if ($this->event->addReview($connectedUser, $reviewNote, $reviewText))
                         {
                             $emitter = Emitter::getInstance();
-                            $emitter->emit('event.review.add', $this->event, $me);
+                            $emitter->emit('event.review.add', $this->event, $connectedUser);
                             return true;
                         }
                     }
@@ -165,11 +160,13 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Check the global confidentiality for the tab
          * @return bool
+         * @throws NotConnectedUserException
          */
         public function isActivated(): bool
         {
             $event = $this->event;
-            return ($event->isCreator($_SESSION['USER_DATA']) || $event->isOrganizer($_SESSION['USER_DATA']) || $event->isParticipantValid($_SESSION['USER_DATA']));
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            return ($event->isCreator($connectedUser) || $event->isOrganizer($connectedUser) || $event->isParticipantValid($connectedUser));
         }
 
     }

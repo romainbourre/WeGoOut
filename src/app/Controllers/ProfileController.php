@@ -3,6 +3,7 @@
 namespace App\Controllers
 {
 
+    use App\Authentication\AuthenticationContext;
     use App\Librairies\Emitter;
     use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserNotExistException;
@@ -19,32 +20,18 @@ namespace App\Controllers
      */
     class ProfileController extends AppController
     {
-        /**
-         * @var ILogger logger
-         */
-        private ILogger $logger;
-
-        /**
-         * Profile constructor.
-         * @param ILogger $logger
-         */
-        public function __construct(ILogger $logger)
+        public function __construct(private readonly ILogger $logger, private readonly AuthenticationContext $authenticationGateway)
         {
             parent::__construct();
-            $this->logger = $logger;
         }
 
-        /**
-         * Load scripts and view of web page
-         * @param string|null $id id of user
-         * @return Response
-         */
         public function getView(?string $id = null): Response
         {
 
             try
             {
-                $user = is_null($id) ? $_SESSION['USER_DATA'] : User::loadUserById((int)$id);
+                $connectedUser = $this->authenticationGateway->getConnectedUser();
+                $userToLoadProfile = is_null($id) ? $connectedUser : User::loadUserById((int)$id);
 
                 $this->addCssStyle('css-profil.css');
                 $this->addJsScript('js-profil.js');
@@ -52,16 +39,16 @@ namespace App\Controllers
                 // NAVIGATION
                 $userItems = $this->render('templates.nav-useritems');
                 $userMenu = $this->render('templates.nav-usermenu', compact('userItems'));
-                $navUserDropDown = $this->render('templates.nav-userdropdown', compact('userMenu'));
+                $navUserDropDown = $this->render('templates.nav-userdropdown', compact('userMenu', 'connectedUser'));
                 $navAddEvent = $this->render('templates.nav-addevent');
                 $navItems = $this->render('templates.nav-connectmenu', compact('navAddEvent'));
 
-                $titleWebPage = $user->getName('full');
-                $cmdFriend = $this->getViewCmdFriend($user);
-                $profileContent = $this->getViewContentProfile($user);
-                $content = self::render('profil.view-profil', compact('user', "cmdFriend", "profileContent"));
+                $titleWebPage = $userToLoadProfile->getName('full');
+                $cmdFriend = $this->getViewCmdFriend($userToLoadProfile);
+                $profileContent = $this->getViewContentProfile($userToLoadProfile);
+                $content = self::render('profil.view-profil', compact('userToLoadProfile', "cmdFriend", "profileContent"));
 
-                $view = $this->render('templates.template', compact('titleWebPage', 'userMenu', 'navUserDropDown', 'navAddEvent', 'navItems', 'content'));
+                $view = $this->render('templates.template', compact('titleWebPage', 'userMenu', 'navUserDropDown', 'navAddEvent', 'navItems', 'content', 'connectedUser'));
 
                 return $this->ok($view);
 
@@ -129,25 +116,25 @@ namespace App\Controllers
         public function getViewCmdFriend(User $user): ?string
         {
 
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
 
-            if ($me->equals($user))
+            if ($connectedUser->equals($user))
             {
                 return $this->render('profil.cmd-edit-profile');
             }
-            else if (!$me->equals($user) && !$me->isFriend($user) && !$me->isFriendWait($user))
+            elseif (!$connectedUser->equals($user) && !$connectedUser->isFriend($user) && !$connectedUser->isFriendWait($user))
             {
                 return $this->render('profil.cmd-no-friend');
             }
-            else if (!$me->equals($user) && $me->isFriend($user))
+            elseif (!$connectedUser->equals($user) && $connectedUser->isFriend($user))
             {
                 return $this->render('profil.cmd-friend');
             }
-            else if (!$me->equals($user) && $me->isFriendWaitFromMe($user))
+            elseif (!$connectedUser->equals($user) && $connectedUser->isFriendWaitFromMe($user))
             {
                 return $this->render('profil.cmd-request-send');
             }
-            else if (!$me->equals($user) && $me->isFriendWaitFromUser($user))
+            elseif (!$connectedUser->equals($user) && $connectedUser->isFriendWaitFromUser($user))
             {
                 return $this->render('profil.cmd-choose-friend');
             }
@@ -163,11 +150,11 @@ namespace App\Controllers
          */
         public function getViewFriendsList(User $user): ?string
         {
-            $me = $_SESSION['USER_DATA'];
-            if ($me->equals($user) || $me->isFriend($user))
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
+            if ($connectedUser->equals($user) || $connectedUser->isFriend($user))
             {
                 $friends = $user->getFriends();
-                return $this->render('profil.friends-list', compact('user', 'friends'));
+                return $this->render('profil.friends-list', compact('user', 'friends', 'connectedUser'));
             }
             return null;
         }
@@ -179,8 +166,8 @@ namespace App\Controllers
          */
         public function getViewFriendsRequestList(User $user): ?string
         {
-            $me = $_SESSION['USER_DATA'];
-            if ($me->equals($user))
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
+            if ($connectedUser->equals($user))
             {
                 $users = $user->getFriendsASkMe();
                 return $this->render('profil.friends-request-list', compact('users'));
@@ -195,17 +182,16 @@ namespace App\Controllers
          */
         public function getViewContentProfileEvents(User $user): ?string
         {
-            $me = $_SESSION['USER_DATA'];
-            if ($me->equals($user) || $me->isFriend($user))
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
+            if ($connectedUser->equals($user) || $connectedUser->isFriend($user))
             {
                 $participation = $user->getEventsParticipation(1);
-                $organisation = $user->getEventsOrganisation(1);
+                $organisation = $user->getOrganizedEvents($connectedUser, 1);
             }
             else
             {
                 $participation = $user->getEventsParticipation();
-                $organisation = $user->getEventsOrganisation();
-
+                $organisation = $user->getOrganizedEvents($connectedUser);
             }
             return $this->render("profil.content-profile-events", compact('user', 'participation', 'organisation'));
         }
@@ -218,18 +204,16 @@ namespace App\Controllers
          */
         public function sendRequestFriend(User $user): bool
         {
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
             $emitter = Emitter::getInstance();
-
-            if (!$me->equals($user) && !$user->isFriend($me) && !$user->isFriendWait($me))
+            if (!$connectedUser->equals($user) && !$user->isFriend($connectedUser) && !$user->isFriendWait($connectedUser))
             {
-                if ($me->sendFriendRequest($user))
+                if ($connectedUser->sendFriendRequest($user))
                 {
-                    $emitter->emit('user.friend.request', $user, $me);
+                    $emitter->emit('user.friend.request', $user, $connectedUser);
                     return true;
                 }
             }
-
             return false;
         }
 
@@ -241,13 +225,13 @@ namespace App\Controllers
          */
         public function unsetRequestFriend(User $user): bool
         {
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
             $emitter = Emitter::getInstance();
-            if (!$me->equals($user) && $user->isFriendWait($me))
+            if (!$connectedUser->equals($user) && $user->isFriendWait($connectedUser))
             {
-                if ($me->unsetFriendRequest($user))
+                if ($connectedUser->unsetFriendRequest($user))
                 {
-                    $emitter->emit('user.friend.unrequest', $user, $me);
+                    $emitter->emit('user.friend.unrequest', $user, $connectedUser);
                     return true;
                 }
             }
@@ -265,22 +249,22 @@ namespace App\Controllers
          */
         public function acceptFriend(User $user): bool
         {
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
             $emitter = Emitter::getInstance();
-            if (!$me->equals($user) && $me->isFriendWait($user))
+            if (!$connectedUser->equals($user) && $connectedUser->isFriendWait($user))
             {
-                if ($me->acceptFriend($user))
+                if ($connectedUser->acceptFriend($user))
                 {
-                    $emitter->emit('user.friend.accept', $user, $me);
+                    $emitter->emit('user.friend.accept', $user, $connectedUser);
                     return true;
                 }
             }
-            else if ($me->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
+            elseif ($connectedUser->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
             {
                 $friend = User::loadUserById((int)$_POST['friendId']);
-                if ($me->isFriendWait($friend) && $me->acceptFriend($friend))
+                if ($connectedUser->isFriendWait($friend) && $connectedUser->acceptFriend($friend))
                 {
-                    $emitter->emit('user.friend.accept', $friend, $me);
+                    $emitter->emit('user.friend.accept', $friend, $connectedUser);
                     return true;
                 }
             }
@@ -297,18 +281,18 @@ namespace App\Controllers
          */
         public function refuseFriend(User $user): bool
         {
-            $me = $_SESSION['USER_DATA'];
-            if (!$me->equals($user) && $me->isFriendWait($user))
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
+            if (!$connectedUser->equals($user) && $connectedUser->isFriendWait($user))
             {
-                if ($me->refuseFriend($user))
+                if ($connectedUser->refuseFriend($user))
                 {
                     return true;
                 }
             }
-            else if ($me->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
+            elseif ($connectedUser->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
             {
                 $friend = User::loadUserById((int)$_POST['friendId']);
-                if ($me->isFriendWait($friend) && $me->refuseFriend($friend))
+                if ($connectedUser->isFriendWait($friend) && $connectedUser->refuseFriend($friend))
                 {
                     return true;
                 }
@@ -326,28 +310,27 @@ namespace App\Controllers
          */
         public function deleteFriend(User $user): bool
         {
-            $me = $_SESSION['USER_DATA'];
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
             $friend = $user;
             $emitter = Emitter::getInstance();
-            if (!$me->equals($user) && $me->isFriend($user))
+            if (!$connectedUser->equals($user) && $connectedUser->isFriend($user))
             {
-                if ($me->unsetFriend($user))
+                if ($connectedUser->unsetFriend($user))
                 {
-                    $emitter->emit('user.friend.delete', $friend, $me);
+                    $emitter->emit('user.friend.delete', $friend, $connectedUser);
                     return true;
                 }
             }
-            else if ($me->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
+            elseif ($connectedUser->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
             {
                 $friend = User::loadUserById((int)$_POST['friendId']);
-                if ($me->isFriend($friend) && $me->unsetFriend($friend))
+                if ($connectedUser->isFriend($friend) && $connectedUser->unsetFriend($friend))
                 {
-                    $emitter->emit('user.friend.delete', $friend, $me);
+                    $emitter->emit('user.friend.delete', $friend, $connectedUser);
                     return true;
                 }
             }
             return false;
-
         }
     }
 }

@@ -4,6 +4,8 @@ namespace App\Controllers
 {
 
 
+    use App\Authentication\AuthenticationContext;
+    use App\Exceptions\NotConnectedUserException;
     use Domain\Entities\Alert;
     use Domain\Exceptions\BadAccountValidationTokenException;
     use Domain\Exceptions\UserAlreadyValidatedException;
@@ -22,38 +24,25 @@ namespace App\Controllers
      */
     class ValidationController extends AppController
     {
-        /**
-         * @var ILogger logger
-         */
-        private ILogger $logger;
 
-        /**
-         * @var IAccountService account service
-         */
-        private IAccountService $accountService;
-
-        /**
-         * ValidationController constructor.
-         * @param ILogger $logger
-         * @param IAccountService $accountService
-         */
-        public function __construct(ILogger $logger, IAccountService $accountService)
-        {
+        public function __construct(
+            private readonly ILogger $logger,
+            private readonly IAccountService $accountService,
+            private readonly AuthenticationContext $authenticationGateway
+        ) {
             parent::__construct();
-            $this->accountService = $accountService;
-            $this->logger = $logger;
         }
 
         /**
-         * Display of web page
+         * @throws NotConnectedUserException
          */
         public function getView(Request $request): Response
         {
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $params = $request->getQueryParams();
 
             $validationToken = $params['token'] ?? null;
-            if (!is_null($validationToken))
-            {
+            if (!is_null($validationToken)) {
                 return $this->validAccount($validationToken);
             }
 
@@ -62,11 +51,11 @@ namespace App\Controllers
 
             $userItems = null;
             $userMenu = $this->render('templates.nav-usermenu', compact('userItems'));
-            $navUserDropDown = $this->render('templates.nav-userdropdown', compact('userMenu'));
+            $navUserDropDown = $this->render('templates.nav-userdropdown', compact('userMenu', 'connectedUser'));
 
             $content = self::render('validation.view-validation');
 
-            $view = self::render('templates.template', compact('navUserDropDown', 'content'));
+            $view = self::render('templates.template', compact('navUserDropDown', 'content', 'connectedUser'));
 
             return $this->ok($view);
         }
@@ -76,13 +65,10 @@ namespace App\Controllers
          */
         public function askNewValidationToken(): Response
         {
-            try
-            {
+            try {
+                $user = $this->authenticationGateway->getConnectedUser();
 
-                $user = $_SESSION['USER_DATA'] ?? null;
-
-                if (is_null($user))
-                {
+                if (is_null($user)) {
                     return $this->unauthorized()->withRedirectTo('/validation');
                 }
 
@@ -93,10 +79,7 @@ namespace App\Controllers
                 Alert::addAlert("Nous vous avons envoyé un email pour valider votre compte.", 1);
 
                 return $this->ok()->withRedirectTo('/');
-
-            }
-            catch (Exception $e)
-            {
+            } catch (Exception $e) {
                 $this->logger->logCritical($e->getMessage());
                 Alert::addAlert("Nous n'avons pas pu générer un nouveau lien de validation. Rééssayez plus tard.", 3);
                 return $this->internalServerError()->withRedirectTo('/');
@@ -108,13 +91,10 @@ namespace App\Controllers
          */
         public function validAccount(string $validationToken): Response
         {
-            try
-            {
+            try {
+                $user = $this->authenticationGateway->getConnectedUser();
 
-                $user = $_SESSION['USER_DATA'] ?? null;
-
-                if (is_null($user))
-                {
+                if (is_null($user)) {
                     return $this->unauthorized()->withRedirectTo('/validation');
                 }
 
@@ -125,22 +105,18 @@ namespace App\Controllers
                 $this->logger->logInfo("user with id $userId is now validated");
 
                 return $this->ok()->withRedirectTo('/');
-
-            }
-            catch (BadAccountValidationTokenException $e)
-            {
+            } catch (BadAccountValidationTokenException $e) {
                 $this->logger->logWarning($e->getMessage());
-                Alert::addAlert("Le code de validation est incorrect. Veuillez cliquez sur le lien contenu dans le dernier e-mail de validation.", 2);
+                Alert::addAlert(
+                    "Le code de validation est incorrect. Veuillez cliquez sur le lien contenu dans le dernier e-mail de validation.",
+                    2
+                );
                 return $this->badRequest()->withRedirectTo('/');
-            }
-            catch (UserAlreadyValidatedException $e)
-            {
+            } catch (UserAlreadyValidatedException $e) {
                 $this->logger->logWarning($e->getMessage());
                 Alert::addAlert("Vous avez déjà un compte validé.", 2);
                 return $this->unauthorized()->withRedirectTo('/');
-            }
-            catch (Exception $e)
-            {
+            } catch (Exception $e) {
                 $this->logger->logCritical($e->getMessage());
                 Alert::addAlert("la validation n'a pas pu s'executer correctement. Rééssayez plus tard.", 3);
                 return $this->internalServerError()->withRedirectTo('/');

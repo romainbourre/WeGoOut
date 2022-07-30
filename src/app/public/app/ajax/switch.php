@@ -1,5 +1,7 @@
 <?php require_once '../../../../../vendor/autoload.php';
 
+use App\Authentication\AuthenticationConstants;
+use App\Authentication\AuthenticationContext;
 use App\Controllers\NotificationsCenterController;
 use App\Controllers\OneEventController;
 use App\Controllers\ProfileController;
@@ -38,7 +40,9 @@ class SwitchStartup implements IStartUp
         $connectionString = $this->configuration->getRequired('Database:ConnectionString');
         $databaseContext = new PDO($connectionString, $this->configuration->getRequired('Database:User'), $this->configuration->getRequired('Database:Password'));
         $eventRepository = new EventRepository($databaseContext);
-        $eventService = new EventService($eventRepository, Emitter::getInstance());
+        $authenticationGateway = $this->loadUserInAuthenticationGateway();
+        $eventService = new EventService($authenticationGateway, $eventRepository, Emitter::getInstance());
+        $connectedUser = $authenticationGateway->getConnectedUser();
 
         $request = null;
         $action = null;
@@ -53,16 +57,16 @@ class SwitchStartup implements IStartUp
             case "event":
                 $eventId = $_GET['id'] ?? ($_POST['id'] ?? null);
                 if(!is_null($eventId)) {
-                    echo (new OneEventController($this->logger, $eventService))->getAjaxEventView($action, $eventId);
+                    echo (new OneEventController($this->logger, $eventService, $authenticationGateway))->getAjaxEventView($action, $eventId);
                 }
                 break;
             case "profile":
                 $userId = $_GET['id'] ?? ($_POST['id'] ?? null);
-                $user = !is_null($userId) ? User::loadUserById($userId) : $_SESSION['USER_DATA'];
-                echo (new ProfileController($this->logger))->getAjax($action, $user);
+                $user = !is_null($userId) ? User::loadUserById($userId) : $connectedUser;
+                echo (new ProfileController($this->logger, $authenticationGateway))->getAjax($action, $user);
                 break;
             case "notifications":
-                echo (new NotificationsCenterController())->ajaxSwitch($action);
+                echo (new NotificationsCenterController($authenticationGateway))->ajaxSwitch($action);
                 break;
 
             case "search":
@@ -70,6 +74,15 @@ class SwitchStartup implements IStartUp
                 break;
 
         }
+    }
+
+    private function loadUserInAuthenticationGateway(): AuthenticationContext {
+        $authenticationGateway = new AuthenticationContext();
+        if (isset($_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY])) {
+            $connectedUser = $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY];
+            $authenticationGateway->setConnectedUser($connectedUser);
+        }
+        return $authenticationGateway;
     }
 }
 

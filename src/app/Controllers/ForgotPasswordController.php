@@ -4,6 +4,8 @@ namespace App\Controllers
 {
 
 
+    use App\Authentication\AuthenticationContext;
+    use App\Exceptions\NotConnectedUserException;
     use Domain\Entities\Alert;
     use Domain\Exceptions\BadArgumentException;
     use Domain\Exceptions\UserNotExistException;
@@ -16,35 +18,31 @@ namespace App\Controllers
 
     class ForgotPasswordController extends AppController
     {
-        private ILogger $logger;
-        private IAccountService $accountService;
 
-        /**
-         * ForgotPasswordController constructor.
-         * @param ILogger $logger
-         * @param IAccountService $accountService
-         */
-        public function __construct(ILogger $logger, IAccountService $accountService)
-        {
+
+        public function __construct(
+            private readonly AuthenticationContext $authenticationGateway,
+            private readonly ILogger $logger,
+            private readonly IAccountService $accountService
+        ) {
             parent::__construct();
-            $this->logger = $logger;
-            $this->accountService = $accountService;
         }
 
         /**
          * Display forgot password page
+         * @throws NotConnectedUserException
          */
         public function getView(): Response
         {
-
             $this->addCssStyle('css-forgotpwd.css');
             $this->addJsScript('js-forgotpwd.js');
 
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $navItems = self::render('forgotpwd.navitems');
 
             $content = self::render('forgotpwd.view-forgotpwd');
 
-            $view = self::render('templates.template', compact( 'navItems', 'content'));
+            $view = self::render('templates.template', compact('navItems', 'content', 'connectedUser'));
 
             return $this->ok($view);
         }
@@ -57,15 +55,13 @@ namespace App\Controllers
         {
             $params = $request->getParsedBody();
 
-            if (!isset($params['forgot-password-email-field']))
-            {
+            if (!isset($params['forgot-password-email-field'])) {
                 return null;
             }
 
             $emailOfUser = htmlspecialchars($params['forgot-password-email-field']);
 
-            if (empty($emailOfUser))
-            {
+            if (empty($emailOfUser)) {
                 echo "<script>Materialize.toast('Il semble que des données soient manquantes, veuillez rééssayer', 4000, 'red-text text-accent-2')</script>";
                 return null;
             }
@@ -78,12 +74,10 @@ namespace App\Controllers
          */
         public function resetPassword(Request $request): Response
         {
-            try
-            {
+            try {
                 $emailOfUser = $this->getData($request);
 
-                if (is_null($emailOfUser))
-                {
+                if (is_null($emailOfUser)) {
                     return $this->badRequest();
                 }
 
@@ -92,23 +86,22 @@ namespace App\Controllers
 
                 alert::addAlert('Un e-mail vous a été envoyé, consulter votre boîte de réception', 1);
                 return $this->ok()->withRedirectTo('/login');
-
-            }
-            catch (BadArgumentException $e)
-            {
+            } catch (BadArgumentException $e) {
                 echo "<script>Materialize.toast('Il semble que les informations fournis soient incorrects, veuillez rééssayer', 4000, 'red-text text-accent-2')</script>";
                 return $this->badRequest();
-            }
-            catch (UserNotExistException $e)
-            {
+            } catch (UserNotExistException $e) {
                 $this->logger->logError($e->getMessage());
-                alert::addAlert('Un problème a été rencontré lors du changement de mot de passe. Veuillez rééssayer plus tard', 3);
+                alert::addAlert(
+                    'Un problème a été rencontré lors du changement de mot de passe. Veuillez rééssayer plus tard',
+                    3
+                );
                 return $this->badRequest();
-            }
-            catch (Exception $e)
-            {
+            } catch (Exception $e) {
                 $this->logger->logCritical($e->getMessage());
-                alert::addAlert('Un problème a été rencontré lors du changement de mot de passe. Veuillez rééssayer plus tard', 3);
+                alert::addAlert(
+                    'Un problème a été rencontré lors du changement de mot de passe. Veuillez rééssayer plus tard',
+                    3
+                );
                 return $this->internalServerError();
             }
         }

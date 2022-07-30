@@ -5,32 +5,28 @@ namespace App\Middleware
 {
 
 
+    use App\Authentication\AuthenticationContext;
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\MiddlewareInterface;
     use Psr\Http\Server\RequestHandlerInterface;
-    use Slim\Psr7\Response;
+    use System\Routing\Responses\RedirectedResponse;
 
     class AuthenticatedUserGuardMiddleware implements MiddlewareInterface
     {
 
-        /**
-         * MyMiddleware constructor.
-         */
-        public function __construct()
+
+        public function __construct(private readonly AuthenticationContext $authenticationGateway)
         {
         }
 
         public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
         {
-            if (!isset($_SESSION['USER_DATA']))
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
+            if (is_null($connectedUser))
             {
-                $response = new Response();
-
-                $rep = $response->withHeader('Location', '/login');
-                return $rep;
+                return RedirectedResponse::to('/login');
             }
-
             return $handler->handle($request);
         }
     }

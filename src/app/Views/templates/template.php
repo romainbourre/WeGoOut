@@ -59,8 +59,8 @@
                     <?php if (isset($navUserDropDown)): ?>
                         <?php if (isset($navUserDropDown)): ?>
                             <li><a class="dropdown-button" href="#!"
-                                   data-activates="dropdown_user_menu"><?= $_SESSION['USER_DATA']->getFirstname(
-                                ) . " " . $_SESSION['USER_DATA']->getLastname() ?>
+                                   data-activates="dropdown_user_menu"><?= $connectedUser->getFirstname(
+                                ) . " " . $connectedUser->getLastname() ?>
                                 <i class="material-icons right">arrow_drop_down</i></a></li><?php endif; ?>
                     <?php endif; ?>
                 </div>

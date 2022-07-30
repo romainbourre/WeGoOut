@@ -343,30 +343,20 @@ namespace Domain\Entities
             return ($this->id == $event->getID());
         }
 
-        /**
-         * Get number of user every category
-         * @return int
-         */
-        public function getNumbAll(): int
+        public function countParticipant(UserCli $userThatCount): int
         {
-
             $bdd = Database::getDB();
-
-            if ($this->managersConfidentiality()) $WAIT = '';
-            else $WAIT = 'AND PART_DATETIME_ACCEPT is not null';
-            $SQL = 'SELECT count(user_id) as nbrPart FROM PARTICIPATE WHERE event_id = :eventId ' . $WAIT . ' AND PART_DATETIME_DELETE is null UNION ALL SELECT count(distinct user_id) as nbrPart FROM GUEST LEFT JOIN PARTICIPATE USING(user_id, event_id) WHERE GUEST.event_id = :eventId AND GUEST_DATETIME_SEND is not null AND GUEST_DATETIME_DELETE is null AND ( (PART_DATETIME_SEND is null AND PART_DATETIME_ACCEPT is null) OR (PART_DATETIME_SEND is not null AND PART_DATETIME_ACCEPT is null)) UNION ALL SELECT count(GUEST_EMAIL) FROM GUEST_TEMP_EMAIL WHERE GUEST_DATETIME_SEND is not null AND GUEST_DATETIME_DELETE is null';
+            $ONLY_ACCEPTED_PARTICIPANT = $this->isManagerOfEvent($userThatCount) ? '' : 'AND PART_DATETIME_ACCEPT is not null';
+            $SQL = 'SELECT count(user_id) as nbrPart FROM PARTICIPATE WHERE event_id = :eventId ' . $ONLY_ACCEPTED_PARTICIPANT . ' AND PART_DATETIME_DELETE is null UNION ALL SELECT count(distinct user_id) as nbrPart FROM GUEST LEFT JOIN PARTICIPATE USING(user_id, event_id) WHERE GUEST.event_id = :eventId AND GUEST_DATETIME_SEND is not null AND GUEST_DATETIME_DELETE is null AND ( (PART_DATETIME_SEND is null AND PART_DATETIME_ACCEPT is null) OR (PART_DATETIME_SEND is not null AND PART_DATETIME_ACCEPT is null)) UNION ALL SELECT count(GUEST_EMAIL) FROM GUEST_TEMP_EMAIL WHERE GUEST_DATETIME_SEND is not null AND GUEST_DATETIME_DELETE is null';
             $SUM = 'SELECT SUM(nbrPart) as nbrPart FROM (' . $SQL . ') tab';
-
             $request = $bdd->prepare($SUM);
             $request->bindValue(':eventId', $this->id);
-            if ($test = $request->execute())
+            if ($request->execute())
             {
                 $result = $request->fetch();
                 if (!is_null($result['nbrPart'])) return $result['nbrPart'];
             }
-
             return 0;
-
         }
 
         /**
@@ -390,18 +380,11 @@ namespace Domain\Entities
 
         }
 
-        /**
-         * Get number of pending participants
-         * @return int number of pending participants
-         */
-        public function getNumbParticipantsWait(): int
+        public function getNumberOfAwaitingParticipant(UserCli $userThatAsk): int
         {
-
-            if ($this->managersConfidentiality())
+            if ($this->isManagerOfEvent($userThatAsk))
             {
-
                 $bdd = Database::getDB();
-
                 $request = $bdd->prepare('SELECT count(user_id) as nbrPart FROM PARTICIPATE WHERE event_id = :id AND PART_DATETIME_SEND is not null AND PART_DATETIME_ACCEPT is null AND PART_DATETIME_DELETE is null');
                 $request->bindValue(':id', $this->id);
                 if ($request->execute())
@@ -409,11 +392,8 @@ namespace Domain\Entities
                     $result = $request->fetch();
                     if (!is_null($result['nbrPart'])) return $result['nbrPart'];
                 }
-
             }
-
             return 0;
-
         }
 
         /**
@@ -681,50 +661,33 @@ namespace Domain\Entities
 
         }
 
-        /**
-         * Set an user as valid participant (if registration request send before
-         * @param User $user user
-         * @return bool
-         */
-        public function setParticipantAsValid(User $user): bool
+        public function validateParticipant(UserCli $userThatValidateParticipation, UserCli $participantToValidateParticipation): bool
         {
-
-            if (!$this->isStarted() && ($this->managersConfidentiality() || ($user->getID() == $_SESSION['USER_DATA']->getID() && $this->isInvited($_SESSION['USER_DATA']))))
+            $isInvitedUserWhoValidateHimself = $participantToValidateParticipation->getID() == $userThatValidateParticipation->getID()
+                && $this->isInvited($userThatValidateParticipation);
+            if (!$this->isStarted() && ($this->isManagerOfEvent($userThatValidateParticipation) || $isInvitedUserWhoValidateHimself))
             {
-
                 $bdd = Database::getDB();
-
                 $request = $bdd->prepare('UPDATE PARTICIPATE SET part_datetime_accept = sysdate() WHERE event_id = :eventId AND user_id = :userId AND PART_DATETIME_SEND is not null AND PART_DATETIME_ACCEPT is null AND  PART_DATETIME_DELETE is null ');
                 $request->bindValue(':eventId', $this->id);
-                $request->bindValue(':userId', $user->getID());
-
+                $request->bindValue(':userId', $participantToValidateParticipation->getID());
                 return $request->execute();
-
-
             }
-
             return false;
-
         }
 
-        /**
-         * Check the confidentiality for managers
-         * @return bool
-         */
-        private function managersConfidentiality(): bool
+        private function isManagerOfEvent(UserCli $user): bool
         {
-            return ($this->isCreator($_SESSION['USER_DATA']) || $this->isOrganizer($_SESSION['USER_DATA']));
+            return ($this->isCreator($user) || $this->isOrganizer($user));
         }
 
-
-        /**
-         * Unset participant user of the event
-         * @param User $user user
-         * @return bool
-         */
-        public function unsetParticipant(User $user): bool
+        public function unsetParticipant(UserCli $userThatRemoveParticipant, UserCli $participantToRemove): bool
         {
-            if ($this->managersConfidentiality()) return ($this->unsetRegistration($user) && $this->unsetInvitation($user));
+            if ($this->isManagerOfEvent($userThatRemoveParticipant))
+                return (
+                    $this->cancelRegistrationOfUser($userThatRemoveParticipant, $participantToRemove)
+                    && $this->unsetInvitation($participantToRemove)
+                );
             return false;
         }
 
@@ -802,29 +765,17 @@ namespace Domain\Entities
 
         }
 
-        /**
-         * Unset registration request for an user
-         * @param User $user user
-         * @return bool
-         */
-        public function unsetRegistration(User $user): bool
+        public function cancelRegistrationOfUser(UserCli $userThatMakeRetirement, UserCli $userToRetire): bool
         {
-
-            if ($this->managersConfidentiality() || $user->equals($_SESSION['USER_DATA']))
+            if ($this->isManagerOfEvent($userThatMakeRetirement) || $userToRetire->equals($userThatMakeRetirement))
             {
-
                 $bdd = Database::getDB();
-
                 $request = $bdd->prepare('UPDATE PARTICIPATE SET part_datetime_delete = sysdate() WHERE event_id = :eventId AND user_id = :userId AND PART_DATETIME_SEND is not null AND part_datetime_delete is null ');
                 $request->bindValue(':eventId', $this->id);
-                $request->bindValue(':userId', $user->getID());
-
+                $request->bindValue(':userId', $userToRetire->getID());
                 return $request->execute();
-
             }
-
             return false;
-
         }
 
         /**
@@ -861,20 +812,15 @@ namespace Domain\Entities
         }
 
         /**
-         * Get array of users who are participants or/and invited or/and bending participants
          * @param int $level 0 = All | 1 = Valid participants | 2 = Bending participants | 3 = Invited
-         * @return iterable|null array of user
-         * @throws UserNotExistException
          */
-        public function getParticipants(int $level = 0): ?iterable
+        public function getParticipants(UserCli $requestingUser, int $level = 0): ?iterable
         {
-
             $bdd = Database::getDB();
-
             switch ($level)
             {
                 case 0: // ALL
-                    if ($this->managersConfidentiality()) $WAIT = '';
+                    if ($this->isManagerOfEvent($requestingUser)) $WAIT = '';
                     else $WAIT = 'AND PART_DATETIME_ACCEPT is not null';
                     $SQL = 'SELECT user_id FROM PARTICIPATE WHERE event_id = :eventId AND PART_DATETIME_SEND is not null ' . $WAIT . ' AND PART_DATETIME_DELETE is null UNION SELECT user_id FROM GUEST LEFT JOIN PARTICIPATE USING(user_id, event_id) WHERE GUEST.event_id = :eventId AND GUEST_DATETIME_SEND is not null AND GUEST_DATETIME_DELETE is null';
                     break;
@@ -882,7 +828,7 @@ namespace Domain\Entities
                     $SQL = 'SELECT user_id FROM PARTICIPATE WHERE event_id = :eventId AND PART_DATETIME_ACCEPT is not null AND PART_DATETIME_DELETE is null';
                     break;
                 case 2: // PARTICIPANT IN WAITING ONLY
-                    if ($this->managersConfidentiality()) $SQL = 'SELECT user_id FROM PARTICIPATE WHERE event_id = :eventId AND PART_DATETIME_SEND is not null AND PART_DATETIME_ACCEPT is null AND PART_DATETIME_DELETE is null';
+                    if ($this->isManagerOfEvent($requestingUser)) $SQL = 'SELECT user_id FROM PARTICIPATE WHERE event_id = :eventId AND PART_DATETIME_SEND is not null AND PART_DATETIME_ACCEPT is null AND PART_DATETIME_DELETE is null';
                     else $SQL = '';
                     break;
                 case 3: // INVITED ONLY
@@ -1021,24 +967,17 @@ namespace Domain\Entities
         }
 
         /**
-         * Set a new review for the event
-         * @param int $revNote note of review
-         * @param string|null $revText text of review
-         * @return bool
+         * @throws EventNotExistException
          */
-        public function setNewReview(int $revNote, string $revText = null): bool
+        public function addReview(UserCli $reviewer, int $revNote, string $revText = null): bool
         {
-
-            $me = $_SESSION['USER_DATA'];
-
-            if (!Review::checkUserPostReview($me, new Event($this->id)))
-            {
+            if (!Review::checkUserPostReview($reviewer, new Event($this->id))) {
 
                 $bdd = Database::getDB();
 
                 $request = $bdd->prepare('INSERT INTO REVIEW(event_id, user_id, rev_note, rev_text, rev_datetime_leave) VALUES(:eventId, :userId, :revNote, :revText, sysdate() )');
                 $request->bindValue(':eventId', $this->id);
-                $request->bindValue(':userId', $me->getID());
+                $request->bindValue(':userId', $reviewer->getID());
                 $request->bindValue(':revNote', $revNote);
                 $request->bindValue(':revText', $revText);
 

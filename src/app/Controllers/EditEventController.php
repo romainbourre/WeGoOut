@@ -4,6 +4,7 @@ namespace App\Controllers
 {
 
 
+    use App\Authentication\AuthenticationContext;
     use Domain\Services\EventService\IEventService;
     use Exception;
     use System\Logging\ILogger;
@@ -23,7 +24,7 @@ namespace App\Controllers
          * @param ILogger $logger
          * @param IEventService $eventService
          */
-        public function __construct(ILogger $logger, IEventService $eventService)
+        public function __construct(ILogger $logger, IEventService $eventService, private readonly AuthenticationContext $authenticationGateway)
         {
             parent::__construct();
             $this->logger = $logger;
@@ -39,7 +40,7 @@ namespace App\Controllers
         {
             try
             {
-
+                $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
                 $event = $this->eventService->getEvent($eventId);
 
                 // WEB PAGE NAME
@@ -52,13 +53,13 @@ namespace App\Controllers
                 // NAVIGATION
                 $userItems = $this->render('templates.nav-useritems');
                 $userMenu = $this->render('templates.nav-usermenu', compact('userItems'));
-                $navUserDropDown = $this->render('templates.nav-userdropdown', compact('userMenu'));
+                $navUserDropDown = $this->render('templates.nav-userdropdown', compact('userMenu', 'connectedUser'));
                 $navAddEvent = $this->render('templates.nav-addevent');
                 $navItems = $this->render('templates.nav-connectmenu', compact('navAddEvent'));
 
                 $content = $this->render('listevent.edit-event.view-edit-event', compact('event'));
 
-                $view = $this->render('templates.template', compact('titleWebPage', 'userMenu', 'navUserDropDown', 'navAddEvent', 'navItems', 'content'));
+                $view = $this->render('templates.template', compact('titleWebPage', 'userMenu', 'navUserDropDown', 'navAddEvent', 'navItems', 'content', 'connectedUser'));
 
                 return $this->ok($view);
 

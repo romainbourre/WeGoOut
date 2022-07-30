@@ -5,27 +5,31 @@ namespace App\Middleware
 {
 
 
-    use Domain\Entities\User;
+    use App\Authentication\AuthenticationContext;
+    use App\Exceptions\NotConnectedUserException;
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\MiddlewareInterface;
     use Psr\Http\Server\RequestHandlerInterface;
     use System\Routing\Responses\RedirectedResponse;
-    use System\Routing\Responses\UnauthorizedResponse;
 
     class AccountNotValidatedGuardMiddleware implements MiddlewareInterface
     {
 
+
+        public function __construct(private readonly AuthenticationContext $authenticationGateway)
+        {
+        }
+
+        /**
+         * @throws NotConnectedUserException
+         */
         public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
         {
-            /* @var User $user */
-            $user = $_SESSION['USER_DATA'];
-
-            if (!$user->isValidate())
-            {
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            if (!$connectedUser->isValidate()) {
                 return $handler->handle($request);
             }
-
             return RedirectedResponse::to('/');
         }
     }
