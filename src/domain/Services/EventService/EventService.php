@@ -10,11 +10,9 @@ namespace Domain\Services\EventService
     use App\Librairies\Emitter;
     use DateTime;
     use Domain\Entities\Event;
-    use Domain\Entities\Location;
     use Domain\Entities\User;
-    use Domain\Entities\UserCli;
     use Domain\Exceptions\BadArgumentException;
-    use Domain\Exceptions\DataNotSavedException;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\NotAuthorizedException;
     use Domain\Exceptions\ResourceNotFound;
     use Domain\Exceptions\UserDeletedException;
@@ -24,6 +22,7 @@ namespace Domain\Services\EventService
     use Domain\Interfaces\IEventRepository;
     use Domain\Services\EventService\Requests\CreateEventRequest;
     use Domain\Services\EventService\Requests\SearchEventsRequest;
+    use Domain\ValueObjects\Location;
     use Exception;
     use PhpLinq\Interfaces\ILinq;
     use PhpLinq\PhpLinq;
@@ -157,17 +156,17 @@ namespace Domain\Services\EventService
          * @param int $userId
          * @param SearchEventsRequest $searchEventsRequest
          * @return array
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          * @throws UserDeletedException
          * @throws UserNotExistException
          * @throws UserSignaledException
          */
         public function searchEventsForUser(int $userId, SearchEventsRequest $searchEventsRequest): array
         {
-            $user = UserCli::loadUserById($userId);
+            $user = User::load($userId);
             $kilometersRadius = $searchEventsRequest->kilometersRadius ?? (new AppSettings())->getDefaultDistance();
-            $latitude = $searchEventsRequest->latitude ?? $user->getLocation()->getLatitude();
-            $longitude = $searchEventsRequest->longitude ?? $user->getLocation()->getLongitude();;
+            $latitude = $searchEventsRequest->latitude ?? $user->getLocation()->latitude;
+            $longitude = $searchEventsRequest->longitude ?? $user->getLocation()->longitude;;
             $events = $this->eventRepository->searchEventsForUser(
                 $userId,
                 $searchEventsRequest->categoryId,
@@ -208,7 +207,7 @@ namespace Domain\Services\EventService
         public function changeRegistrationOfUSerToEvent(int $userId, int $eventId): void
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            $userToChangeRegistration = User::loadUserById($userId);
+            $userToChangeRegistration = User::load($userId);
 
             if (is_null($userToChangeRegistration)) {
                 throw new ResourceNotFound("user with id $userId not found.");

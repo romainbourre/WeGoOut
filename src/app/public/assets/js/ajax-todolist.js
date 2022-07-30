@@ -164,7 +164,8 @@ function saveTask() {
     const page = 'event';
     const action = 'task.save';
 
-    const request = `a-request=${page}&a-action=${action}&id=${taskId}&task=${taskId}`;
+    const eventId = document.getElementById('event_id').value;
+    const request = `a-request=${page}&a-action=${action}&id=${eventId}&task=${taskId}`;
     const data = request + "&" + $(form).serialize();
 
     $.ajax({

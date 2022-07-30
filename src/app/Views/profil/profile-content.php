@@ -1,9 +1,14 @@
+<?php
+
+use Domain\ValueObjects\FrenchDate;
+
+?>
 <div class="row">
     <div class="panel-top col s12">
 
 
         <div class="panel-top-card center-align col s2">
-            <p class="card-content"><?= $user->getNumbEventsParticipation() ?></p>
+            <p class="card-content"><?= $user->getNumberOfEventsWhichUserParticipate() ?></p>
             <span class="card-title grey-text">
                     Participation
                 </span>
@@ -12,7 +17,7 @@
 
 
         <div class="panel-top-card center-align col s2">
-            <p class="card-content"><?= $user->getNumbEventsOrganisation() ?></p>
+            <p class="card-content"><?= $user->getNumberOfEventsWhichUserOrganize() ?></p>
             <span class="card-title grey-text">
                     Organisation
                 </span>
@@ -26,7 +31,7 @@
 
     <div class="col s12 l4">
 
-        <?php if(!empty($desc = $user->getDescription())): ?>
+        <?php if(!empty($desc = $user->description)): ?>
             <div class="row">
                 <div class="card light-blue">
                     <div class="card-content white-text">
@@ -50,23 +55,10 @@
                             Sexe
                         </div>
                         <div class="col s5 grey-text text-darken-4 right-align">
-                            <?= $user->getSex() ?>
+                            <?= $user->computeGenre() ?>
                         </div>
                     </div>
                 </li>
-                <?php if(!is_null($sex = $user->getRelationship())): ?>
-                    <li class="collection-item">
-                        <div class="row">
-                            <div class="col s7 grey-text darken-1">
-                                <i class="left material-icons"><i class="material-icons">favorite</i></i>
-                                Situation
-                            </div>
-                            <div class="col s5 grey-text text-darken-4 right-align">
-                                <?= $sex ?>
-                            </div>
-                        </div>
-                    </li>
-                <?php endif; ?>
                 <li class="collection-item">
                     <div class="row">
                         <div class="col s7 grey-text darken-1">
@@ -85,7 +77,7 @@
                             Date de naissance
                         </div>
                         <div class="col s5 grey-text text-darken-4 right-align">
-                            <?= $user->getBirthDate()->getFrenchDate("ddmm") ?>
+                            <?= $user->getBirthDate()->getDate(FrenchDate::SHORT_FORMAT) ?>
                         </div>
                     </div>
                 </li>
@@ -97,7 +89,7 @@
                 <div class="card-content white-text">
                 <span class="card-title">
                     <i class="material-icons">group_add</i>
-                    <?= $user->getNumbFriends() ?>
+                    <?= $user->getNumberOfFriends() ?>
                 </span>
                     <p>
                         Amis

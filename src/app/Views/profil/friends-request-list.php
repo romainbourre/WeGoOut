@@ -8,7 +8,7 @@
                         <img src="<?= $friend->getPicture() ?>" alt="" class="circle">
                         <div>
                             <span class="title grey-text text-darken-4"><?= $friend->getLastname(
-                                ) . " friends-request-list.php" . $friend->getFirstname() ?></span>
+                                ) . " friends-request-list.php" . $friend->firstname ?></span>
                             <p class="city grey-text"><?= $friend->getLocation()->getCity() ?></p>
                         </div>
                         <div class="friends-list-choice">

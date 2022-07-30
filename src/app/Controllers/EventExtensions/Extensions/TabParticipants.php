@@ -128,7 +128,7 @@ namespace App\Controllers\EventExtensions\Extensions
 
                     try {
                         try {
-                            $user = User::loadUserById($userId);
+                            $user = User::load($userId);
                         } catch (UserNotExistException|UserSignaledException|UserDeletedException $e) {
                             if (filter_var($text, FILTER_VALIDATE_EMAIL)) {
                                 $user = User::loadUserByEmail($text);
@@ -206,7 +206,7 @@ namespace App\Controllers\EventExtensions\Extensions
          * Set a bending participant as valid participant
          * @param User $participantToValidate user
          * @return bool
-         * @throws Exception
+         * @throws NotConnectedUserException
          */
         public function setParticipantAsValid(User $participantToValidate): bool
         {
@@ -240,7 +240,7 @@ namespace App\Controllers\EventExtensions\Extensions
                 }
 
                 try {
-                    $participantToRemove = User::loadUserById((int)$id);
+                    $participantToRemove = User::load((int)$id);
                     $emitter = Emitter::getInstance();
                     if ($this->event->unsetParticipant($connectedUser, $participantToRemove)) {
                         $emitter->emit("event.user.delete", $this->event, $participantToRemove, $connectedUser);

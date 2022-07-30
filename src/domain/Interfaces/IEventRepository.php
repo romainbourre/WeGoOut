@@ -7,7 +7,7 @@ namespace Domain\Interfaces
 
     use DateTime;
     use Domain\Entities\Event;
-    use Domain\Exceptions\DataNotSavedException;
+    use Domain\Exceptions\DatabaseErrorException;
     use PhpLinq\Interfaces\ILinq;
 
     interface IEventRepository
@@ -15,7 +15,7 @@ namespace Domain\Interfaces
         /**
          * Save a new event
          * @param array $cleaned_data
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          */
         public function saveEvent(array $cleaned_data): void;
 
@@ -39,8 +39,8 @@ namespace Domain\Interfaces
          * @param int $userId
          * @param int|null $cat
          * @param int|null $date
-         * @throws DataNotSavedException
          * @return ILinq<Event>
+         *@throws DatabaseErrorException
          */
         public function searchEventsForUser(int $userId, ?int $cat = null, ?int $date = null): ILinq;
     }

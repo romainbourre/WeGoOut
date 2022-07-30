@@ -32,7 +32,6 @@ namespace App
                         init(['dsn' => $sentryDsn, 'environment' => $environment, 'release' => "app@$version"]);
                     }
 
-                    //TIME SYSTEM
                     date_default_timezone_set('Europe/Paris');
 
                     define('ROOT', substr(__DIR__, 0, strpos(__DIR__, "/app")));
@@ -40,10 +39,8 @@ namespace App
                     define('APP', ROOT . "/app");
                     define('CONF', $configuration->toArray());
 
-                    // START SESSION
                     session_name("EVENT_PROJECT");
                     session_start();
-
                 })
                 ->configureLogging(function(ILoggingBuilder $builder, IConfiguration $configuration)
                 {

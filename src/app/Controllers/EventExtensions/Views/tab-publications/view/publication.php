@@ -1,4 +1,5 @@
-<?php use Domain\Entities\Date;
+<?php
+use Domain\ValueObjects\FrenchDate;
 
 if(isset($publicationsContent)) foreach ($publicationsContent as $publication): ?>
     <div class="row">
@@ -15,13 +16,13 @@ if(isset($publicationsContent)) foreach ($publicationsContent as $publication): 
                     <div class="row">
                         <div class="col s12">
                             <a href="/profile/<?= $publication->getUser()->getID()  ?>"><?= $publication->getUser(
-                                )->getLastName() . " " . $publication->getUser()->getFirstName() ?></a>
+                                )->lastname . " " . $publication->getUser()->firstname ?></a>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="grey-text col s12">
-                            <small><?= (new Date($publication->getDateTime()))->getFrenchSmartDate() ?></small>
+                            <small><?= (new FrenchDate($publication->getDateTime()))->getRelativeDateAndHours() ?></small>
                         </div>
                     </div>
 

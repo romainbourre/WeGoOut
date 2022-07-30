@@ -50,7 +50,7 @@ namespace Domain\Entities
 
         /**
          * Save a new publication
-         * @param User $User user of the publication
+         * @param User $User $User user of the publication
          * @param int $eventId event of the publication
          * @param string $text text of the publication
          * @return bool
@@ -143,7 +143,7 @@ namespace Domain\Entities
          */
         public function getUser(): User
         {
-            return User::loadUserById($this->userId);
+            return User::load($this->userId);
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Domain\Services\AccountService\Requests
             $this->latitude = $latitude;
             $this->placeId = $placeId;
             $this->password = $password;
-            $this->genre = $genre;
+            $thiscomputeGenre() = $genre;
         }
     }
 }

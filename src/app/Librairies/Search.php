@@ -20,7 +20,7 @@ namespace App\Librairies
         public function __construct(
             private readonly AuthenticationContext $authenticationGateway,
             private readonly string $research,
-            private readonly array $result = [],
+            private readonly object $result,
             private readonly int $relevance = 0
         ) {
         }
@@ -94,7 +94,7 @@ namespace App\Librairies
                         $users = array();
 
                         while ($result = $request->fetch()) {
-                            $users[] = new Search($this->research, User::loadUserById($result['USER_ID']));
+                            $users[] = new Search($this->authenticationGateway, $this->research, User::load($result['USER_ID']));
                         }
 
                         return $users;

@@ -8,6 +8,7 @@ namespace Domain\Entities
     use Domain\Exceptions\EventNotExistException;
     use Domain\Exceptions\EventSignaledException;
     use Domain\Exceptions\UserNotExistException;
+    use Domain\ValueObjects\Location;
     use System\Librairies\Database;
 
     /**
@@ -80,7 +81,7 @@ namespace Domain\Entities
                     if (!empty($result))
                     {
                         $this->id = $result['EVENT_ID'];
-                        $this->user = User::loadUserById((int)$result['USER_ID']);
+                        $this->user = User::load((int)$result['USER_ID']);
                         $this->title = (string)$result['EVENT_TITLE'];
                         $this->description = (string)$result['EVENT_DESCRIPTION'];
                         $this->catId = $result['CAT_ID'];
@@ -154,10 +155,6 @@ namespace Domain\Entities
             return $this->id;
         }
 
-        /**
-         * Get user of event
-         * @return User instance of User
-         */
         public function getUser(): User
         {
             return $this->user;
@@ -343,7 +340,7 @@ namespace Domain\Entities
             return ($this->id == $event->getID());
         }
 
-        public function countParticipant(UserCli $userThatCount): int
+        public function countParticipant(User $userThatCount): int
         {
             $bdd = Database::getDB();
             $ONLY_ACCEPTED_PARTICIPANT = $this->isManagerOfEvent($userThatCount) ? '' : 'AND PART_DATETIME_ACCEPT is not null';
@@ -380,7 +377,7 @@ namespace Domain\Entities
 
         }
 
-        public function getNumberOfAwaitingParticipant(UserCli $userThatAsk): int
+        public function getNumberOfAwaitingParticipant(User $userThatAsk): int
         {
             if ($this->isManagerOfEvent($userThatAsk))
             {
@@ -477,21 +474,11 @@ namespace Domain\Entities
             }
         }
 
-        /**
-         * Check if an user is creator of the event
-         * @param User $user user
-         * @return bool
-         */
         public function isCreator(User $user): bool
         {
             return ($this->user->getID() == $user->getID());
         }
 
-        /**
-         * Check if an user is an organizer of the event
-         * @param User $user user
-         * @return bool|null return null if request break
-         */
         public function isOrganizer(User $user): ?bool
         {
 
@@ -516,11 +503,6 @@ namespace Domain\Entities
 
         }
 
-        /**
-         * Check if an user is invited to the event
-         * @param User $user user
-         * @return bool
-         */
         public function isInvited(User $user): bool
         {
 
@@ -564,21 +546,11 @@ namespace Domain\Entities
 
         }
 
-        /**
-         * Check if an user participate to the event
-         * @param User $user user
-         * @return bool|null return null if request break
-         */
         public function isParticipant(User $user): ?bool
         {
             return ($this->isParticipantWait($user) || $this->isParticipantValid($user));
         }
 
-        /**
-         * Check if an user is pending participant
-         * @param User $user
-         * @return bool|null return null if request break
-         */
         public function isParticipantWait(User $user): ?bool
         {
 
@@ -605,11 +577,6 @@ namespace Domain\Entities
 
         }
 
-        /**
-         * Check if user is valid participant
-         * @param User $user
-         * @return bool|null return null if request break
-         */
         public function isParticipantValid(User $user): ?bool
         {
 
@@ -636,11 +603,6 @@ namespace Domain\Entities
 
         }
 
-        /**
-         * Send registration request at the event for an user, if the user is invited then valid participation
-         * @param User $user user
-         * @return bool
-         */
         public function sendRegistrationAsk(User $user): bool
         {
 
@@ -661,7 +623,7 @@ namespace Domain\Entities
 
         }
 
-        public function validateParticipant(UserCli $userThatValidateParticipation, UserCli $participantToValidateParticipation): bool
+        public function validateParticipant(User $userThatValidateParticipation, User $participantToValidateParticipation): bool
         {
             $isInvitedUserWhoValidateHimself = $participantToValidateParticipation->getID() == $userThatValidateParticipation->getID()
                 && $this->isInvited($userThatValidateParticipation);
@@ -676,12 +638,12 @@ namespace Domain\Entities
             return false;
         }
 
-        private function isManagerOfEvent(UserCli $user): bool
+        private function isManagerOfEvent(User $user): bool
         {
             return ($this->isCreator($user) || $this->isOrganizer($user));
         }
 
-        public function unsetParticipant(UserCli $userThatRemoveParticipant, UserCli $participantToRemove): bool
+        public function unsetParticipant(User $userThatRemoveParticipant, User $participantToRemove): bool
         {
             if ($this->isManagerOfEvent($userThatRemoveParticipant))
                 return (
@@ -691,11 +653,6 @@ namespace Domain\Entities
             return false;
         }
 
-        /**
-         * @param User|null $user
-         * @param null|string $email
-         * @return bool
-         */
         public function sendInvitation(?User $user, ?string $email = null): bool
         {
 
@@ -726,12 +683,6 @@ namespace Domain\Entities
 
         }
 
-        /**
-         * Unset invitation for an user of the event
-         * @param User|null $user user
-         * @param string|null $email
-         * @return bool
-         */
         public function unsetInvitation(?User $user, ?string $email = null): bool
         {
 
@@ -765,7 +716,7 @@ namespace Domain\Entities
 
         }
 
-        public function cancelRegistrationOfUser(UserCli $userThatMakeRetirement, UserCli $userToRetire): bool
+        public function cancelRegistrationOfUser(User $userThatMakeRetirement, User $userToRetire): bool
         {
             if ($this->isManagerOfEvent($userThatMakeRetirement) || $userToRetire->equals($userThatMakeRetirement))
             {
@@ -799,7 +750,7 @@ namespace Domain\Entities
                 while ($result = $request->fetch())
                 {
 
-                    $organizers[] = User::loadUserById((int)$result['USER_ID']);
+                    $organizers[] = User::load((int)$result['USER_ID']);
 
                 }
 
@@ -814,7 +765,7 @@ namespace Domain\Entities
         /**
          * @param int $level 0 = All | 1 = Valid participants | 2 = Bending participants | 3 = Invited
          */
-        public function getParticipants(UserCli $requestingUser, int $level = 0): ?iterable
+        public function getParticipants(User $requestingUser, int $level = 0): ?iterable
         {
             $bdd = Database::getDB();
             switch ($level)
@@ -846,7 +797,7 @@ namespace Domain\Entities
 
                 while ($result = $request->fetch())
                 {
-                    $user[] = User::loadUserById($result['user_id']);
+                    $user[] = User::load($result['user_id']);
                 }
 
                 return $user;
@@ -969,7 +920,7 @@ namespace Domain\Entities
         /**
          * @throws EventNotExistException
          */
-        public function addReview(UserCli $reviewer, int $revNote, string $revText = null): bool
+        public function addReview(User $reviewer, int $revNote, string $revText = null): bool
         {
             if (!Review::checkUserPostReview($reviewer, new Event($this->id))) {
 

@@ -68,7 +68,7 @@ namespace Domain\Entities
                     $this->id = (int)$result['TASK_ID'];
                     $this->label = (string)$result['TASK_LABEL'];
                     $this->event = new Event((int)$result['EVENT_ID']);
-                    if (!is_null($result['TASK_USER_DESIGNATION'])) $this->userDesignated = User::loadUserById((int)$result['TASK_USER_DESIGNATION']);
+                    if (!is_null($result['TASK_USER_DESIGNATION'])) $this->userDesignated = User::load((int)$result['TASK_USER_DESIGNATION']);
                     $this->datetimeCreate = DateTime::createFromFormat("d/m/Y", $result['TASK_DATETIME_CREATE']);
                     if (!is_null($result['TASK_DATETIME_DEADLINE'])) $this->datetimeDeadline = new DateTime($result['TASK_DATETIME_DEADLINE']);
                     $this->category = $result['TASK_CATEGORY_ID'];
@@ -568,6 +568,7 @@ namespace Domain\Entities
          * @param Event $event
          * @param User $user
          * @return iterable|null list of tasks
+         * @throws TaskNotExistException
          */
         public static function getEventTasksForUser(Event $event, User $user): ?iterable
         {

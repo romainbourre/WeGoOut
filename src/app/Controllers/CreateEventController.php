@@ -9,7 +9,7 @@ namespace App\Controllers
     use DateTime;
     use Domain\Entities\Alert;
     use Domain\Exceptions\BadArgumentException;
-    use Domain\Exceptions\DataNotSavedException;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\UserHadAlreadyEventsException;
     use Domain\Services\EventService\IEventService;
     use Domain\Services\EventService\Requests\CreateEventRequest;
@@ -115,7 +115,7 @@ namespace App\Controllers
                 echo "<script>document.getElementById('form_group_create').className += ' has-danger'</script>";
                 echo "<script>document.getElementById('create_feedback').innerHTML = 'Des champs semblent incorrects'</script>";
                 return $this->badRequest();
-            } catch (Exception|DataNotSavedException $e) {
+            } catch (Exception|DatabaseErrorException $e) {
                 $this->logger->logCritical($e->getMessage());
                 return $this->internalServerError();
             }

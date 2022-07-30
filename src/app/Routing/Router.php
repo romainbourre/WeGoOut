@@ -147,7 +147,7 @@ namespace App\Routing
                 });
             })->addMiddleware(new NonAuthenticatedUserGuardMiddleware($this->authenticationGateway))->addMiddleware(
                 new AlertDisplayMiddleware()
-            )->addMiddleware(new ErrorManagerMiddleware($this->logger));
+            )->addMiddleware(new AuthenticationMiddleware($this->authenticationGateway))->addMiddleware(new ErrorManagerMiddleware($this->logger));
 
             $routeCollectorProxy->group('/', function (RouteCollectorProxy $group) use ($configuration)
             {
@@ -261,7 +261,7 @@ namespace App\Routing
             })
                                 ->addMiddleware(new AlertDisplayMiddleware())
                                 ->addMiddleware(new NotificationDisplayMiddleware($this->authenticationGateway))
-                                ->addMiddleware(new SearchResultsDisplayMiddleware())
+                                ->addMiddleware(new SearchResultsDisplayMiddleware($this->authenticationGateway))
                                 ->addMiddleware(
                                     new CreateEventMiddleware(
                                         $this->logger,
