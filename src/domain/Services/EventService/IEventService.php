@@ -7,7 +7,7 @@ namespace Domain\Services\EventService
 
     use Domain\Entities\Event;
     use Domain\Exceptions\BadArgumentException;
-    use Domain\Exceptions\DataNotSavedException;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\ResourceNotFound;
     use Domain\Exceptions\UserHadAlreadyEventsException;
     use Domain\Exceptions\UserNotExistException;
@@ -22,7 +22,7 @@ namespace Domain\Services\EventService
          * @param int $userId
          * @param CreateEventRequest $createEventRequest
          * @throws BadArgumentException
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          * @throws UserHadAlreadyEventsException
          */
         public function createEvent(int $userId, CreateEventRequest $createEventRequest): void;
@@ -55,7 +55,7 @@ namespace Domain\Services\EventService
          * @param SearchEventsRequest $searchEventsRequest arguments of research request
          * @return Event[] list of events for user
          * @throws UserNotExistException
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          */
         public function searchEventsForUser(int $userId, SearchEventsRequest $searchEventsRequest): array;
 

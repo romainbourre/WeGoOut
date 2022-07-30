@@ -59,8 +59,7 @@
                     <?php if (isset($navUserDropDown)): ?>
                         <?php if (isset($navUserDropDown)): ?>
                             <li><a class="dropdown-button" href="#!"
-                                   data-activates="dropdown_user_menu"><?= $connectedUser->getFirstname(
-                                ) . " " . $connectedUser->getLastname() ?>
+                                   data-activates="dropdown_user_menu"><?= $connectedUser->firstname . " " . $connectedUser->lastname ?>
                                 <i class="material-icons right">arrow_drop_down</i></a></li><?php endif; ?>
                     <?php endif; ?>
                 </div>

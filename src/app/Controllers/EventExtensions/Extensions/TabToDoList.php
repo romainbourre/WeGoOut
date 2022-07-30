@@ -258,7 +258,7 @@ namespace App\Controllers\EventExtensions\Extensions
                         {
                             try
                             {
-                                $user = User::loadUserById((int)$_POST['task-designation']);
+                                $user = User::load((int)$_POST['task-designation']);
                             }
                             catch (UserNotExistException | UserDeletedException | UserSignaledException $e)
                             {

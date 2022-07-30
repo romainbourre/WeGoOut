@@ -5,6 +5,7 @@ namespace App\Middleware
 {
 
 
+    use App\Authentication\AuthenticationContext;
     use App\Controllers\ResearchController;
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
@@ -14,9 +15,14 @@ namespace App\Middleware
     class SearchResultsDisplayMiddleware implements MiddlewareInterface
     {
 
+
+        public function __construct(private readonly AuthenticationContext $authenticationContext)
+        {
+        }
+
         public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
         {
-            (new ResearchController())->getView();
+            (new ResearchController($this->authenticationContext))->getView();
 
             return $handler->handle($request);
         }

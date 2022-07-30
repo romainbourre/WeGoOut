@@ -42,7 +42,7 @@ use Domain\Entities\Event;
 
 
                     <div class="input-field col s12">
-                        <textarea id="edit_event_desc" class="materialize-textarea"><?= $event->getDescription() ?></textarea>
+                        <textarea id="edit_event_desc" class="materialize-textarea"><?= $event->description ?></textarea>
                         <label for="edit_event_desc">Description</label>
                     </div>
 

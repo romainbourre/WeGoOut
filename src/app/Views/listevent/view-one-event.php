@@ -23,9 +23,8 @@
                                 <h4 class="sheet-event-title"><?= $event->getTitle() ?></h4>
                                 <p class="sheet-event-user">
                                     <a class="white-text" href="/profile/<?= $event->getUser()->getID() ?>" >
-                                        <?php if(($profilPicture = $event->getUser()->getPicture()) != ""): ?> <img src="<?= $profilPicture ?>" alt="..." class="circle responsive-img"><?php endif; ?>
-                                        <?= $event->getUser()->getLastname(
-                                        ) . " " . $event->getUser()->getFirstname() ?>
+                                        <?php if(($profilPicture = $event->getUser()->picture) != ""): ?> <img src="<?= $profilPicture ?>" alt="..." class="circle responsive-img"><?php endif; ?>
+                                        <?= $event->getUser()->lastname . " " . $event->getUser()->firstname ?>
                                         <?php if($event->isInvited($connectedUser)): ?><small class=""> vous a invité à participer</small><?php endif; ?>
                                     </a>
                                 </p>

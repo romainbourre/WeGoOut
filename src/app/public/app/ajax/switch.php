@@ -62,7 +62,7 @@ class SwitchStartup implements IStartUp
                 break;
             case "profile":
                 $userId = $_GET['id'] ?? ($_POST['id'] ?? null);
-                $user = !is_null($userId) ? User::loadUserById($userId) : $connectedUser;
+                $user = !is_null($userId) ? User::load($userId) : $connectedUser;
                 echo (new ProfileController($this->logger, $authenticationGateway))->getAjax($action, $user);
                 break;
             case "notifications":
@@ -70,7 +70,7 @@ class SwitchStartup implements IStartUp
                 break;
 
             case "search":
-                echo (new ResearchController())->ajaxRouter($action);
+                echo (new ResearchController($authenticationGateway))->ajaxRouter($action);
                 break;
 
         }

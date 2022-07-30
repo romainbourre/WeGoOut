@@ -3,6 +3,7 @@
 namespace Domain\Entities
 {
 
+    use Domain\ValueObjects\FrenchDate;
     use System\Configuration\Librairies\Database;
 
 
@@ -40,10 +41,10 @@ namespace Domain\Entities
 
                 $this->id = $id;
                 $this->event = new Event($result['event_id']);
-                $this->user = User::loadUserById($result['user_id']);
+                $this->user = User::load($result['user_id']);
                 $this->note = (float)htmlspecialchars($result['rev_note']);
                 $this->comment = (string)htmlspecialchars($result['rev_text']);
-                $this->datetimeLeave = new Date(strtotime($result['rev_datetime_leave']));
+                $this->datetimeLeave = new FrenchDate(strtotime($result['rev_datetime_leave']));
 
             }
 
@@ -87,9 +88,9 @@ namespace Domain\Entities
 
         /**
          * Get leave datetime of event
-         * @return Date
+         * @return FrenchDate
          */
-        public function getDatetimeLeave(): ?Date
+        public function getDatetimeLeave(): ?FrenchDate
         {
             return $this->datetimeLeave;
         }

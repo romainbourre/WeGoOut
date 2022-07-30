@@ -3,6 +3,7 @@
 namespace Domain\Entities
 {
 
+    use Domain\ValueObjects\FrenchDate;
     use System\Librairies\Database;
 
 
@@ -135,12 +136,12 @@ namespace Domain\Entities
         private $targetUser;
 
         /**
-         * @var Date|null the datetime of dispatch of the notification
+         * @var FrenchDate|null the datetime of dispatch of the notification
          */
         private $datetime_send;
 
         /**
-         * @var Date|null the datetime of reading of the notification
+         * @var FrenchDate|null the datetime of reading of the notification
          */
         private $datetime_read;
 
@@ -167,12 +168,12 @@ namespace Domain\Entities
          * @param int $category
          * @param int $targetEvent
          * @param int $targetUser
-         * @param Date|null $send
-         * @param Date|null $read
+         * @param FrenchDate|null $send
+         * @param FrenchDate|null $read
          * @param string|null $message
          * @param string|null $action
          */
-        public function __construct(int $id, int $recipient, ?int $type, ?int $category, ?int $targetEvent, ?int $targetUser, ?Date $send, ?Date $read, ?string $message, ?string $action)
+        public function __construct(int $id, int $recipient, ?int $type, ?int $category, ?int $targetEvent, ?int $targetUser, ?FrenchDate $send, ?FrenchDate $read, ?string $message, ?string $action)
         {
             $this->id = $id;
             $this->recipient = $recipient;
@@ -186,12 +187,7 @@ namespace Domain\Entities
             $this->action = $action;
         }
 
-        /**
-         * Get a manager class of notifications for an user
-         * @param User $user
-         * @return object
-         */
-        public static function manager(User $user)
+        public static function manager(User $user): object
         {
             return new class($user)
             {
@@ -218,11 +214,7 @@ namespace Domain\Entities
                 {
                     return new class($this->user)
                     {
-
-                        /**
-                         * @var User recipient of notifications
-                         */
-                        private $user;
+                        private User $user;
 
                         public function __construct(User &$user)
                         {
@@ -234,7 +226,6 @@ namespace Domain\Entities
                          * @param string $category category of event-type notification
                          * @param Event|null $event event target
                          * @param User|null $user user target
-                         * @throws \Exception
                          */
                         public function event(string $category, Event $event = null, User $user = null): void
                         {
@@ -377,7 +368,6 @@ namespace Domain\Entities
                          * Leave a user-type notification
                          * @param string $category category of user notification
                          * @param User $user user target
-                         * @throws \Exception
                          */
                         public function user(string $category, User $user): void
                         {
@@ -434,7 +424,6 @@ namespace Domain\Entities
                          * @param string $category category of publication-type
                          * @param Event $event event target
                          * @param User $user user target
-                         * @throws \Exception
                          */
                         public function publication(string $category, Event $event, User $user)
                         {
@@ -463,7 +452,6 @@ namespace Domain\Entities
                          * @param string $category category of review-type
                          * @param Event $event event target
                          * @param User $user user target
-                         * @throws \Exception
                          */
                         public function review(string $category, Event $event, User $user)
                         {
@@ -492,7 +480,6 @@ namespace Domain\Entities
                          * @param string $category category of enjoy-type
                          * @param Event|null $event event target
                          * @param User|null $user user target
-                         * @throws \Exception
                          */
                         public function enjoy(string $category, Event $event = null, User $user = null)
                         {
@@ -574,11 +561,11 @@ namespace Domain\Entities
                             $category = $result['NOTIF_CATEGORY'];
                             $targetEvent = $result['NOTIF_TARGET_EVENT'];
                             $targetUser = $result['NOTIF_TARGET_USER'];
-                            if (!is_null($result['NOTIF_DATETIME_SEND'])) $send = new Date(strtotime($result['NOTIF_DATETIME_SEND']));
+                            if (!is_null($result['NOTIF_DATETIME_SEND'])) $send = new FrenchDate(strtotime($result['NOTIF_DATETIME_SEND']));
                             else $send = null;
                             if (!is_null($result['NOTIF_DATETIME_READ']))
                             {
-                                $read = new Date(strtotime($result['NOTIF_DATETIME_READ']));
+                                $read = new FrenchDate(strtotime($result['NOTIF_DATETIME_READ']));
                             }
                             else
                             {
@@ -701,7 +688,7 @@ namespace Domain\Entities
             else $link = "";
             if ($this->isUnread()) $background = "blue lighten-5";
             else $background = "";
-            $content = '<li class="' . $background . '"><a ' . $link . '><span>' . $this->message . '<br><small>' . $this->datetime_send->getFrenchSmartDate() . '</small></span><i class="material-icons right">' . $logo . '</i></a></li><li class="divider"></li>';
+            $content = '<li class="' . $background . '"><a ' . $link . '><span>' . $this->message . '<br><small>' . $this->datetime_send->getRelativeDateAndHours() . '</small></span><i class="material-icons right">' . $logo . '</i></a></li><li class="divider"></li>';
             return $content;
         }
 
@@ -729,7 +716,7 @@ namespace Domain\Entities
          */
         public function getRecipient(): User
         {
-            return User::loadUserById($this->recipient);
+            return User::load($this->recipient);
         }
 
         /**
@@ -766,24 +753,24 @@ namespace Domain\Entities
          */
         public function getTargetUser(): ?User
         {
-            if (!is_null($this->targetUser)) return User::loadUserById($this->targetUser);
+            if (!is_null($this->targetUser)) return User::load($this->targetUser);
             return null;
         }
 
         /**
          * Get send datetime of notification
-         * @return Date|null
+         * @return FrenchDate|null
          */
-        public function getDatetimeSend(): ?Date
+        public function getDatetimeSend(): ?FrenchDate
         {
             return $this->datetime_send;
         }
 
         /**
          * Get read datetime of notification
-         * @return Date|null
+         * @return FrenchDate|null
          */
-        public function getDatetimeRead(): ?Date
+        public function getDatetimeRead(): ?FrenchDate
         {
             return $this->datetime_read;
         }

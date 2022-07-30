@@ -6,7 +6,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
 
 
     use Domain\Entities\User;
-    use Domain\Exceptions\DataNotSavedException;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
@@ -76,7 +76,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
                 if (!$request->execute())
                 {
                     $errorMessage = self::mapPDOErrorToString($request->errorInfo());
-                    throw new DataNotSavedException($errorMessage);
+                    throw new DatabaseErrorException($errorMessage);
                 }
 
                 $lastId = $bdd->lastInsertId();
@@ -90,20 +90,20 @@ namespace Infrastructure\MySqlDatabase\Repositories
                 if (!$request->execute())
                 {
                     $errorMessage = self::mapPDOErrorToString($request->errorInfo());
-                    throw new DataNotSavedException($errorMessage);
+                    throw new DatabaseErrorException($errorMessage);
                 }
 
                 self::retrieveEmailInvitation($lastId);
 
-                return User::loadUserById($lastId);
+                return User::load($lastId);
             }
             catch (UserNotExistException | UserSignaledException | UserDeletedException $e) {
-                throw new DataNotSavedException($e->getMessage());
+                throw new DatabaseErrorException($e->getMessage());
             }
         }
 
         /**
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          */
         private function retrieveEmailInvitation(string $id): void
         {
@@ -116,7 +116,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
             if (!$request->execute())
             {
                 $errorMessage = self::mapPDOErrorToString($request->errorInfo());
-                throw new DataNotSavedException($errorMessage);
+                throw new DatabaseErrorException($errorMessage);
             }
 
             $email = "";
@@ -134,7 +134,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
                 if (!$request2->execute())
                 {
                     $errorMessage = self::mapPDOErrorToString($request2->errorInfo());
-                    throw new DataNotSavedException($errorMessage);
+                    throw new DatabaseErrorException($errorMessage);
                 }
             }
 
@@ -144,7 +144,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
             if (!$request3->execute())
             {
                 $errorMessage = self::mapPDOErrorToString($request3->errorInfo());
-                throw new DataNotSavedException($errorMessage);
+                throw new DatabaseErrorException($errorMessage);
             }
         }
 
@@ -171,7 +171,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
 
             if (!$request->execute())
             {
-                throw new DataNotSavedException();
+                throw new DatabaseErrorException();
             }
         }
 
@@ -186,7 +186,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
 
             if (!$request->execute())
             {
-                throw new DataNotSavedException();
+                throw new DatabaseErrorException();
             }
         }
 

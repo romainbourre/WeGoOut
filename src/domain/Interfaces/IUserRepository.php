@@ -6,7 +6,7 @@ namespace Domain\Interfaces
 
 
     use Domain\Entities\User;
-    use Domain\Exceptions\DataNotSavedException;
+    use Domain\Exceptions\DatabaseErrorException;
 
     interface IUserRepository
     {
@@ -16,7 +16,7 @@ namespace Domain\Interfaces
          * Add user
          * @param array $data
          * @return User
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          */
         public function addUser(array $data): User;
 
@@ -25,7 +25,7 @@ namespace Domain\Interfaces
         /**
          * Set user's account as valid account
          * @param int $userId
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          */
         public function setAccountAsValid(int $userId): void;
 
@@ -34,7 +34,7 @@ namespace Domain\Interfaces
          * @param int $userId id of user
          * @param string $token new validation token
          * @return void
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          */
         public function setValidationToken(int $userId, string $token): void;
     }

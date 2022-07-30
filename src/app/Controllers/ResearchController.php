@@ -3,6 +3,7 @@
 namespace App\Controllers
 {
 
+    use App\Authentication\AuthenticationContext;
     use App\Librairies\Search;
 
     /**
@@ -12,6 +13,11 @@ namespace App\Controllers
      */
     class ResearchController extends AppController
     {
+        public function __construct(private readonly AuthenticationContext $authenticationContext)
+        {
+            parent::__construct();
+        }
+
 
         /**
          * Load stylesheets and scripts
@@ -32,7 +38,7 @@ namespace App\Controllers
             $results = array();
             if (!empty($research))
             {
-                $results = Search::found($research)->all();
+                $results = Search::found($this->authenticationContext, $research)->all();
             }
             return $this->getAutocompleteView($results);
         }
@@ -47,7 +53,7 @@ namespace App\Controllers
             $results = array();
             if (!empty($research))
             {
-                $results = Search::found($research)->user();
+                $results = Search::found($this->authenticationContext, $research)->user();
             }
             return $this->getAutocompleteView($results);
         }
@@ -62,7 +68,7 @@ namespace App\Controllers
             $results = array();
             if (!empty($research))
             {
-                $results = Search::found($research)->event();
+                $results = Search::found($this->authenticationContext, $research)->event();
             }
             return $this->getAutocompleteView($results);
         }

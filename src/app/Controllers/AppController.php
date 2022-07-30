@@ -4,12 +4,10 @@ namespace App\Controllers
 {
 
 
-    use App\Exceptions\NotConnectedUserException;
     use App\Librairies\Emitter;
     use Domain\Entities\Event;
     use Domain\Entities\Notifications;
     use Domain\Entities\User;
-    use Domain\Entities\UserCli;
     use System\Controllers\Controller;
 
     /**
@@ -111,34 +109,34 @@ namespace App\Controllers
                 Notifications::manager($welcomeUser)->add()->enjoy("welcome");
             });
 
-            $emitter->on('user.friend.request', function (UserCli $requested, UserCli $applicant)
+            $emitter->on('user.friend.request', function (User $requested, User $applicant)
             { // SEND NOTIFICATIONS WHEN USER SEND A FRIEND REQUEST
                 Notifications::manager($requested)->add()->user("request", $applicant);
             });
 
-            $emitter->on('user.friend.unrequest', function (UserCli $unrequested, UserCli $applicant)
+            $emitter->on('user.friend.unrequest', function (User $unrequested, User $applicant)
             { // SEND NOTIFICATION WHEN USER CANCELED FRIEND REQUEST
                 Notifications::manager($unrequested)->add()->user("unrequest", $applicant);
             });
 
-            $emitter->on('user.friend.accept', function (UserCli $accepted, UserCli $applicant)
+            $emitter->on('user.friend.accept', function (User $accepted, User $applicant)
             { // SEND NOTIFICATION WHEN USER ACCEPT FRIEND
                 Notifications::manager($accepted)->add()->user("accept", $applicant);
             });
 
-            $emitter->on('user.friend.delete', function (UserCli $deleted, UserCli $applicant)
+            $emitter->on('user.friend.delete', function (User $deleted, User $applicant)
             { // SEND NOTIFICATION WHEN USER DELETE FRIEND
                 Notifications::manager($deleted)->add()->user("delete", $applicant);
             });
 
             // INVITATION NOTIFICATION
 
-            $emitter->on('event.send.invitation', function (Event $event, UserCli $invitedUser, UserCli $userWhoInvite)
+            $emitter->on('event.send.invitation', function (Event $event, User $invitedUser, User $userWhoInvite)
             {
                 Notifications::manager($invitedUser)->add()->event("send.invitation", $event, $userWhoInvite);
             });
 
-            $emitter->on('event.delete.invitation', function (Event $event, UserCli $disinvitedUser, UserCli $userWhoDisinvite)
+            $emitter->on('event.delete.invitation', function (Event $event, User $disinvitedUser, User $userWhoDisinvite)
             {
                 Notifications::manager($disinvitedUser)->add()->event("delete.invitation", $event, $userWhoDisinvite);
             });

@@ -6,8 +6,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
 
     use DateTime;
     use Domain\Entities\Event;
-    use Domain\Entities\Location;
-    use Domain\Exceptions\DataNotSavedException;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\EventCanceledException;
     use Domain\Exceptions\EventDeletedException;
     use Domain\Exceptions\EventNotExistException;
@@ -36,7 +35,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
         /**
          * Save a new event
          * @param array $cleaned_data
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          */
         public function saveEvent(array $cleaned_data): void
         {
@@ -126,7 +125,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
             if (!$request->execute())
             {
                 $errorMessage = self::mapPDOErrorToString($request->errorInfo());
-                throw new DataNotSavedException($errorMessage);
+                throw new DatabaseErrorException($errorMessage);
             }
         }
 
@@ -150,7 +149,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
             if (!$request->execute())
             {
                 $errorMessage = self::mapPDOErrorToString($request->errorInfo());
-                throw new DataNotSavedException($errorMessage);
+                throw new DatabaseErrorException($errorMessage);
             }
 
             while ($resultEvent = $request->fetch())

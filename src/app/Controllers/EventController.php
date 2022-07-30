@@ -6,14 +6,14 @@ namespace App\Controllers
 
     use App\Authentication\AuthenticationContext;
     use Domain\Entities\Event;
-    use Domain\Entities\Location;
     use Domain\Services\EventService\IEventService;
     use Domain\Services\EventService\Requests\SearchEventsRequest;
+    use Domain\ValueObjects\Location;
     use Exception;
     use Slim\Psr7\Request;
+    use Slim\Psr7\Response;
     use System\Configuration\IConfiguration;
     use System\Logging\ILogger;
-    use Slim\Psr7\Response;
 
     class EventController extends AppController
     {

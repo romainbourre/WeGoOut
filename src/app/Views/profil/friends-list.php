@@ -6,7 +6,7 @@
                     <a href="?page=profile&id=<?= $friend->getID() ?>">
                         <img src="<?= $friend->getPicture() ?>" alt="" class="circle">
                         <span class="title grey-text text-darken-4"><?= $friend->getLastname(
-                            ) . " friends-list.php" . $friend->getFirstname() ?></span>
+                            ) . " friends-list.php" . $friend->firstname ?></span>
                         <p class="grey-text"><?= $friend->getLocation()->getCity() ?></p>
                         <?php if($connectedUser->equals($user)): ?>
                             <a class="user_delete secondary-content grey-text" data-id="<?= $friend->getID() ?>"><i class="material-icons">close</i></a>

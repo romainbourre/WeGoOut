@@ -1,8 +1,8 @@
 <?php
 
-use Domain\Entities\Date;
+use Domain\ValueObjects\FrenchDate;
 
- ?>
+?>
 <?php if(!empty($list)): ?>
 
     <?php foreach ($list as $date => $event): ?>
@@ -11,7 +11,7 @@ use Domain\Entities\Date;
             <?php if(date("d/m/Y", $date) == date("d/m/Y", time())): ?>
                 <h2 class="left-align label-date col s12 xl6 push-xl3">Aujourd'hui</h2>
             <?php else: ?>
-                <h2 class="left-align label-date col s12 xl6 push-xl3"><?= (new Date($date))->getFrenchDate() ?></h2>
+                <h2 class="left-align label-date col s12 xl6 push-xl3"><?= (new FrenchDate($date))->getDate() ?></h2>
             <?php endif; ?>
         </div>
 
@@ -44,7 +44,7 @@ use Domain\Entities\Date;
                         $fp = $friendsParticipant[$i];
                         if($numberFriends == 2) $superCardMsg .= " et ";
                         if($numberFriends > 2) $superCardMsg .= ", ";
-                        $superCardMsg .= "<a href='?page=profile&id=" . $fp->getID() . "'>" . $fp->getLastname() . " " . $fp->getFirstname() . "</a>";
+                        $superCardMsg .= "<a href='?page=profile&id=" . $fp->getID() . "'>" . $fp->lastname . " " . $fp->firstname . "</a>";
                     }
                     if($diff > 0) $superCardMsg .= " et " . $diff . " amis";
                     if($numberFriends > 1 && $element->isOver()) {
@@ -97,7 +97,7 @@ use Domain\Entities\Date;
                     <div class="card-event-int row">
                         <div class="card-event-user truncate col m9 xl8 left-align">
                             <a class="<?= $cardColorTextUser ?>" href="/profile/<?= $element->getUser()->getID() ?>" ><?php if(($profilPicture = $element->getUser()->getPicture()) != ""): ?> <img src="<?= $profilPicture ?>" alt="..." class="circle responsive-img"><?php endif; ?><?= $element->getUser(
-                                )->getLastname() . " " . $element->getUser()->getFirstname() ?></a>
+                                )->lastname . " " . $element->getUser()->firstname ?></a>
                         </div>
                         <div class="card-event-category right-align hide-on-med-and-down <?= $cardColorCategoryText ?> col s12 m3 xl4">
                             <?= $element->getCategory()[1] ?><i class="material-icons">local_offer</i>

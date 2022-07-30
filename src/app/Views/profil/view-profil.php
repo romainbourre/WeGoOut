@@ -5,8 +5,8 @@
             <div class="row">
                 <div class="head-user col s12">
 
-                    <img src="<?= $userToLoadProfile->getPicture() ?>" alt="" class="circle">
-                    <span class="white-text"><?= $userToLoadProfile->getLastname() . " " . $userToLoadProfile->getFirstname() ?></span><p id="head_user_friend"><?= $cmdFriend ?></p>
+                    <img src="<?= $userToLoadProfile->picture ?>" alt="" class="circle">
+                    <span class="white-text"><?= $userToLoadProfile->lastname . " " . $userToLoadProfile->firstname ?></span><p id="head_user_friend"><?= $cmdFriend ?></p>
 
                 </div>
             </div>

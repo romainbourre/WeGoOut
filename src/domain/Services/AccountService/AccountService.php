@@ -14,7 +14,6 @@ namespace Domain\Services\AccountService
     use Domain\Exceptions\ResourceNotFound;
     use Domain\Exceptions\UserAlreadyExistException;
     use Domain\Exceptions\UserAlreadyValidatedException;
-    use Domain\Exceptions\UserNotExistException;
     use Domain\Interfaces\IEmailSender;
     use Domain\Interfaces\ITemplateRenderer;
     use Domain\Interfaces\IUserRepository;
@@ -59,7 +58,7 @@ namespace Domain\Services\AccountService
          */
         public function isValidAccount(string $userId): bool
         {
-            $user = User::loadUserById((int)$userId);
+            $user = User::load((int)$userId);
 
             if (is_null($user))
             {
@@ -78,7 +77,7 @@ namespace Domain\Services\AccountService
 
             $encryptedPassword = md5($loginRequest->password);
 
-            return User::loadUserByEmail($loginRequest->email, $encryptedPassword);
+            return User::load($loginRequest->email, $encryptedPassword);
         }
 
         /**
@@ -115,14 +114,14 @@ namespace Domain\Services\AccountService
          */
         public function sendNewValidationToken(int $userId): void
         {
-            $user = User::loadUserById($userId);
+            $user = User::load($userId);
             $newValidationToken = Security::generateTimeStampMd5();
 
             $this->userRepository->setValidationToken($userId, $newValidationToken);
 
             $userEmail = $user->getEmail();
             $userFullName = $user->getName('full');
-            $userFirstname = $user->getFirstname();
+            $userFirstname = $user->firstname;
             $applicationName = CONF['Application']['Name'];
             $companyEmailContact = CONF['Application']['Email'];
             $companyWebsite = CONF['Application']['Domain'];

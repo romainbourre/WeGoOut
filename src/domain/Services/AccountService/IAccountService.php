@@ -8,7 +8,7 @@ namespace Domain\Services\AccountService
     use Domain\Entities\User;
     use Domain\Exceptions\BadAccountValidationTokenException;
     use Domain\Exceptions\BadArgumentException;
-    use Domain\Exceptions\DataNotSavedException;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\ResourceNotFound;
     use Domain\Exceptions\TemplateLoadingException;
     use Domain\Exceptions\UserAlreadyExistException;
@@ -53,7 +53,7 @@ namespace Domain\Services\AccountService
          * Set new account validation token to user and sent it to him
          * @param int $userId
          * @throws UserNotExistException
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          * @throws Exception
          */
         public function sendNewValidationToken(int $userId): void;
@@ -74,7 +74,7 @@ namespace Domain\Services\AccountService
          * @param ValidateAccountRequest $validateAccountRequest
          * @throws UserAlreadyValidatedException
          * @throws BadAccountValidationTokenException
-         * @throws DataNotSavedException
+         * @throws DatabaseErrorException
          */
         public function validateAccount(int $userId, ValidateAccountRequest $validateAccountRequest): void;
     }

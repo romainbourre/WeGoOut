@@ -4,11 +4,13 @@ namespace App\Controllers
 {
 
     use App\Authentication\AuthenticationContext;
+    use App\Exceptions\NotConnectedUserException;
     use App\Librairies\Emitter;
+    use Domain\Entities\User;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
-    use Domain\Entities\User;
     use Exception;
     use System\Logging\ILogger;
     use Slim\Psr7\Response;
@@ -25,13 +27,18 @@ namespace App\Controllers
             parent::__construct();
         }
 
+        /**
+         * @throws DatabaseErrorException
+         * @throws NotConnectedUserException
+         * @throws Exception
+         */
         public function getView(?string $id = null): Response
         {
 
             try
             {
-                $connectedUser = $this->authenticationGateway->getConnectedUser();
-                $userToLoadProfile = is_null($id) ? $connectedUser : User::loadUserById((int)$id);
+                $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+                $userToLoadProfile = is_null($id) ? $connectedUser : User::load((int)$id);
 
                 $this->addCssStyle('css-profil.css');
                 $this->addJsScript('js-profil.js');
@@ -60,11 +67,7 @@ namespace App\Controllers
             }
         }
 
-        /**
-         * Ajax router
-         * @param string $action
-         * @param User $user
-         * @return string|null view of request
+        /**est
          * @throws UserDeletedException
          * @throws UserNotExistException
          * @throws UserSignaledException
@@ -72,33 +75,23 @@ namespace App\Controllers
          */
         public function getAjax(string $action, User $user): ?string
         {
-
-            switch ($action)
-            {
-
-                case "content.update":
-                    return $this->getViewContentProfile($user);
-                case "friend.update":
-                    return $this->getViewCmdFriend($user);
-                case "friend.send":
-                    return $this->sendRequestFriend($user);
-                case "friend.cancel.send":
-                    return $this->unsetRequestFriend($user);
-                case "friend.accept":
-                    return $this->acceptFriend($user);
-                case "friend.refuse":
-                    return $this->refuseFriend($user);
-                case "friend.delete":
-                    return $this->deleteFriend($user);
-            }
-
-            return null;
+            return match ($action) {
+                "content.update" => $this->getViewContentProfile($user),
+                "friend.update" => $this->getViewCmdFriend($user),
+                "friend.send" => $this->sendRequestFriend($user),
+                "friend.cancel.send" => $this->unsetRequestFriend($user),
+                "friend.accept" => $this->acceptFriend($user),
+                "friend.refuse" => $this->refuseFriend($user),
+                "friend.delete" => $this->deleteFriend($user),
+                default => null,
+            };
         }
 
         /**
          * Load view of content profile of user
          * @param User $user
          * @return string
+         * @throws Exception
          */
         public function getViewContentProfile(User $user): string
         {
@@ -112,6 +105,7 @@ namespace App\Controllers
          * Load view of panel control event
          * @param User $user
          * @return null|string
+         * @throws Exception
          */
         public function getViewCmdFriend(User $user): ?string
         {
@@ -147,6 +141,7 @@ namespace App\Controllers
          * Load view of friends list of the user
          * @param User $user
          * @return null|string
+         * @throws Exception
          */
         public function getViewFriendsList(User $user): ?string
         {
@@ -163,6 +158,7 @@ namespace App\Controllers
          * Load view of friends request of the user
          * @param User $user
          * @return null|string
+         * @throws UserNotExistException
          */
         public function getViewFriendsRequestList(User $user): ?string
         {
@@ -179,19 +175,20 @@ namespace App\Controllers
          * Load view of event list of the user
          * @param User $user
          * @return null|string
+         * @throws Exception
          */
         public function getViewContentProfileEvents(User $user): ?string
         {
             $connectedUser = $this->authenticationGateway->getConnectedUser();
             if ($connectedUser->equals($user) || $connectedUser->isFriend($user))
             {
-                $participation = $user->getEventsParticipation(1);
-                $organisation = $user->getOrganizedEvents($connectedUser, 1);
+                $participation = $user->getEventsWhichUserParticipate(1);
+                $organisation = $user->getEventsWhichUserOrganize($connectedUser, 1);
             }
             else
             {
-                $participation = $user->getEventsParticipation();
-                $organisation = $user->getOrganizedEvents($connectedUser);
+                $participation = $user->getEventsWhichUserParticipate();
+                $organisation = $user->getEventsWhichUserOrganize($connectedUser);
             }
             return $this->render("profil.content-profile-events", compact('user', 'participation', 'organisation'));
         }
@@ -242,9 +239,6 @@ namespace App\Controllers
          * Accept friend request of an user for the user
          * @param User $user
          * @return bool
-         * @throws UserDeletedException
-         * @throws UserNotExistException
-         * @throws UserSignaledException
          * @throws Exception
          */
         public function acceptFriend(User $user): bool
@@ -261,7 +255,7 @@ namespace App\Controllers
             }
             elseif ($connectedUser->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
             {
-                $friend = User::loadUserById((int)$_POST['friendId']);
+                $friend = User::load((int)$_POST['friendId']);
                 if ($connectedUser->isFriendWait($friend) && $connectedUser->acceptFriend($friend))
                 {
                     $emitter->emit('user.friend.accept', $friend, $connectedUser);
@@ -275,9 +269,6 @@ namespace App\Controllers
          * Refuse friend request of an user for the user
          * @param User $user
          * @return bool
-         * @throws UserDeletedException
-         * @throws UserNotExistException
-         * @throws UserSignaledException
          */
         public function refuseFriend(User $user): bool
         {
@@ -291,7 +282,7 @@ namespace App\Controllers
             }
             elseif ($connectedUser->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
             {
-                $friend = User::loadUserById((int)$_POST['friendId']);
+                $friend = User::load((int)$_POST['friendId']);
                 if ($connectedUser->isFriendWait($friend) && $connectedUser->refuseFriend($friend))
                 {
                     return true;
@@ -304,9 +295,7 @@ namespace App\Controllers
          * Delete a friend of the user
          * @param User $user
          * @return bool
-         * @throws UserDeletedException
-         * @throws UserNotExistException
-         * @throws UserSignaledException
+         * @throws Exception
          */
         public function deleteFriend(User $user): bool
         {
@@ -323,7 +312,7 @@ namespace App\Controllers
             }
             elseif ($connectedUser->equals($user) && isset($_POST['friendId']) && !empty($_POST['friendId']))
             {
-                $friend = User::loadUserById((int)$_POST['friendId']);
+                $friend = User::load((int)$_POST['friendId']);
                 if ($connectedUser->isFriend($friend) && $connectedUser->unsetFriend($friend))
                 {
                     $emitter->emit('user.friend.delete', $friend, $connectedUser);

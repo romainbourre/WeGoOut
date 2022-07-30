@@ -19,7 +19,7 @@ switch ($action) {
         echo $this->getViewParticipantsList(3);
         break;
     case "part.accept":
-        $this->setParticipantAsValid(User::loadUserById($_POST['userId']));
+        $this->setParticipantAsValid(UserCli::loadUserById($_POST['userId']));
         break;
     case "part.delete":
         $this->unsetParticipant($_POST['userId']);
