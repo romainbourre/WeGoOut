@@ -13,7 +13,6 @@ namespace System\Host
 
     class Host implements IHost
     {
-        private const SESSION_USER_VARIABLE = "USER_DATA";
 
         private IConfiguration  $configuration;
         private ILogger        $logger;
@@ -96,16 +95,6 @@ namespace System\Host
             {
                 $this->logger->logCritical($exception->getMessage(), $exception);
             }
-        }
-
-        /**
-         * Get user session
-         * @return null
-         */
-        public static function getMe()
-        {
-            if (isset($_SESSION[self::SESSION_USER_VARIABLE]) && !empty($_SESSION[self::SESSION_USER_VARIABLE])) return $_SESSION[self::SESSION_USER_VARIABLE];
-            return null;
         }
     }
 }

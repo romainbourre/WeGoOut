@@ -30,7 +30,7 @@ namespace Domain\Entities
             public readonly ?string $description,
             private readonly FrenchDate $birthDate,
             private readonly Location $location,
-            private readonly string $validationToken,
+            private readonly ?string $validationToken,
             private readonly string $genre,
             private readonly FrenchDate $createdAt,
             private readonly ?FrenchDate $deletedAt,
@@ -566,7 +566,7 @@ namespace Domain\Entities
                 description: $result['CLI_DESCRIPTION'],
                 birthDate: new FrenchDate(strtotime((string)$result['USER_DATE_BIRTH'])),
                 location: $locationOfLoadedUser,
-                validationToken: $result['USER_VALID'],
+                validationToken: $result['USER_VALIDATION'],
                 genre: $result['CLI_SEX'],
                 createdAt: new FrenchDate(strtotime($result['USER_DATETIME_REGISTRATION'])),
                 deletedAt: new FrenchDate(strtotime($result['USER_DATETIME_DELETE']))

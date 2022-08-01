@@ -5,6 +5,7 @@ namespace Domain\Services\AccountService
 {
 
 
+    use App\Authentication\AuthenticationConstants;
     use App\Librairies\AppSettings;
     use App\Librairies\Emitter;
     use DateTime;
@@ -77,7 +78,7 @@ namespace Domain\Services\AccountService
 
             $encryptedPassword = md5($loginRequest->password);
 
-            return User::load($loginRequest->email, $encryptedPassword);
+            return User::loadUserByEmail($loginRequest->email, $encryptedPassword);
         }
 
         /**

@@ -80,7 +80,7 @@ namespace App\Controllers
                 $loginRequest = new LoginRequest($email, $password);
                 $user = $this->accountService->login($loginRequest);
 
-                $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user;
+                $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user->id;
 
                 $this->logger->logTrace("user with id {$user->getID()} is now connected.");
 

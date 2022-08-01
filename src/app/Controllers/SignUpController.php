@@ -39,7 +39,9 @@ namespace App\Controllers
         }
 
         /**
-         * @throws NotConnectedUserException
+         * @param Request $request
+         * @return Response
+         * @throws Exception
          */
         public function getView(Request $request): Response
         {
@@ -47,7 +49,7 @@ namespace App\Controllers
             $this->addCssStyle('css-register.css');
             $this->addJsScript('js-register.js');
 
-            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
             $titleWebPage = CONF['Application']['Name'] . " - Inscription";
             $navItems = self::render('register.navitems');
 
@@ -108,7 +110,7 @@ namespace App\Controllers
                 $this->logger->logDebug("start sign up");
                 $user = $this->accountService->signUp($signUpRequest);
 
-                $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user;
+                $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user->id;
 
                 $this->logger->logInfo("user with email $registration_email} signed up.");
 

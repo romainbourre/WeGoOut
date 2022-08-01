@@ -25,7 +25,7 @@ namespace Domain\Entities
         private $id;
         private $user;
         private $title;
-        private $description;
+        public $description;
         private $catId;
         private $datetimeBegin;
         private $datetimeEnd;

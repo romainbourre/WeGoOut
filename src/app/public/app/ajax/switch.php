@@ -9,6 +9,8 @@ use App\Controllers\ResearchController;
 use App\Librairies\Emitter;
 use App\Logging\Logger\SentryLogger;
 use Domain\Entities\User;
+use Domain\Exceptions\DatabaseErrorException;
+use Domain\Exceptions\UserNotExistException;
 use Domain\Services\EventService\EventService;
 use Infrastructure\MySqlDatabase\Repositories\EventRepository;
 use System\Configuration\IConfiguration;
@@ -76,10 +78,15 @@ class SwitchStartup implements IStartUp
         }
     }
 
+    /**
+     * @throws DatabaseErrorException
+     * @throws UserNotExistException
+     */
     private function loadUserInAuthenticationGateway(): AuthenticationContext {
         $authenticationGateway = new AuthenticationContext();
         if (isset($_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY])) {
-            $connectedUser = $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY];
+            $userId = $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY];
+            $connectedUser = User::load($userId);
             $authenticationGateway->setConnectedUser($connectedUser);
         }
         return $authenticationGateway;

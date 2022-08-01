@@ -107,8 +107,8 @@ use Domain\Entities\Event;
                     <input type="hidden" name="edit_input_postalCode" id="edit_input_postalCode" value="<?= $event->getLocation()->getPostalCode() ?>">
                     <input type="hidden" name="edit_input_city" id="edit_input_city" value="<?= $event->getLocation()->getCity() ?>">
                     <input type="hidden" name="edit_input_placeId" id="edit_input_placeId" value="<?= $event->getLocation()->getGooglePlaceId() ?>">
-                    <input type="hidden" name="edit_input_lat" id="edit_input_lat" value="<?= $event->getLocation()->getLatitude() ?>">
-                    <input type="hidden" name="edit_input_lng" id="edit_input_lng" value="<?= $event->getLocation()->getLongitude() ?>">
+                    <input type="hidden" name="edit_input_lat" id="edit_input_lat" value="<?= $event->getLocation()->latitude ?>">
+                    <input type="hidden" name="edit_input_lng" id="edit_input_lng" value="<?= $event->getLocation()->longitude ?>">
 
                     <label class="" for="">Indication sur le lieu</label>
                     <input type="text" value="<?= $event->getLocation()->getComplements() ?>">

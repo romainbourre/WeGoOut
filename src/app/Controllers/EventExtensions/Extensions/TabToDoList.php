@@ -92,11 +92,13 @@ namespace App\Controllers\EventExtensions\Extensions
          * Get list of tasks for the event
          * @return string
          * @throws NotConnectedUserException
+         * @throws TaskNotExistException
          */
         public function getTasksListView(): string
         {
             $event = $this->event;
-            $tasksList = Task::getEventTasksForUser($event, Host::getMe());
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            $tasksList = Task::getEventTasksForUser($event, $connectedUser);
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             return $this->render('view-list-task', compact('tasksList', 'connectedUser'));
         }
