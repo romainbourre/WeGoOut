@@ -4,10 +4,12 @@ namespace App\Controllers
 {
 
 
+    use App\Exceptions\MandatoryParamMissedException;
     use App\Librairies\Emitter;
     use Domain\Entities\Event;
     use Domain\Entities\Notifications;
     use Domain\Entities\User;
+    use Slim\Psr7\Request;
     use System\Controllers\Controller;
 
     /**
@@ -27,11 +29,31 @@ namespace App\Controllers
         }
 
         /**
+         * @throws MandatoryParamMissedException
+         */
+        protected function extractValueFromRequestOrThrow(Request $request, string $valueName): string
+        {
+            $value = $this->extractValueFromRequest($request, $valueName);
+            if ($value == null) {
+                throw new MandatoryParamMissedException($valueName);
+            }
+            return $value;
+        }
+
+        protected function extractValueFromRequest(Request $request, string $valueName): ?string
+        {
+            $params = $request->getParsedBody();
+            if (!isset($params[$valueName])) {
+                return null;
+            }
+            return htmlspecialchars($params[$valueName]);
+        }
+
+        /**
          * Load listener of web application
          */
         private function initListeners()
         {
-
             $emitter = Emitter::getInstance();
 
             // EVENTS NOTIFICATIONS ------------------------------------------------------------------------------------------- //

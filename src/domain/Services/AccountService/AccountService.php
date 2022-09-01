@@ -5,7 +5,6 @@ namespace Domain\Services\AccountService
 {
 
 
-    use App\Authentication\AuthenticationConstants;
     use App\Librairies\AppSettings;
     use App\Librairies\Emitter;
     use DateTime;
@@ -18,7 +17,6 @@ namespace Domain\Services\AccountService
     use Domain\Interfaces\IEmailSender;
     use Domain\Interfaces\ITemplateRenderer;
     use Domain\Interfaces\IUserRepository;
-    use Domain\Services\AccountService\Requests\LoginRequest;
     use Domain\Services\AccountService\Requests\ResetPasswordRequest;
     use Domain\Services\AccountService\Requests\SignUpRequest;
     use Domain\Services\AccountService\Requests\ValidateAccountRequest;
@@ -67,18 +65,6 @@ namespace Domain\Services\AccountService
             }
 
             return $user->isValidate();
-        }
-
-        /**
-         * @inheritDoc
-         */
-        public function login(LoginRequest $loginRequest): User
-        {
-            $loginRequest->valid();
-
-            $encryptedPassword = md5($loginRequest->password);
-
-            return User::loadUserByEmail($loginRequest->email, $encryptedPassword);
         }
 
         /**

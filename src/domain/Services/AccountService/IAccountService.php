@@ -13,9 +13,7 @@ namespace Domain\Services\AccountService
     use Domain\Exceptions\TemplateLoadingException;
     use Domain\Exceptions\UserAlreadyExistException;
     use Domain\Exceptions\UserAlreadyValidatedException;
-    use Domain\Exceptions\UserIncorrectPasswordException;
     use Domain\Exceptions\UserNotExistException;
-    use Domain\Services\AccountService\Requests\LoginRequest;
     use Domain\Services\AccountService\Requests\ResetPasswordRequest;
     use Domain\Services\AccountService\Requests\SignUpRequest;
     use Domain\Services\AccountService\Requests\ValidateAccountRequest;
@@ -30,15 +28,6 @@ namespace Domain\Services\AccountService
          * @throws ResourceNotFound
          */
         public function isValidAccount(string $userId): bool;
-
-        /**
-         * Login user from login request
-         * @param LoginRequest $loginRequest
-         * @throws BadArgumentException
-         * @throws UserIncorrectPasswordException
-         * @throws UserNotExistException
-         */
-        public function login(LoginRequest $loginRequest): User;
 
         /**
          * Reset password of user from email

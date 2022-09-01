@@ -4,8 +4,9 @@ namespace App\Authentication;
 
 use App\Exceptions\NotConnectedUserException;
 use Domain\Entities\User;
+use Domain\Interfaces\IAuthenticationContext;
 
-class AuthenticationContext
+class AuthenticationContext implements IAuthenticationContext
 {
     private ?User $connectedUser = null;
 

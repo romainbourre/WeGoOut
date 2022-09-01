@@ -12,25 +12,10 @@ namespace Domain\Services\AccountService\Requests
 
     class LoginRequest implements IRequest
     {
-        /**
-         * @var ?string email of user
-         */
-        public ?string $email;
 
-        /**
-         * @var ?string password of user
-         */
-        public ?string $password;
 
-        /**
-         * LoginRequest constructor.
-         * @param ?string $email
-         * @param ?string $password
-         */
-        public function __construct(?string $email, ?string $password)
+        public function __construct(public readonly string $email, public readonly string $password)
         {
-            $this->email = $email;
-            $this->password = $password;
         }
 
         /**
