@@ -37,5 +37,7 @@ namespace Domain\Interfaces
          * @throws DatabaseErrorException
          */
         public function setValidationToken(int $userId, string $token): void;
+
+        public function getUserByEmailAndPassword(string $email, string $password);
     }
 }

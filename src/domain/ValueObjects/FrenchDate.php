@@ -4,8 +4,9 @@ namespace Domain\ValueObjects
 {
 
     use DateTime;
-    use Domain\Exceptions\IncorrectDateIndexException;
     use Domain\Exceptions\IncorrectDateFormatException;
+    use Domain\Exceptions\IncorrectDateIndexException;
+    use Exception;
 
 
     class FrenchDate
@@ -13,9 +14,16 @@ namespace Domain\ValueObjects
         public const SHORT_FORMAT = "dd";
         public const LONG_FORMAT = "dddd";
 
+        public readonly DateTime $value;
 
+
+        /**
+         * @throws Exception
+         */
         public function __construct(private readonly int $timestamp)
         {
+            $this->value = new DateTime();
+            $this->value->setTimestamp($this->timestamp);
         }
 
         /**

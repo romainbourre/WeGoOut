@@ -6,15 +6,17 @@ namespace App\Controllers
 
     use App\Authentication\AuthenticationConstants;
     use App\Authentication\AuthenticationContext;
-    use Domain\Exceptions\UserIncorrectPasswordException;
-    use Domain\Exceptions\UserNotExistException;
+    use App\Exceptions\MandatoryParamMissedException;
     use Domain\Entities\Alert;
-    use Domain\Services\AccountService\IAccountService;
+    use Domain\Exceptions\UserNotExistException;
+    use Domain\Exceptions\ValidationException;
+    use Domain\Interfaces\IUserRepository;
     use Domain\Services\AccountService\Requests\LoginRequest;
+    use Domain\UseCases\Login\LoginUseCase;
     use Exception;
-    use System\Logging\ILogger;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
+    use System\Logging\ILogger;
 
     /**
      * Class Login
@@ -27,7 +29,7 @@ namespace App\Controllers
 
         public function __construct(
             private readonly ILogger $logger,
-            private readonly IAccountService $accountService,
+            private readonly IUserRepository $userRepository,
             private readonly AuthenticationContext $authenticationGateway
         ) {
             parent::__construct();
@@ -65,27 +67,23 @@ namespace App\Controllers
         public function login(Request $request): Response
         {
             try {
-                $connectedUser = $this->authenticationGateway->getConnectedUser();
-
-                if (!is_null($connectedUser)) {
-                    return $this->unauthorized();
-                }
-
-                if (!$cleaned_data = $this->getData($request)) {
-                    return $this->badRequest();
-                }
-
-                list($email, $password) = $cleaned_data;
+                $email = $this->extractValueFromRequestOrThrow($request, 'login-user-email-field');
+                $password = $this->extractValueFromRequestOrThrow($request, 'login-user-password-field');
 
                 $loginRequest = new LoginRequest($email, $password);
-                $user = $this->accountService->login($loginRequest);
+                $useCase = new LoginUseCase($this->userRepository, $this->authenticationGateway);
+                $user = $useCase->handle($loginRequest);
 
                 $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user->id;
-
                 $this->logger->logTrace("user with id {$user->getID()} is now connected.");
-
                 return $this->ok()->withRedirectTo('/');
-            } catch (UserNotExistException|UserIncorrectPasswordException $e) {
+            } catch (ValidationException) {
+                Alert::addAlert("l'email saisi est mal formaté");
+                return $this->badRequest()->withRedirectTo('/login');
+            } catch (MandatoryParamMissedException $e) {
+                $this->logger->logTrace($e->getMessage());
+                return $this->badRequest()->withRedirectTo('/login');
+            } catch (UserNotExistException $e) {
                 $this->logger->logWarning($e->getMessage());
                 Alert::addAlert($e->getMessage(), 2);
                 return $this->badRequest()->withRedirectTo('/login');
@@ -94,29 +92,6 @@ namespace App\Controllers
                 Alert::addAlert('Une erreur est survenue. Rééssayez plus tard.', 3);
                 return $this->internalServerError()->withRedirectTo('/login');
             }
-        }
-
-        /**
-         * Get post data of form login page and check validity
-         * @param Request $request
-         * @return array|null
-         */
-        private function getData(Request $request): ?array
-        {
-            $params = $request->getParsedBody();
-
-            if (isset($params['login-user-email-field']) && isset($params['login-user-password-field'])) {
-                if (!empty($params['login-user-email-field']) && !empty($params['login-user-password-field'])) {
-                    $login_email = htmlspecialchars($params['login-user-email-field']);
-                    $login_password = htmlspecialchars($params['login-user-password-field']);
-
-                    return array($login_email, $login_password);
-                }
-
-                Alert::addAlert('Il semble que des données soient manquantes, veuillez rééssayer', 2);
-            }
-
-            return null;
         }
     }
 }

@@ -14,7 +14,6 @@ namespace App\Controllers\EventExtensions\Extensions
     use Domain\Entities\User;
     use Domain\Exceptions\EventNotExistException;
     use Domain\Exceptions\UserDeletedException;
-    use Domain\Exceptions\UserIncorrectPasswordException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
     use Domain\Interfaces\IEmailSender;
@@ -108,7 +107,6 @@ namespace App\Controllers\EventExtensions\Extensions
 
         /**
          * Send invitation to an user of e-mail address
-         * @throws UserIncorrectPasswordException
          * @throws Exception
          */
         public function sendInvitation()

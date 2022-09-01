@@ -26,6 +26,7 @@ namespace App\Routing
     use App\Middleware\NonAuthenticatedUserGuardMiddleware;
     use App\Middleware\NotificationDisplayMiddleware;
     use App\Middleware\SearchResultsDisplayMiddleware;
+    use Domain\Interfaces\IUserRepository;
     use Domain\Services\AccountService\AccountService;
     use Domain\Services\AccountService\IAccountService;
     use Domain\Services\EventService\EventService;
@@ -35,11 +36,11 @@ namespace App\Routing
     use Infrastructure\SendGrid\SendGridAdapter;
     use Infrastructure\TwigRenderer\TwigRendererAdapter;
     use PDO;
-    use System\Configuration\IConfiguration;
     use Slim\Interfaces\RouteCollectorProxyInterface;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use Slim\Routing\RouteCollectorProxy;
+    use System\Configuration\IConfiguration;
     use System\Exceptions\ConfigurationVariableNotFoundException;
     use System\Exceptions\IncorrectConfigurationVariableException;
     use System\Logging\ILogger;
@@ -51,6 +52,7 @@ namespace App\Routing
         private ILogger               $logger;
         private IEventService         $eventService;
         private IAccountService       $accountService;
+        private IUserRepository       $userRepository;
         private AuthenticationContext $authenticationGateway;
 
         /**
@@ -72,14 +74,13 @@ namespace App\Routing
          */
         private function configureService(IConfiguration $configuration): void
         {
-            $connectionString = $configuration->getRequired('Database:ConnectionString');
             $databaseContext = new PDO(
-                $connectionString,
+                $configuration->getRequired('Database:ConnectionString'),
                 $configuration->getRequired('Database:User'),
                 $configuration->getRequired('Database:Password')
             );
             $eventRepository = new EventRepository($databaseContext);
-            $userRepository = new UserRepository($databaseContext);
+            $this->userRepository = new UserRepository($databaseContext);
             $emailSender = new SendGridAdapter($configuration['SendGrid:ApiKey'], $this->logger);
             $emailTemplateRenderer = new TwigRendererAdapter(ROOT . '/domain/Templates/Emails');
 
@@ -89,7 +90,7 @@ namespace App\Routing
                 $eventRepository,
                 Emitter::getInstance()
             );
-            $this->accountService = new AccountService($userRepository, $emailSender, $emailTemplateRenderer);
+            $this->accountService = new AccountService($this->userRepository, $emailSender, $emailTemplateRenderer);
         }
 
         private function configure(
@@ -103,14 +104,14 @@ namespace App\Routing
                 $group->get('login', function (Request $request)
                 {
                     return (new LoginController(
-                        $this->logger, $this->accountService, $this->authenticationGateway
+                        $this->logger, $this->userRepository, $this->authenticationGateway
                     ))->getView($request);
                 });
 
                 $group->post('login', function (Request $request)
                 {
                     return (new LoginController(
-                        $this->logger, $this->accountService, $this->authenticationGateway
+                        $this->logger, $this->userRepository, $this->authenticationGateway
                     ))->login($request);
                 });
 
@@ -147,7 +148,9 @@ namespace App\Routing
                 });
             })->addMiddleware(new NonAuthenticatedUserGuardMiddleware($this->authenticationGateway))->addMiddleware(
                 new AlertDisplayMiddleware()
-            )->addMiddleware(new AuthenticationMiddleware($this->authenticationGateway))->addMiddleware(new ErrorManagerMiddleware($this->logger));
+            )->addMiddleware(new AuthenticationMiddleware($this->authenticationGateway))->addMiddleware(
+                new ErrorManagerMiddleware($this->logger)
+            );
 
             $routeCollectorProxy->group('/', function (RouteCollectorProxy $group) use ($configuration)
             {

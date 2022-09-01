@@ -7,7 +7,8 @@
       "App\\": "src/app/",
       "Infrastructure\\": "src/infrastructure/",
       "Domain\\": "src/domain/",
-      "System\\": "src/system/"
+      "System\\": "src/system/",
+      "Tests\\": "tests"
     }
   },
   "require": {
@@ -15,7 +16,7 @@
     "sendgrid/sendgrid": "^7.8",
     "sentry/sdk": "^3.1",
     "ext-pdo": "*",
-    "romainbourre/php-linq": "^0.1.0",
+    "romainbourre/php-linq": "^0.2.1",
     "twig/twig": "^3.0",
     "slim/slim": "4.*",
     "slim/psr7": "^1.3",

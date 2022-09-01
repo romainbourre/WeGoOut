@@ -11,6 +11,9 @@ namespace Infrastructure\MySqlDatabase\Repositories
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
     use Domain\Interfaces\IUserRepository;
+    use Domain\ValueObjects\FrenchDate;
+    use Domain\ValueObjects\Location;
+    use Exception;
     use PDO;
 
     class UserRepository implements IUserRepository
@@ -184,10 +187,62 @@ namespace Infrastructure\MySqlDatabase\Repositories
             $request->bindValue(':code', $token);
             $request->bindValue(':id', $userId);
 
-            if (!$request->execute())
-            {
+            if (!$request->execute()) {
                 throw new DatabaseErrorException();
             }
+        }
+
+        /**
+         * @throws DatabaseErrorException
+         * @throws Exception
+         */
+        public function getUserByEmailAndPassword(string $email, string $password): ?User
+        {
+            $request = $this->databaseContext->prepare(
+                'SELECT * FROM USER JOIN META_USER_CLI MUC on USER.USER_ID = MUC.USER_ID WHERE USER_EMAIL = :email AND USER_PASSWORD = :password'
+            );
+            $request->bindValue(':email', $email);
+            $request->bindValue(':password', $password);
+
+            if (!$request->execute()) {
+                throw new DatabaseErrorException();
+            }
+
+            $result = $request->fetch();
+
+            if (!$result) {
+                return null;
+            }
+
+            return self::mapDataToUser($result);
+        }
+
+        /**
+         * @throws Exception
+         */
+        private static function mapDataToUser(array $result): User
+        {
+            $locationOfLoadedUser = new Location(
+                (double)$result['USER_LOCATION_LAT'],
+                (double)$result['USER_LOCATION_LNG']
+            );
+
+            $locationOfLoadedUser->setCity($result['USER_LOCATION_CITY']);
+
+            return new User(
+                id: $result['USER_ID'],
+                email: $result['USER_EMAIL'],
+                firstname: $result['CLI_FIRSTNAME'],
+                lastname: $result['CLI_LASTNAME'],
+                picture: $result['USER_PROFILE_PICTURE'],
+                description: $result['CLI_DESCRIPTION'],
+                birthDate: new FrenchDate(strtotime((string)$result['USER_DATE_BIRTH'])),
+                location: $locationOfLoadedUser,
+                validationToken: $result['USER_VALIDATION'],
+                genre: $result['CLI_SEX'],
+                createdAt: new FrenchDate(strtotime($result['USER_DATETIME_REGISTRATION'])),
+                deletedAt: new FrenchDate(strtotime($result['USER_DATETIME_DELETE']))
+            );
         }
 
         /**

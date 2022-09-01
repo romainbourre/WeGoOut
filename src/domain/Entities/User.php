@@ -8,11 +8,11 @@ namespace Domain\Entities
     use Domain\Exceptions\EventNotExistException;
     use Domain\Exceptions\EventSignaledException;
     use Domain\Exceptions\UserDeletedException;
-    use Domain\Exceptions\UserIncorrectPasswordException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
     use Domain\ValueObjects\FrenchDate;
     use Domain\ValueObjects\Location;
+    use Exception;
     use System\Librairies\Database;
 
     class User
@@ -28,12 +28,12 @@ namespace Domain\Entities
             public readonly string $lastname,
             public readonly ?string $picture,
             public readonly ?string $description,
-            private readonly FrenchDate $birthDate,
-            private readonly Location $location,
-            private readonly ?string $validationToken,
-            private readonly string $genre,
-            private readonly FrenchDate $createdAt,
-            private readonly ?FrenchDate $deletedAt,
+            public readonly FrenchDate $birthDate,
+            public readonly Location $location,
+            public readonly ?string $validationToken,
+            public readonly string $genre,
+            public readonly FrenchDate $createdAt,
+            public readonly ?FrenchDate $deletedAt,
         ) {
         }
 
@@ -261,13 +261,12 @@ namespace Domain\Entities
 
         /**
          * @throws DatabaseErrorException
-         * @throws UserIncorrectPasswordException
          * @throws UserNotExistException
          */
-        public static function loadUserByEmail(string $email, string $password = null): ?User
+        public static function loadUserByEmail(string $email): ?User
         {
             $bdd = Database::getDB();
-            $request = $bdd->prepare('SELECT USER_ID, USER_PASSWORD FROM USER WHERE USER_EMAIL = :id');
+            $request = $bdd->prepare('SELECT USER_ID FROM USER WHERE USER_EMAIL = :id');
             $request->bindValue(':id', $email);
 
             if (!$request->execute()) {
@@ -280,16 +279,6 @@ namespace Domain\Entities
             }
 
             $userId = (int)$result['USER_ID'];
-
-            if (is_null($password)) {
-                return User::load($userId);
-            }
-
-            $isNotCorrectPassword = $result['USER_PASSWORD'] != $password;
-            if ($isNotCorrectPassword) {
-                throw new UserIncorrectPasswordException('Le mot de passe est incorrect');
-            }
-
             return User::load($userId);
         }
 
@@ -527,6 +516,7 @@ namespace Domain\Entities
         /**
          * @throws DatabaseErrorException
          * @throws UserNotExistException
+         * @throws Exception
          */
         public static function load(int $id): User
         {
@@ -548,6 +538,9 @@ namespace Domain\Entities
             return self::mapDataToUser($result);
         }
 
+        /**
+         * @throws Exception
+         */
         private static function mapDataToUser(array $result): User
         {
             $locationOfLoadedUser = new Location(

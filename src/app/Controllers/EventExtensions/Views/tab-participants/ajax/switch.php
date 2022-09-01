@@ -1,5 +1,6 @@
 <?php
 
+
 use Domain\Entities\User;
 
 switch ($action) {
@@ -19,7 +20,7 @@ switch ($action) {
         echo $this->getViewParticipantsList(3);
         break;
     case "part.accept":
-        $this->setParticipantAsValid(UserCli::loadUserById($_POST['userId']));
+        $this->setParticipantAsValid(User::load($_POST['userId']));
         break;
     case "part.delete":
         $this->unsetParticipant($_POST['userId']);
