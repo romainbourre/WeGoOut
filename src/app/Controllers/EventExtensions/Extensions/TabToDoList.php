@@ -12,12 +12,10 @@ namespace App\Controllers\EventExtensions\Extensions
     use Domain\Entities\Event;
     use Domain\Entities\Task;
     use Domain\Entities\User;
-    use Domain\Exceptions\EventNotExistException;
     use Domain\Exceptions\TaskNotExistException;
     use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
-    use System\Host\Host;
 
     class TabToDoList extends EventExtension implements IEventExtension
     {
@@ -25,23 +23,11 @@ namespace App\Controllers\EventExtensions\Extensions
         public const ORDER = 3;
 
 
-        /**
-         * @throws EventNotExistException
-         */
-        public function __construct(private readonly AuthenticationContext $authenticationGateway, private Event $event)
-        {
+        public function __construct(
+            private readonly AuthenticationContext $authenticationGateway,
+            private readonly Event $event
+        ) {
             parent::__construct('todolist');
-            $this->event = new Event($event->getID());
-        }
-
-
-        /**
-         * @throws NotConnectedUserException
-         */
-        public function active(): bool
-        {
-            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            return (($this->event->isCreator($connectedUser) || $this->event->isCreator($connectedUser)) || ($this->event->isParticipantValid($connectedUser) && Task::getEventTasksForUser($this->event, $connectedUser)));
         }
 
         /**
@@ -66,6 +52,7 @@ namespace App\Controllers\EventExtensions\Extensions
          * Generate global content view of the tab
          * @return string global content
          * @throws NotConnectedUserException
+         * @throws TaskNotExistException
          */
         public function getContent(): string
         {
@@ -84,7 +71,9 @@ namespace App\Controllers\EventExtensions\Extensions
         private function getAddOnFormView(): ?string
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser)) return $this->render('view-form-task');
+            if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser)) {
+                return $this->render('view-form-task');
+            }
             return null;
         }
 
@@ -110,16 +99,12 @@ namespace App\Controllers\EventExtensions\Extensions
          */
         protected function getSlideTaskView(): ?string
         {
-            if (isset($_POST['task']) && !empty($_POST['task']))
-            {
-                try
-                {
+            if (isset($_POST['task']) && !empty($_POST['task'])) {
+                try {
                     $task = new Task((int)$_POST['task']);
                     $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
                     return $this->render("slide-task", compact('task', 'connectedUser'));
-                }
-                catch (TaskNotExistException $e)
-                {
+                } catch (TaskNotExistException $e) {
                 }
             }
             return null;
@@ -132,8 +117,9 @@ namespace App\Controllers\EventExtensions\Extensions
         protected function addTask(): bool
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            if (isset($_POST['task-add-label']) && ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser)))
-            {
+            if (isset($_POST['task-add-label']) && ($this->event->isCreator(
+                        $connectedUser
+                    ) || $this->event->isOrganizer($connectedUser))) {
                 return $this->event->addTask(htmlspecialchars($_POST['task-add-label']));
             }
             return false;
@@ -146,14 +132,11 @@ namespace App\Controllers\EventExtensions\Extensions
          */
         protected function setUserDesignated(): bool
         {
-            try
-            {
+            try {
                 $task = new Task((int)$_POST['task']);
                 $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
                 return $task->setUserDesignated($connectedUser);
-            }
-            catch (TaskNotExistException $e)
-            {
+            } catch (TaskNotExistException $e) {
             }
             return false;
         }
@@ -165,15 +148,15 @@ namespace App\Controllers\EventExtensions\Extensions
          */
         protected function checkTask(): bool
         {
-            try
-            {
+            try {
                 $task = new Task((int)$_POST['task']);
                 $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-                if (!$task->isCheck($connectedUser)) return $task->check($connectedUser);
-                else return $task->uncheck($connectedUser);
-            }
-            catch (TaskNotExistException $e)
-            {
+                if (!$task->isCheck($connectedUser)) {
+                    return $task->check($connectedUser);
+                } else {
+                    return $task->uncheck($connectedUser);
+                }
+            } catch (TaskNotExistException $e) {
             }
             return false;
         }
@@ -186,15 +169,11 @@ namespace App\Controllers\EventExtensions\Extensions
         protected function deleteTask(): bool
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser))
-            {
-                try
-                {
+            if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser)) {
+                try {
                     $task = new Task((int)$_POST['task']);
                     return $task->delete();
-                }
-                catch (TaskNotExistException $e)
-                {
+                } catch (TaskNotExistException $e) {
                 }
             }
             return false;
@@ -206,105 +185,87 @@ namespace App\Controllers\EventExtensions\Extensions
          */
         protected function saveFormTask()
         {
-
-            try
-            {
-
+            try {
                 $task = new Task((int)$_POST['task']);
                 $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
 
-                if ($this->event->equals($task->getEvent()))
-                {
-
+                if ($this->event->equals($task->getEvent())) {
                     // SAVE CHECK
-                    if (isset($_POST['task-check'])) $task->check($connectedUser);
-                    else $task->uncheck($connectedUser);
+                    if (isset($_POST['task-check'])) {
+                        $task->check($connectedUser);
+                    } else {
+                        $task->uncheck($connectedUser);
+                    }
 
-                    if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser))
-                    {
-
+                    if ($this->event->isCreator($connectedUser) || $this->event->isOrganizer($connectedUser)) {
                         // SAVE LABEL
-                        if (isset($_POST['task-label']) && !empty($label = (string)$_POST['task-label']))
-                        {
+                        if (isset($_POST['task-label']) && !empty($label = (string)$_POST['task-label'])) {
                             $task->setLabel($label);
                         }
 
                         // SAVE CATEGORY
-                        if (isset($_POST['task-category']))
-                        {
+                        if (isset($_POST['task-category'])) {
                             $task->setCategory((int)$_POST['task-category']);
                         }
 
                         // SAVE DEADLINE
-                        if (isset($_POST['task-deadline']))
-                        {
-                            if (empty($deadline = $_POST['task-deadline']))
-                            {
+                        if (isset($_POST['task-deadline'])) {
+                            if (empty($deadline = $_POST['task-deadline'])) {
                                 $deadline = null;
-                            }
-                            else
-                            {
+                            } else {
                                 $deadline = DateTime::createFromFormat('d/m/Y', $deadline);
                             }
                             $task->setDatetimeDeadline($deadline);
                         }
 
                         // SAVE VISIBILITY
-                        if (isset($_POST['task-visibility']))
-                        {
+                        if (isset($_POST['task-visibility'])) {
                             $task->setVisibility((int)$_POST['task-visibility']);
                         }
 
                         // SAVE USER DESIGNATED
-                        if (isset($_POST['task-designation']))
-                        {
-                            try
-                            {
+                        if (isset($_POST['task-designation'])) {
+                            try {
                                 $user = User::load((int)$_POST['task-designation']);
-                            }
-                            catch (UserNotExistException | UserDeletedException | UserSignaledException $e)
-                            {
+                            } catch (UserNotExistException|UserDeletedException|UserSignaledException $e) {
                                 $user = null;
                             }
-                            finally
-                            {
+                            finally {
                                 $task->setUserDesignated($user);
                             }
                         }
 
                         // SAVE PRICE OF TASK
-                        if (isset($_POST['task-price']))
-                        {
+                        if (isset($_POST['task-price'])) {
                             $price = $_POST['task-price'];
-                            if ($price == "") $price = null;
-                            else $price = (float)$price;
+                            if ($price == "") {
+                                $price = null;
+                            } else {
+                                $price = (float)$price;
+                            }
                             $task->setPrice($price);
                         }
 
                         // SAVE SPENT AFFECTATION
-                        if (isset($_POST['task-spent-affect']))
-                        {
+                        if (isset($_POST['task-spent-affect'])) {
                             $task->setPriceAffect((int)$_POST['task-spent-affect']);
                         }
 
                         // SAVE SPENT ON PLACE
-                        if (isset($_POST['task-spent-onplace'])) $task->setSpentOnPlace(true);
-                        else $task->setSpentOnPlace(false);
+                        if (isset($_POST['task-spent-onplace'])) {
+                            $task->setSpentOnPlace(true);
+                        } else {
+                            $task->setSpentOnPlace(false);
+                        }
 
                         // SAVE NOTE OF TASK
-                        if (isset($_POST['task-notes']))
-                        {
+                        if (isset($_POST['task-notes'])) {
                             $notes = (string)htmlspecialchars($_POST['task-notes']);
                             $task->setNote($notes);
                         }
-
                     }
-
                 }
-
-            }
-            catch (TaskNotExistException $e)
-            {
+            } catch (TaskNotExistException $e) {
             }
         }
 
@@ -315,7 +276,9 @@ namespace App\Controllers\EventExtensions\Extensions
         {
             $event = $this->event;
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            return ($event->isCreator($connectedUser) || $event->isOrganizer($connectedUser) || $event->isParticipantValid($connectedUser) || $event->isInvited($connectedUser));
+            return ($event->isCreator($connectedUser) || $event->isOrganizer(
+                    $connectedUser
+                ) || $event->isParticipantValid($connectedUser) || $event->isInvited($connectedUser));
         }
     }
 }

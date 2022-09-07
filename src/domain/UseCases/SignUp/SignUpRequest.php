@@ -1,11 +1,9 @@
 <?php
 
 
-namespace Domain\Services\AccountService\Requests
+namespace Domain\UseCases\SignUp
 {
 
-
-    use DateTime;
 
     class SignUpRequest
     {
@@ -14,13 +12,13 @@ namespace Domain\Services\AccountService\Requests
             public string $firstname,
             public string $lastname,
             public string $email,
-            public DateTime $birthDate,
+            public string $birthDate,
             public string $label,
             public string $postalCode,
             public string $city,
             public string $country,
-            public string $longitude,
-            public string $latitude,
+            public float $longitude,
+            public float $latitude,
             public string $placeId,
             public string $password,
             public string $genre

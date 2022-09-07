@@ -4,23 +4,39 @@ namespace Domain\ValueObjects
 {
 
 
+    use Domain\Exceptions\ValidationException;
+
     class Location
     {
 
-        private string $label;
-        private string $complements;
-        private string $address;
-        private string $postalCode;
-        private string $city;
-        private string $country;
-        private string $googlePlaceId;
+        private string $label         = '';
+        private string $complements   = '';
+        private string $address       = '';
+        private string $country       = '';
+        private string $googlePlaceId = '';
 
 
+        /**
+         * @throws ValidationException
+         */
         public function __construct(
+            public readonly string $postalCode,
+            public readonly string $city,
             public readonly float $latitude,
             public readonly float $longitude,
             public readonly float $altitude = 0
         ) {
+            if ($city == '') {
+                throw new ValidationException('incorrect city given');
+            }
+            if (strlen($postalCode) != 5) {
+                throw new ValidationException('incorrect postal code given');
+            }
+            foreach (str_split($postalCode) as $number) {
+                if (!ctype_digit($number)) {
+                    throw new ValidationException('incorrect postal code given');
+                }
+            }
         }
 
         public function getLabel(): string
@@ -91,16 +107,6 @@ namespace Domain\ValueObjects
             $this->address = $address;
         }
 
-        public function setPostalCode(string $postalCode): void
-        {
-            $this->postalCode = $postalCode;
-        }
-
-        public function setCity(string $city): void
-        {
-            $this->city = $city;
-        }
-
         public function setCountry(string $country): void
         {
             $this->country = $country;
@@ -118,7 +124,14 @@ namespace Domain\ValueObjects
 
             //calcul précis
             $dp = 2 * asin(
-                    sqrt(pow(sin(($originLatitudeRadian - $destinationLatitudeRadian) / 2), 2) + cos($originLatitudeRadian) * cos($destinationLatitudeRadian) * pow(sin(($originLongitudeRadian - $destinationLongitudeRadian) / 2), 2))
+                    sqrt(
+                        pow(sin(($originLatitudeRadian - $destinationLatitudeRadian) / 2), 2) + cos(
+                            $originLatitudeRadian
+                        ) * cos($destinationLatitudeRadian) * pow(
+                            sin(($originLongitudeRadian - $destinationLongitudeRadian) / 2),
+                            2
+                        )
+                    )
                 );
 
             //sortie en km

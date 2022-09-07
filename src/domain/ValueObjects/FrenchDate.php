@@ -6,6 +6,7 @@ namespace Domain\ValueObjects
     use DateTime;
     use Domain\Exceptions\IncorrectDateFormatException;
     use Domain\Exceptions\IncorrectDateIndexException;
+    use Domain\Exceptions\ValidationException;
     use Exception;
 
 
@@ -30,7 +31,7 @@ namespace Domain\ValueObjects
          * @throws IncorrectDateFormatException
          * @throws IncorrectDateIndexException
          */
-        public function getDayOfWeek(string $format = self::LONG_FORMAT): ?string
+        public function getDayOfWeek(string $format = self::LONG_FORMAT): string
         {
             if ($format != self::SHORT_FORMAT && $format != self::LONG_FORMAT) {
                 throw new IncorrectDateFormatException($format);
@@ -38,8 +39,7 @@ namespace Domain\ValueObjects
 
             $isShortDayFormat = $format == self::SHORT_FORMAT;
             $numberOfWeekDay = date("N", $this->timestamp);
-            $dayOfWeekText = match ($numberOfWeekDay)
-            {
+            $dayOfWeekText = match ($numberOfWeekDay) {
                 '1' => ['Lun.', 'Lundi'],
                 '2' => ['Mar.', 'Mardi'],
                 '3' => ['Mer.', 'Mercredi'],
@@ -56,7 +56,7 @@ namespace Domain\ValueObjects
          * @throws IncorrectDateFormatException
          * @throws IncorrectDateIndexException
          */
-        public function getMonth(string $format = self::LONG_FORMAT): ?string
+        public function getMonth(string $format = self::LONG_FORMAT): string
         {
             if ($format != self::SHORT_FORMAT && $format != self::LONG_FORMAT) {
                 throw new IncorrectDateFormatException($format);
@@ -117,15 +117,25 @@ namespace Domain\ValueObjects
                 {
                     return "Il y a " . $elapsedHours . " heure(s)";
                 }
-            }
-            elseif ($elapsedHours > $maximumHoursDisplayed && $isToday)
-            {
+            } elseif ($elapsedHours > $maximumHoursDisplayed && $isToday) {
                 return "Aujourd'hui à " . date("H:i", $this->timestamp);
             }
             $dayText = date("d", $this->timestamp);
             $monthText = $this->getMonth();
             $hourText = date("H:i", $this->timestamp);
             return "$dayText $monthText, $hourText";
+        }
+
+        /**
+         * @throws ValidationException
+         * @throws Exception
+         */
+        public static function parse(string $textOfDate): FrenchDate
+        {
+            if (!($date = DateTime::createFromFormat('d/m/Y', $textOfDate))) {
+                throw new ValidationException('incorrect birthdate given');
+            }
+            return new self($date->getTimestamp());
         }
     }
 }

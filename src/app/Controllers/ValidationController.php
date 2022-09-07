@@ -12,9 +12,10 @@ namespace App\Controllers
     use Domain\Services\AccountService\IAccountService;
     use Domain\Services\AccountService\Requests\ValidateAccountRequest;
     use Exception;
-    use System\Logging\ILogger;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
+    use System\Logging\ILogger;
+    use System\Routing\Responses\RedirectedResponse;
 
     /**
      * Class Validation
@@ -104,7 +105,7 @@ namespace App\Controllers
 
                 $this->logger->logInfo("user with id $userId is now validated");
 
-                return $this->ok()->withRedirectTo('/');
+                return RedirectedResponse::to('/');
             } catch (BadAccountValidationTokenException $e) {
                 $this->logger->logWarning($e->getMessage());
                 Alert::addAlert(

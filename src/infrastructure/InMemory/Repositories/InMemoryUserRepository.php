@@ -3,6 +3,7 @@
 namespace Infrastructure\InMemory\Repositories;
 
 use Domain\Entities\User;
+use Domain\Exceptions\ValidationException;
 use Domain\Interfaces\IUserRepository;
 use Infrastructure\InMemory\Entities\User as DatabaseUser;
 use PhpLinq\Interfaces\ILinq;
@@ -10,6 +11,8 @@ use PhpLinq\PhpLinq;
 
 class InMemoryUserRepository implements IUserRepository
 {
+    private int $currentId = 0;
+
     public readonly ILinq $users;
 
     public function __construct()
@@ -58,5 +61,41 @@ class InMemoryUserRepository implements IUserRepository
             return null;
         }
         return $databaseUser->toDomainUser();
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function addUserWithPassword(User $user, string $password): User
+    {
+        $user = self::copyUserWithNewId($this->currentId++, $user);
+        $this->users->add(DatabaseUser::from($user, $password));
+        return $user;
+    }
+
+    public function isEmailExist(string $email): bool
+    {
+        return $this->users->any(fn(User $user) => $user->email == $email);
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private static function copyUserWithNewId(int $newId, User $user): User
+    {
+        return new User(
+            id: $newId,
+            email: $user->email,
+            firstname: $user->firstname,
+            lastname: $user->lastname,
+            picture: $user->picture,
+            description: $user->description,
+            birthDate: $user->birthDate,
+            location: $user->location,
+            validationToken: $user->validationToken,
+            genre: $user->genre,
+            createdAt: $user->createdAt,
+            deletedAt: $user->deletedAt
+        );
     }
 }

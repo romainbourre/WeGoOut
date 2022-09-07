@@ -3,11 +3,10 @@
 namespace Domain\Entities
 {
 
-    use Domain\Exceptions\EventCanceledException;
-    use Domain\Exceptions\EventDeletedException;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\EventNotExistException;
-    use Domain\Exceptions\EventSignaledException;
     use Domain\Exceptions\UserNotExistException;
+    use Domain\Exceptions\ValidationException;
     use Domain\ValueObjects\Location;
     use System\Librairies\Database;
 
@@ -63,6 +62,9 @@ namespace Domain\Entities
          * @param int $id id of the event
          * @return boolean
          * @throws EventNotExistException
+         * @throws UserNotExistException
+         * @throws DatabaseErrorException
+         * @throws ValidationException
          */
         private function load(int $id): bool
         {
@@ -95,10 +97,13 @@ namespace Domain\Entities
                         $this->city = $result['EVENT_LOCATION_CITY'];
                         $this->maxOfPart = $result['EVENT_PARTICIPANTS_NUMBER'];
                         $this->placeID = $result['EVENT_LOCATION_PLACE_ID'];
-                        $this->location = new Location((double)$result['EVENT_LOCATION_LAT'], (double)$result['EVENT_LOCATION_LNG']);
+                        $this->location = new Location(
+                            $this->postalCode,
+                            $this->city,
+                            (double)$result['EVENT_LOCATION_LAT'],
+                            (double)$result['EVENT_LOCATION_LNG']
+                        );
                         $this->location->setAddress($this->address);
-                        $this->location->setPostalCode($this->postalCode);
-                        $this->location->setCity($this->city);
                         $this->location->setComplements((string)$result['EVENT_LOCATION_COMPLEMENTS']);
                         $this->location->setGooglePlaceId($result['EVENT_LOCATION_PLACE_ID']);
                         $this->price = $result['EVENT_PRICE'];
@@ -136,14 +141,17 @@ namespace Domain\Entities
         /**
          * Reload data of event
          * @return boolean
-         * @throws EventCanceledException
-         * @throws EventDeletedException
+         * @throws DatabaseErrorException
          * @throws EventNotExistException
-         * @throws EventSignaledException
+         * @throws UserNotExistException
+         * @throws ValidationException
          */
         public function update(): bool
         {
-            if (!is_null($this->id)) return $this->load($this->id);
+            if (!is_null($this->id)) {
+                return $this->load($this->id);
+            }
+            return false;
         }
 
         /**

@@ -11,20 +11,21 @@ namespace App\Controllers\EventExtensions\Extensions
     use App\Librairies\Emitter;
     use Domain\Entities\Event;
     use Domain\Entities\Publication;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\EventNotExistException;
+    use Exception;
 
     class TabPublications extends EventExtension implements IEventExtension
     {
         private const TAB_EXTENSION_NAME = "discussions";
         private const ORDER = 1;
 
-        private int $eventID;
 
-
-        public function __construct(private readonly AuthenticationContext $authenticationGateway, Event $event)
-        {
+        public function __construct(
+            private readonly AuthenticationContext $authenticationGateway,
+            private readonly Event $event
+        ) {
             parent::__construct('publications');
-            $this->eventID = $event->getID();
         }
 
         /**
@@ -48,22 +49,18 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Generate global content of the tab
          * @return string
+         * @throws EventNotExistException
+         * @throws NotConnectedUserException
+         * @throws DatabaseErrorException
          */
         public function getContent(): string
         {
-
-            if ($this->isActivated())
-            {
-
-                $publicationsContent = Publication::loadPubFromEvent($this->eventID);
-                $publications = $this->render('publication', compact('publicationsContent'));
-
-                return $this->render("list-publications", compact('publications'));
-
+            if (!$this->isActivated()) {
+                return $this->render('content-not-auth');
             }
-
-            return $this->render('content-not-auth');
-
+            $publicationsContent = Publication::loadPubFromEvent($this->event->getID());
+            $publications = $this->render('publication', compact('publicationsContent'));
+            return $this->render("list-publications", compact('publications'));
         }
 
         /**
@@ -71,12 +68,22 @@ namespace App\Controllers\EventExtensions\Extensions
          * @return bool
          * @throws EventNotExistException
          * @throws NotConnectedUserException
+         * @throws DatabaseErrorException
          */
         public function isActivated(): bool
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            $event = new Event($this->eventID);
-            return ($event->isPublic() || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend($connectedUser)) || ($event->isPrivate() && $event->isGuestOnly() && $event->isInvited($connectedUser)) || $event->isCreator($connectedUser) || $event->isOrganizer($connectedUser) || $event->isParticipantValid($connectedUser));
+            $event = new Event($this->event->getID());
+            if ($event->isPublic()) {
+                return true;
+            }
+            if ($event->isCreator($connectedUser) || $event->isOrganizer($connectedUser)) {
+                return true;
+            }
+            if ($event->isGuestOnly() && $event->isInvited($connectedUser)) {
+                return true;
+            }
+            return $event->isParticipantValid($connectedUser);
         }
 
         /**
@@ -85,7 +92,7 @@ namespace App\Controllers\EventExtensions\Extensions
          */
         public function getAjaxPublications(): string
         {
-            $publicationsContent = Publication::loadPubFromEvent($this->eventID);
+            $publicationsContent = Publication::loadPubFromEvent($this->event->getID());
             return $this->render('publication', compact('publicationsContent'));
         }
 
@@ -95,19 +102,18 @@ namespace App\Controllers\EventExtensions\Extensions
          * @return bool
          * @throws EventNotExistException
          * @throws NotConnectedUserException
+         * @throws DatabaseErrorException
+         * @throws Exception
          */
         public function setAjaxNewPublication($args = array()): bool
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            if ($this->isActivated())
-            {
-                if ($cleaned_data = $this->getDataNewPublication())
-                {
+            if ($this->isActivated()) {
+                if ($cleaned_data = $this->getDataNewPublication()) {
                     list($textPublication, $eventId) = $cleaned_data;
-                    if (Publication::saveNewPublication($connectedUser, $eventId, $textPublication))
-                    {
+                    if (Publication::saveNewPublication($connectedUser, $eventId, $textPublication)) {
                         $emitter = Emitter::getInstance();
-                        $emitter->emit('event.pub.add', new Event($this->eventID), $connectedUser);
+                        $emitter->emit('event.pub.add', new Event($this->event->getPlaceID()), $connectedUser);
                     }
                 }
             }
@@ -120,27 +126,20 @@ namespace App\Controllers\EventExtensions\Extensions
          */
         private function getDataNewPublication(): ?array
         {
-
             if (
                 isset($_POST['id']) &&
                 isset($_POST['form_new_publication_text'])
-            )
-            {
-
+            ) {
                 if (
                     !empty($_POST['id']) &&
                     !empty($_POST['form_new_publication_text'])
-                )
-                {
-
+                ) {
                     $textPublication = htmlspecialchars($_POST['form_new_publication_text']);
                     $eventId = (int)htmlspecialchars($_POST['id']);
 
 
                     return array($textPublication, $eventId);
-
                 }
-
             }
 
             return null;

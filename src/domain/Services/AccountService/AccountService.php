@@ -5,20 +5,15 @@ namespace Domain\Services\AccountService
 {
 
 
-    use App\Librairies\AppSettings;
-    use App\Librairies\Emitter;
-    use DateTime;
     use Domain\Entities\User;
     use Domain\Exceptions\BadAccountValidationTokenException;
     use Domain\Exceptions\BadArgumentException;
     use Domain\Exceptions\ResourceNotFound;
-    use Domain\Exceptions\UserAlreadyExistException;
     use Domain\Exceptions\UserAlreadyValidatedException;
     use Domain\Interfaces\IEmailSender;
     use Domain\Interfaces\ITemplateRenderer;
     use Domain\Interfaces\IUserRepository;
     use Domain\Services\AccountService\Requests\ResetPasswordRequest;
-    use Domain\Services\AccountService\Requests\SignUpRequest;
     use Domain\Services\AccountService\Requests\ValidateAccountRequest;
     use System\Librairies\Security;
 
@@ -122,44 +117,6 @@ namespace Domain\Services\AccountService
         /**
          * @inheritDoc
          */
-        public function signUp(SignUpRequest $signUpRequest): User
-        {
-            $this->checkSignUpRequest($signUpRequest);
-
-            if (User::emailExist($signUpRequest->email))
-            {
-                throw new UserAlreadyExistException();
-            }
-
-            $encryptedPassword = md5($signUpRequest->password);
-
-            $cleaned_data = array($signUpRequest->firstname,
-                                  $signUpRequest->lastname,
-                                  $signUpRequest->email,
-                                  $signUpRequest->birthDate,
-                                  $signUpRequest->label,
-                                  $signUpRequest->postalCode,
-                                  $signUpRequest->postalCode,
-                                  $signUpRequest->country,
-                                  $signUpRequest->longitude,
-                                  $signUpRequest->latitude,
-                                  $signUpRequest->placeId,
-                                  $encryptedPassword,
-                                  $signUpRequest->genre);
-
-            $user = $this->userRepository->addUser($cleaned_data);
-
-            $emitter = Emitter::getInstance();
-            $emitter->emit('user.welcome', $user);
-
-            $this->sendNewValidationToken($user->getID());
-
-            return $user;
-        }
-
-        /**
-         * @inheritDoc
-         */
         public function validateAccount(int $userId, ValidateAccountRequest $validateAccountRequest): void
         {
             $userValidationToken = $this->userRepository->getValidationCode($userId);
@@ -175,38 +132,6 @@ namespace Domain\Services\AccountService
             }
 
             $this->userRepository->setAccountAsValid($userId);
-        }
-
-        /**
-         * Check data of sign up request
-         * @param SignUpRequest $signUpRequest request
-         * @throws BadArgumentException
-         */
-        private function checkSignUpRequest(SignUpRequest $signUpRequest)
-        {
-            if (!filter_var($signUpRequest->email, FILTER_VALIDATE_EMAIL))
-            {
-                throw new BadArgumentException("incorrect format of email");
-            }
-
-            $minimumPasswordCharacters = (new AppSettings())->getPasswordMinLength();
-            if (strlen($signUpRequest->password) < $minimumPasswordCharacters)
-            {
-                throw new BadArgumentException("password must be have more than $minimumPasswordCharacters characters");
-            }
-
-            $birthDateFromNow = $signUpRequest->birthDate->diff(new DateTime());
-            $ageOfUser = $birthDateFromNow->y;
-            $minimumAgeOfUser = (new AppSettings())->getMinAgeUser();
-            if ($ageOfUser < (new AppSettings())->getMinAgeUser())
-            {
-                throw new BadArgumentException("user must be have at lest $minimumAgeOfUser years old");
-            }
-
-            if ($signUpRequest->genre != "H" && $signUpRequest->genre != "F")
-            {
-                throw new BadArgumentException("genre should be only 'H' or 'F'");
-            }
         }
     }
 }

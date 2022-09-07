@@ -10,6 +10,7 @@ namespace Infrastructure\MySqlDatabase\Repositories
     use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
+    use Domain\Exceptions\ValidationException;
     use Domain\Interfaces\IUserRepository;
     use Domain\ValueObjects\FrenchDate;
     use Domain\ValueObjects\Location;
@@ -223,12 +224,11 @@ namespace Infrastructure\MySqlDatabase\Repositories
         private static function mapDataToUser(array $result): User
         {
             $locationOfLoadedUser = new Location(
+                $result['USER_LOCATION_CP'],
+                $result['USER_LOCATION_CITY'],
                 (double)$result['USER_LOCATION_LAT'],
                 (double)$result['USER_LOCATION_LNG']
             );
-
-            $locationOfLoadedUser->setCity($result['USER_LOCATION_CITY']);
-
             return new User(
                 id: $result['USER_ID'],
                 email: $result['USER_EMAIL'],
@@ -243,6 +243,86 @@ namespace Infrastructure\MySqlDatabase\Repositories
                 createdAt: new FrenchDate(strtotime($result['USER_DATETIME_REGISTRATION'])),
                 deletedAt: new FrenchDate(strtotime($result['USER_DATETIME_DELETE']))
             );
+        }
+
+        /**
+         * @throws DatabaseErrorException
+         * @throws ValidationException
+         */
+        public function addUserWithPassword(User $user, string $password): User
+        {
+            $bdd = $this->databaseContext;
+
+            $request = $bdd->prepare(
+                'INSERT INTO USER(USER_DATETIME_REGISTRATION, USER_DATE_BIRTH, USER_LOCATION_LABEL, USER_LOCATION_CP, USER_LOCATION_CITY, USER_LOCATION_COUNTRY, USER_LOCATION_PLACE_ID, USER_LOCATION_LNG, USER_LOCATION_LAT, USER_PASSWORD, USER_EMAIL, USER_TYPE, USER_VALIDATION) VALUES (:createdAt, :birthDate, :locationLabel, :locationCP, :locationCity, :locationCountry, :locationPlaceId, :locationLng, :locationLat, :userPassword, :userEmail, 0, :validationToken)'
+            );
+
+            $request->bindValue(':createdAt', date('Y-m-d H:i:s', $user->createdAt->value->getTimestamp()));
+            $request->bindValue(':birthDate', $user->birthDate->value->format('Y-m-d'));
+            $request->bindValue(':locationLabel', $user->location->getLabel());
+            $request->bindValue(':locationCP', $user->location->postalCode);
+            $request->bindValue(':locationCity', $user->location->city);
+            $request->bindValue(':locationCountry', $user->location->getCountry());
+            $request->bindValue(':locationPlaceId', $user->location->getGooglePlaceId());
+            $request->bindValue(':locationLng', $user->location->longitude);
+            $request->bindValue(':locationLat', $user->location->latitude);
+            $request->bindValue(':userPassword', $password);
+            $request->bindValue(':userEmail', $user->email);
+            $request->bindValue(':validationToken', $user->validationToken);
+
+            if (!$request->execute()) {
+                $errorMessage = self::mapPDOErrorToString($request->errorInfo());
+                throw new DatabaseErrorException($errorMessage);
+            }
+
+            $userId = $bdd->lastInsertId();
+            $request = $bdd->prepare(
+                'INSERT INTO META_USER_CLI(USER_ID, CLI_LASTNAME, CLI_FIRSTNAME, CLI_SEX) VALUES(:cliId, :cliLastname, :cliFirstname, :cliSex)'
+            );
+            $request->bindValue(':cliId', $userId);
+            $request->bindValue(':cliLastname', $user->lastname);
+            $request->bindValue(':cliFirstname', $user->firstname);
+            $request->bindValue(':cliSex', $user->genre);
+
+            if (!$request->execute()) {
+                $errorMessage = self::mapPDOErrorToString($request->errorInfo());
+                throw new DatabaseErrorException($errorMessage);
+            }
+
+            self::retrieveEmailInvitation($userId);
+
+            return new User(
+                id: $userId,
+                email: $user->email,
+                firstname: $user->firstname,
+                lastname: $user->lastname,
+                picture: $user->picture,
+                description: $user->description,
+                birthDate: $user->birthDate,
+                location: $user->location,
+                validationToken: $user->validationToken,
+                genre: $user->genre,
+                createdAt: $user->createdAt,
+                deletedAt: $user->deletedAt
+            );
+        }
+
+        /**
+         * @throws DatabaseErrorException
+         */
+        public function isEmailExist(string $email): bool
+        {
+            $request = $this->databaseContext->prepare(
+                'SELECT count(USER_ID) as userCount FROM USER WHERE user_email = :email'
+            );
+            $request->bindValue(':email', $email);
+
+            if (!$request->execute()) {
+                throw new DatabaseErrorException();
+            }
+
+            $result = $request->fetch();
+            return isset($result['userCount']) && $result['userCount'] > 0;
         }
 
         /**

@@ -11,7 +11,7 @@ namespace App\Controllers\EventExtensions\Extensions
     use App\Librairies\Emitter;
     use Domain\Entities\Event;
     use Domain\Entities\Review;
-    use Domain\Exceptions\EventNotExistException;
+    use Domain\Exceptions\DatabaseErrorException;
     use Exception;
 
     class TabReviews extends EventExtension implements IEventExtension
@@ -20,22 +20,11 @@ namespace App\Controllers\EventExtensions\Extensions
         private const ORDER = 5;
 
 
-        /**
-         * @throws EventNotExistException
-         */
-        public function __construct(private readonly AuthenticationContext $authenticationGateway, private Event $event)
-        {
+        public function __construct(
+            private readonly AuthenticationContext $authenticationGateway,
+            private readonly Event $event
+        ) {
             parent::__construct('reviews');
-            $this->event = new Event($event->getID());
-        }
-
-        /**
-         * Check if event can be active
-         * @return bool
-         */
-        public function active(): bool
-        {
-            return ($this->event->isOver());
         }
 
         /**
@@ -59,27 +48,20 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Generate global content view of the tab
          * @return string global content
+         * @throws NotConnectedUserException
+         * @throws DatabaseErrorException
          */
         public function getContent(): string
         {
-
-            if ($this->event->isOver())
-            {
-
+            if ($this->event->isOver()) {
                 $event = $this->event;
                 $reviewsForm = $this->getViewReviewsForm();
                 $reviews = $this->getViewReviewsList();
 
                 return $this->render("view-reviews", compact('event', 'reviews', 'reviewsForm'));
-
-            }
-            else
-            {
-
+            } else {
                 return $this->render('content-no-over');
-
             }
-
         }
 
         /**
@@ -91,10 +73,8 @@ namespace App\Controllers\EventExtensions\Extensions
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $event = $this->event;
-            if ($event->isOver() && $this->isActivated())
-            {
-                if (!Review::checkUserPostReview($connectedUser, $this->event))
-                {
+            if ($event->isOver() && $this->isActivated()) {
+                if (!Review::checkUserPostReview($connectedUser, $this->event)) {
                     return $this->render('reviews-form');
                 }
                 return $this->render('reviews-no-form');
@@ -106,47 +86,48 @@ namespace App\Controllers\EventExtensions\Extensions
          * Generate view of list of reviews for the event
          * @return null|string view of list of reviews
          * @throws NotConnectedUserException
+         * @throws DatabaseErrorException
          */
         public function getViewReviewsList(): ?string
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $event = $this->event;
-            if ($event->isPublic() || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend($connectedUser)) || $this->isActivated())
-            {
+            if ($event->isPublic() || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend(
+                        $connectedUser
+                    )) || $this->isActivated()) {
                 $reviewsContent = $this->event->getReviews();
-                if (!is_null($reviewsContent) && !empty($reviewsContent)) return $this->render('review', compact('reviewsContent'));
+                if (!is_null($reviewsContent) && !empty($reviewsContent)) {
+                    return $this->render('review', compact('reviewsContent'));
+                }
                 return $this->render('no-review');
             }
             return $this->render('content-not-auth');
         }
 
         /**
-         * Save new review from an an user for the event
+         * Save new review from a user for the event
          * @return bool|null
          * @throws Exception
          */
         public function saveNewReview(): ?bool
         {
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            if ($this->event->isOver() && $this->isActivated() && !Review::checkUserPostReview($connectedUser, $this->event))
-            {
-                if (isset($_POST['form_new_review_note']) && isset($_POST['form_new_review_text']))
-                {
+            if ($this->event->isOver() && $this->isActivated() && !Review::checkUserPostReview(
+                    $connectedUser,
+                    $this->event
+                )) {
+                if (isset($_POST['form_new_review_note']) && isset($_POST['form_new_review_text'])) {
                     $run = true;
                     $reviewNote = (int)htmlspecialchars($_POST['form_new_review_note']);
                     $reviewText = htmlspecialchars($_POST['form_new_review_text']);
-                    if (strlen($reviewText) > 200)
-                    {
+                    if (strlen($reviewText) > 200) {
                         $run = false;
                     }
-                    if (empty($reviewNote) || ($reviewNote <= 0 && $reviewNote > 5))
-                    {
+                    if (empty($reviewNote) || ($reviewNote <= 0 && $reviewNote > 5)) {
                         $run = false;
                     }
-                    if ($run)
-                    {
-                        if ($this->event->addReview($connectedUser, $reviewNote, $reviewText))
-                        {
+                    if ($run) {
+                        if ($this->event->addReview($connectedUser, $reviewNote, $reviewText)) {
                             $emitter = Emitter::getInstance();
                             $emitter->emit('event.review.add', $this->event, $connectedUser);
                             return true;
@@ -166,7 +147,9 @@ namespace App\Controllers\EventExtensions\Extensions
         {
             $event = $this->event;
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            return ($event->isCreator($connectedUser) || $event->isOrganizer($connectedUser) || $event->isParticipantValid($connectedUser));
+            return ($event->isCreator($connectedUser) || $event->isOrganizer(
+                    $connectedUser
+                ) || $event->isParticipantValid($connectedUser));
         }
 
     }

@@ -10,6 +10,8 @@ namespace Domain\Entities
     use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
+    use Domain\Exceptions\ValidationErrorMessages;
+    use Domain\Exceptions\ValidationException;
     use Domain\ValueObjects\FrenchDate;
     use Domain\ValueObjects\Location;
     use Exception;
@@ -21,8 +23,11 @@ namespace Domain\Entities
         private const DEFAULT_PICTURE = "/assets/img/33aeda9.png";
 
 
+        /**
+         * @throws ValidationException
+         */
         public function __construct(
-            public readonly int $id,
+            public readonly ?int $id,
             public readonly string $email,
             public readonly string $firstname,
             public readonly string $lastname,
@@ -35,6 +40,15 @@ namespace Domain\Entities
             public readonly FrenchDate $createdAt,
             public readonly ?FrenchDate $deletedAt,
         ) {
+            if ($firstname == '') {
+                throw new ValidationException(ValidationErrorMessages::INCORRECT_FIRSTNAME);
+            }
+            if ($lastname == '') {
+                throw new ValidationException(ValidationErrorMessages::INCORRECT_LASTNAME);
+            }
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new ValidationException(ValidationErrorMessages::INCORRECT_EMAIL);
+            }
         }
 
         public function getID(): int
@@ -544,12 +558,11 @@ namespace Domain\Entities
         private static function mapDataToUser(array $result): User
         {
             $locationOfLoadedUser = new Location(
+                $result['USER_LOCATION_CP'],
+                $result['USER_LOCATION_CITY'],
                 (double)$result['USER_LOCATION_LAT'],
                 (double)$result['USER_LOCATION_LNG']
             );
-
-            $locationOfLoadedUser->setCity($result['USER_LOCATION_CITY']);
-
             return new User(
                 id: $result['USER_ID'],
                 email: $result['USER_EMAIL'],

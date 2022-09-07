@@ -9,29 +9,18 @@ namespace App\Controllers\EventExtensions\Extensions
     use App\Controllers\EventExtensions\IEventExtension;
     use App\Exceptions\NotConnectedUserException;
     use Domain\Entities\Event;
-    use Domain\Exceptions\EventNotExistException;
 
     class TabAbout extends EventExtension implements IEventExtension
     {
         private const TAB_EXTENSION_NAME = "à propos";
         private const ORDER = 4;
 
-        /**
-         * @throws EventNotExistException
-         */
-        public function __construct(private readonly AuthenticationContext $authenticationGateway, private Event $event)
-        {
-            parent::__construct('about');
-            $this->event = new Event($event->getID());
-        }
 
-        /**
-         * Check if tab can be active
-         * @return bool
-         */
-        public function active(): bool
-        {
-            return ($this->isActivated());
+        public function __construct(
+            private readonly AuthenticationContext $authenticationGateway,
+            private readonly Event $event
+        ) {
+            parent::__construct('about');
         }
 
         /**
@@ -55,6 +44,7 @@ namespace App\Controllers\EventExtensions\Extensions
         /**
          * Generate global content view of the tab
          * @return string global content
+         * @throws NotConnectedUserException
          */
         public function getContent(): string
         {

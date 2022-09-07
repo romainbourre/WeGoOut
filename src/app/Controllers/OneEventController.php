@@ -6,13 +6,9 @@ namespace App\Controllers
 
 
     use App\Authentication\AuthenticationContext;
-    use App\Controllers\EventExtensions\Extensions\TabAbout;
-    use App\Controllers\EventExtensions\Extensions\TabParticipants;
-    use App\Controllers\EventExtensions\Extensions\TabPublications;
-    use App\Controllers\EventExtensions\Extensions\TabReviews;
-    use App\Controllers\EventExtensions\Extensions\TabToDoList;
     use App\Controllers\EventExtensions\IEventExtension;
     use Domain\Entities\Event;
+    use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\EventCanceledException;
     use Domain\Exceptions\EventDeletedException;
     use Domain\Exceptions\EventNotExistException;
@@ -20,9 +16,9 @@ namespace App\Controllers
     use Domain\Exceptions\ResourceNotFound;
     use Domain\Services\EventService\IEventService;
     use Exception;
-    use PhpLinq\PhpLinq;
-    use System\Logging\ILogger;
+    use PhpLinq\Interfaces\ILinq;
     use Slim\Psr7\Response;
+    use System\Logging\ILogger;
 
     /**
      * Class OneEvent
@@ -32,21 +28,12 @@ namespace App\Controllers
      */
     class OneEventController extends AppController
     {
-        /**
-         * @var array<string>
-         */
-        private const extensions = [
-            TabAbout::class,
-            TabParticipants::class,
-            TabPublications::class,
-            TabReviews::class,
-            TabToDoList::class
-        ];
 
         public function __construct(
             private readonly ILogger $logger,
             private readonly IEventService $eventService,
-            private readonly AuthenticationContext $authenticationGateway
+            private readonly AuthenticationContext $authenticationGateway,
+            private readonly ILinq $extensions
         ) {
             parent::__construct();
         }
@@ -92,7 +79,14 @@ namespace App\Controllers
 
                     $content = $this->render(
                         'listevent.view-one-event',
-                        compact('event', 'userLocation', 'registrationCmd', 'numbPartItem', 'contentWindow', 'connectedUser')
+                        compact(
+                            'event',
+                            'userLocation',
+                            'registrationCmd',
+                            'numbPartItem',
+                            'contentWindow',
+                            'connectedUser'
+                        )
                     );
                 } else {
                     $content = $this->render('listevent.one-event.event-not-auth');
@@ -100,7 +94,15 @@ namespace App\Controllers
 
                 $view = $this->render(
                     'templates.template',
-                    compact('titleWebPage', 'userMenu', 'navUserDropDown', 'navAddEvent', 'navItems', 'content', 'connectedUser')
+                    compact(
+                        'titleWebPage',
+                        'userMenu',
+                        'navUserDropDown',
+                        'navAddEvent',
+                        'navItems',
+                        'content',
+                        'connectedUser'
+                    )
                 );
 
                 return $this->ok($view);
@@ -117,6 +119,7 @@ namespace App\Controllers
          * Check confidentiality for global view
          * @param Event $event
          * @return bool
+         * @throws DatabaseErrorException
          */
         private function globalConfidentiality(Event $event): bool
         {
@@ -185,27 +188,19 @@ namespace App\Controllers
          */
         private function getViewEventWindow(Event $event): string
         {
-            $extensionsClass = PhpLinq::fromArray(self::extensions);
-            $extensions = $extensionsClass
-                ->select(fn(string $class) => new $class($this->authenticationGateway, $event, $this->logger, $this->eventService))
-                ->where(fn(IEventExtension $extension) => $extension->isActivated());
-
             if ($this->globalConfidentiality($event)) {
                 $tabs = array();
-
-                $extensions->forEach(function (IEventExtension $extension) use (&$tabs)
-                {
-                    $tabs[$extension->getTabPosition()] = array(
-                        $extension->getExtensionName(),
-                        $extension->getContent()
-                    );
-                });
-
+                $this->extensions->where(fn(IEventExtension $e) => $e->isActivated())
+                                 ->forEach(function (IEventExtension $extension) use (&$tabs)
+                                 {
+                                     $tabs[$extension->getTabPosition()] = array(
+                                         $extension->getExtensionName(),
+                                         $extension->getContent()
+                                     );
+                                 });
                 ksort($tabs);
-
                 return $this->render('listevent.one-event.event-window', compact('tabs'));
             }
-
             return $this->render('listevent.one-event.window-not-auth');
         }
 
@@ -252,11 +247,6 @@ namespace App\Controllers
         public function getAjaxEventView(string $action, string $eventId): ?string
         {
             $event = new Event((int)$eventId);
-            $extensionsClass = PhpLinq::fromArray(self::extensions);
-            $extensions = $extensionsClass->select(
-                fn(string $class) => new $class($this->authenticationGateway, $event, $this->logger, $this->eventService)
-            );
-
             switch ($action) {
                 case "update.cmd":
                     return $this->getViewRegistrationCmd($event);
@@ -265,9 +255,7 @@ namespace App\Controllers
                 case "update.partitem":
                     return $this->getViewEventNumbPart($event);
             }
-
-            $extensions->forEach(fn(IEventExtension $extension) => $extension->getAjaxSwitch($action));
-
+            $this->extensions->forEach(fn(IEventExtension $extension) => $extension->getAjaxSwitch($action));
             return null;
         }
     }
