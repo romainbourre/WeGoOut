@@ -11,15 +11,6 @@ namespace Domain\Interfaces
     interface IUserRepository
     {
         public function setPassword(string $email, string $pwd): bool;
-
-        /**
-         * Add user
-         * @param array $data
-         * @return User
-         * @throws DatabaseErrorException
-         */
-        public function addUser(array $data): User;
-
         public function getValidationCode(int $id);
 
         /**
@@ -39,5 +30,9 @@ namespace Domain\Interfaces
         public function setValidationToken(int $userId, string $token): void;
 
         public function getUserByEmailAndPassword(string $email, string $password);
+
+        public function addUserWithPassword(User $user, string $password);
+
+        public function isEmailExist(string $email): bool;
     }
 }

@@ -17,6 +17,7 @@ namespace App\Controllers
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use System\Logging\ILogger;
+    use System\Routing\Responses\RedirectedResponse;
 
     /**
      * Class Login
@@ -76,21 +77,21 @@ namespace App\Controllers
 
                 $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user->id;
                 $this->logger->logTrace("user with id {$user->getID()} is now connected.");
-                return $this->ok()->withRedirectTo('/');
+                return RedirectedResponse::to('/');
             } catch (ValidationException) {
                 Alert::addAlert("l'email saisi est mal formaté");
-                return $this->badRequest()->withRedirectTo('/login');
+                return RedirectedResponse::to('/login');
             } catch (MandatoryParamMissedException $e) {
                 $this->logger->logTrace($e->getMessage());
-                return $this->badRequest()->withRedirectTo('/login');
+                return RedirectedResponse::to('/login');
             } catch (UserNotExistException $e) {
                 $this->logger->logWarning($e->getMessage());
                 Alert::addAlert($e->getMessage(), 2);
-                return $this->badRequest()->withRedirectTo('/login');
+                return RedirectedResponse::to('/login');
             } catch (Exception $e) {
                 $this->logger->logCritical($e->getMessage());
                 Alert::addAlert('Une erreur est survenue. Rééssayez plus tard.', 3);
-                return $this->internalServerError()->withRedirectTo('/login');
+                return RedirectedResponse::to('/login');
             }
         }
     }

@@ -5,17 +5,14 @@ namespace Domain\Services\AccountService
 {
 
 
-    use Domain\Entities\User;
     use Domain\Exceptions\BadAccountValidationTokenException;
     use Domain\Exceptions\BadArgumentException;
     use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\ResourceNotFound;
     use Domain\Exceptions\TemplateLoadingException;
-    use Domain\Exceptions\UserAlreadyExistException;
     use Domain\Exceptions\UserAlreadyValidatedException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Services\AccountService\Requests\ResetPasswordRequest;
-    use Domain\Services\AccountService\Requests\SignUpRequest;
     use Domain\Services\AccountService\Requests\ValidateAccountRequest;
     use Exception;
 
@@ -46,16 +43,6 @@ namespace Domain\Services\AccountService
          * @throws Exception
          */
         public function sendNewValidationToken(int $userId): void;
-
-        /**
-         * Sign up visitor
-         * @param SignUpRequest $signUpRequest
-         * @return User
-         * @throws UserAlreadyExistException
-         * @throws BadArgumentException
-         * @throws Exception
-         */
-        public function signUp(SignUpRequest $signUpRequest): User;
 
         /**
          * Validate account of user

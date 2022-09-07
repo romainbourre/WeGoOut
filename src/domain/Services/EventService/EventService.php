@@ -15,10 +15,9 @@ namespace Domain\Services\EventService
     use Domain\Exceptions\DatabaseErrorException;
     use Domain\Exceptions\NotAuthorizedException;
     use Domain\Exceptions\ResourceNotFound;
-    use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserHadAlreadyEventsException;
     use Domain\Exceptions\UserNotExistException;
-    use Domain\Exceptions\UserSignaledException;
+    use Domain\Exceptions\ValidationException;
     use Domain\Interfaces\IEventRepository;
     use Domain\Services\EventService\Requests\CreateEventRequest;
     use Domain\Services\EventService\Requests\SearchEventsRequest;
@@ -157,9 +156,8 @@ namespace Domain\Services\EventService
          * @param SearchEventsRequest $searchEventsRequest
          * @return array
          * @throws DatabaseErrorException
-         * @throws UserDeletedException
          * @throws UserNotExistException
-         * @throws UserSignaledException
+         * @throws ValidationException
          */
         public function searchEventsForUser(int $userId, SearchEventsRequest $searchEventsRequest): array
         {
@@ -173,7 +171,7 @@ namespace Domain\Services\EventService
                 $searchEventsRequest->fromDate
             );
 
-            $location = new Location($latitude, $longitude);
+            $location = new Location($user->location->postalCode, $user->location->city, $latitude, $longitude);
             $events = $events->where(function (Event $event) use ($kilometersRadius, $searchEventsRequest, $location)
             {
                 $eventLocation = $event->getLocation();

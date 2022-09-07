@@ -12,35 +12,24 @@ namespace App\Controllers\EventExtensions\Extensions
     use Domain\Entities\Alert;
     use Domain\Entities\Event;
     use Domain\Entities\User;
-    use Domain\Exceptions\EventNotExistException;
     use Domain\Exceptions\UserDeletedException;
     use Domain\Exceptions\UserNotExistException;
     use Domain\Exceptions\UserSignaledException;
     use Domain\Interfaces\IEmailSender;
     use Exception;
-    use Infrastructure\SendGrid\SendGridAdapter;
-    use System\Logging\ILogger;
 
     class TabParticipants extends EventExtension implements IEventExtension
     {
         private const TAB_EXTENSION_NAME = "Participants";
         private const ORDER = 2;
 
-        private IEmailSender $emailSender;
 
-        /**
-         * TabParticipants constructor.
-         * @param Event $event event
-         * @throws EventNotExistException
-         */
         public function __construct(
+            private readonly IEmailSender $emailSender,
             private readonly AuthenticationContext $authenticationGateway,
-            private Event $event,
-            private readonly ILogger $logger
+            private readonly Event $event,
         ) {
             parent::__construct('participants');
-            $this->emailSender = new SendGridAdapter(CONF['SendGrid']['ApiKey'], $this->logger);
-            $this->event = new Event($event->getID());
         }
 
         /**

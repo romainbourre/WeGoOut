@@ -369,7 +369,7 @@ var CtrlCreateLambdaUser = {
     check_email: function (display) {
         if (display === undefined) display = true;
         var email = ViewCreateLambdaUser.get_email();
-        var reg = new RegExp('^[a-z0-9]+([_|\.|-]{1}[a-z0-9]+)*@[a-z0-9]+([_|\.|-]{1}[a-z0-9]+)*[\.]{1}[a-z]{2,7}$', 'i');
+        var reg = new RegExp('^\\w+([\+\.-]?\\w+)*@\\w+([\.-]?\\w+)*(\\.\\w{2,3})+$', 'i');
         if (!reg.test(email)) {
             if (display) {
                 ViewCreateLambdaUser.set_email_feedback('Adresse e-mail invalide');

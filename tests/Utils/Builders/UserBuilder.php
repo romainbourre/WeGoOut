@@ -24,13 +24,14 @@ class UserBuilder
     private function __construct()
     {
         $this->birthDate = new FrenchDate(time());
-        $this->location = new Location(0, 0);
+        $this->location = new Location('75001', 'Paris', 0, 0);
         $this->createdAt = new FrenchDate(time());
     }
 
-    public static function given(): UserBuilder
+    public function withEmail(string $email): UserBuilder
     {
-        return new self();
+        $this->email = $email;
+        return $this;
     }
 
     public function create(): User
@@ -49,5 +50,10 @@ class UserBuilder
             createdAt: $this->createdAt,
             deletedAt: $this->deletedAt
         );
+    }
+
+    public static function given(): UserBuilder
+    {
+        return new self();
     }
 }
