@@ -7,22 +7,17 @@ namespace App\Controllers
     use App\Authentication\AuthenticationContext;
     use App\Exceptions\NotConnectedUserException;
     use Domain\Entities\Alert;
-    use Domain\Exceptions\BadAccountValidationTokenException;
+    use Domain\Exceptions\IncorrectValidationTokenException;
     use Domain\Exceptions\UserAlreadyValidatedException;
     use Domain\Services\AccountService\IAccountService;
-    use Domain\Services\AccountService\Requests\ValidateAccountRequest;
+    use Domain\UseCases\ValidateUserAccount\ValidateUserAccountRequest;
+    use Domain\UseCases\ValidateUserAccount\ValidateUserAccountUseCase;
     use Exception;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use System\Logging\ILogger;
     use System\Routing\Responses\RedirectedResponse;
 
-    /**
-     * Class Validation
-     * Mange validation of user account
-     * @package App\Controllers
-     * @author Romain Bourré
-     */
     class ValidationController extends AppController
     {
 
@@ -36,17 +31,16 @@ namespace App\Controllers
 
         /**
          * @throws NotConnectedUserException
+         * @throws Exception
          */
-        public function getView(Request $request): Response
+        public function index(Request $request, ValidateUserAccountUseCase $useCase): Response
         {
-            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            $params = $request->getQueryParams();
-
-            $validationToken = $params['token'] ?? null;
+            $validationToken = $this->extractValueFromQuery($request, 'token');
             if (!is_null($validationToken)) {
-                return $this->validAccount($validationToken);
+                return $this->validateAccountOfUser($validationToken, $useCase);
             }
 
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             $this->addCssStyle('css-validation.css');
             $this->addJsScript('js-validation.js');
 
@@ -59,6 +53,31 @@ namespace App\Controllers
             $view = self::render('templates.template', compact('navUserDropDown', 'content', 'connectedUser'));
 
             return $this->ok($view);
+        }
+
+        private function validateAccountOfUser(string $validationToken, ValidateUserAccountUseCase $useCase): Response
+        {
+            try {
+                $validateAccountRequest = new ValidateUserAccountRequest($validationToken);
+                $useCase->handle($validateAccountRequest);
+                $this->logger->logInfo("user is now validated");
+                return RedirectedResponse::to('/');
+            } catch (IncorrectValidationTokenException $e) {
+                $this->logger->logWarning($e->getMessage());
+                Alert::addAlert(
+                    "Le code de validation est incorrect. Veuillez cliquez sur le lien contenu dans le dernier e-mail de validation.",
+                    2
+                );
+                return RedirectedResponse::to('/');
+            } catch (UserAlreadyValidatedException $e) {
+                $this->logger->logWarning($e->getMessage());
+                Alert::addAlert("Vous avez déjà un compte validé.", 2);
+                return RedirectedResponse::to('/');
+            } catch (Exception $e) {
+                $this->logger->logCritical($e->getMessage());
+                Alert::addAlert("la validation n'a pas pu s'executer correctement. Rééssayez plus tard.", 3);
+                return RedirectedResponse::to('/');
+            }
         }
 
         /**
@@ -87,41 +106,5 @@ namespace App\Controllers
             }
         }
 
-        /**
-         * Validate user account from token
-         */
-        public function validAccount(string $validationToken): Response
-        {
-            try {
-                $user = $this->authenticationGateway->getConnectedUser();
-
-                if (is_null($user)) {
-                    return $this->unauthorized()->withRedirectTo('/validation');
-                }
-
-                $userId = $user->getID();
-                $validateAccountRequest = new ValidateAccountRequest($validationToken);
-                $this->accountService->validateAccount($userId, $validateAccountRequest);
-
-                $this->logger->logInfo("user with id $userId is now validated");
-
-                return RedirectedResponse::to('/');
-            } catch (BadAccountValidationTokenException $e) {
-                $this->logger->logWarning($e->getMessage());
-                Alert::addAlert(
-                    "Le code de validation est incorrect. Veuillez cliquez sur le lien contenu dans le dernier e-mail de validation.",
-                    2
-                );
-                return $this->badRequest()->withRedirectTo('/');
-            } catch (UserAlreadyValidatedException $e) {
-                $this->logger->logWarning($e->getMessage());
-                Alert::addAlert("Vous avez déjà un compte validé.", 2);
-                return $this->unauthorized()->withRedirectTo('/');
-            } catch (Exception $e) {
-                $this->logger->logCritical($e->getMessage());
-                Alert::addAlert("la validation n'a pas pu s'executer correctement. Rééssayez plus tard.", 3);
-                return $this->internalServerError()->withRedirectTo('/');
-            }
-        }
     }
 }

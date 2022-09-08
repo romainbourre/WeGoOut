@@ -42,6 +42,7 @@ namespace App\Routing
     use Domain\Services\EventService\EventService;
     use Domain\Services\EventService\IEventService;
     use Domain\UseCases\SignUp\SignUpUseCase;
+    use Domain\UseCases\ValidateUserAccount\ValidateUserAccountUseCase;
     use Infrastructure\DateTimeProvider\DateTimeProvider;
     use Infrastructure\Md5PasswordEncoder\Md5PasswordEncoder;
     use Infrastructure\MySqlDatabase\Repositories\EventRepository;
@@ -299,9 +300,11 @@ namespace App\Routing
 
                 $group->get('validation', function (Request $request)
                 {
-                    return (new ValidationController(
+                    $useCase = new ValidateUserAccountUseCase($this->authenticationGateway, $this->userRepository);
+                    $controller = new ValidationController(
                         $this->logger, $this->accountService, $this->authenticationGateway
-                    ))->getView($request);
+                    );
+                    return $controller->index($request, $useCase);
                 })->add(new AccountNotValidatedGuardMiddleware($this->authenticationGateway));
 
                 $group->get('validation/new-token', function ()

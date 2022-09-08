@@ -6,15 +6,11 @@ namespace Domain\Services\AccountService
 
 
     use Domain\Entities\User;
-    use Domain\Exceptions\BadAccountValidationTokenException;
     use Domain\Exceptions\BadArgumentException;
-    use Domain\Exceptions\ResourceNotFound;
-    use Domain\Exceptions\UserAlreadyValidatedException;
     use Domain\Interfaces\IEmailSender;
     use Domain\Interfaces\ITemplateRenderer;
     use Domain\Interfaces\IUserRepository;
     use Domain\Services\AccountService\Requests\ResetPasswordRequest;
-    use Domain\Services\AccountService\Requests\ValidateAccountRequest;
     use System\Librairies\Security;
 
     class AccountService implements IAccountService
@@ -45,21 +41,6 @@ namespace Domain\Services\AccountService
             $this->userRepository = $userRepository;
             $this->emailSender = $emailSender;
             $this->emailTemplateRenderer = $emailTemplateRenderer;
-        }
-
-        /**
-         * @inheritDoc
-         */
-        public function isValidAccount(string $userId): bool
-        {
-            $user = User::load((int)$userId);
-
-            if (is_null($user))
-            {
-                throw new ResourceNotFound("user with id $userId not found.");
-            }
-
-            return $user->isValidate();
         }
 
         /**
@@ -112,26 +93,6 @@ namespace Domain\Services\AccountService
                                                                  ['name' => $userFirstname, 'website' => $companyWebsite, 'token' => $newValidationToken]);
 
             $this->emailSender->sendHtmlEmail($userEmail, $userFullName, $companyEmailContact, $applicationName, $subjectOfEmail, $emailContent);
-        }
-
-        /**
-         * @inheritDoc
-         */
-        public function validateAccount(int $userId, ValidateAccountRequest $validateAccountRequest): void
-        {
-            $userValidationToken = $this->userRepository->getValidationCode($userId);
-
-            if (is_null($userValidationToken))
-            {
-                throw new UserAlreadyValidatedException();
-            }
-
-            if ($validateAccountRequest->token != $userValidationToken)
-            {
-                throw new BadAccountValidationTokenException();
-            }
-
-            $this->userRepository->setAccountAsValid($userId);
         }
     }
 }
