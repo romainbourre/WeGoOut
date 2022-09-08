@@ -68,8 +68,8 @@ namespace App\Controllers
         public function login(Request $request): Response
         {
             try {
-                $email = $this->extractValueFromRequestOrThrow($request, 'login-user-email-field');
-                $password = $this->extractValueFromRequestOrThrow($request, 'login-user-password-field');
+                $email = $this->extractValueFromBodyOrThrow($request, 'login-user-email-field');
+                $password = $this->extractValueFromBodyOrThrow($request, 'login-user-password-field');
 
                 $loginRequest = new LoginRequest($email, $password);
                 $useCase = new LoginUseCase($this->userRepository, $this->authenticationGateway);

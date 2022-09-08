@@ -5,11 +5,15 @@ namespace Infrastructure\InMemory\Entities
 {
 
     use Domain\Entities\User as DomainUser;
+    use Domain\Exceptions\ValidationException;
 
     class User extends DomainUser
     {
         public readonly string $password;
 
+        /**
+         * @throws ValidationException
+         */
         public static function from(DomainUser $user, string $password): User
         {
             $user = new User(
@@ -30,6 +34,9 @@ namespace Infrastructure\InMemory\Entities
             return $user;
         }
 
+        /**
+         * @throws ValidationException
+         */
         public function toDomainUser(): DomainUser
         {
             return new DomainUser(

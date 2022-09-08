@@ -31,7 +31,7 @@ class LoginUseCaseTest extends TestCase
     {
         $user = UserBuilder::given()->create();
         $userPassword = "myPassword";
-        $this->userRepository->addWithPassword($user, md5($userPassword));
+        $this->userRepository->addUserWithPassword($user, md5($userPassword));
 
         $loginRequest = new LoginRequest($user->email, $userPassword);
         $loggedUser = $this->useCase->handle($loginRequest);
@@ -43,7 +43,7 @@ class LoginUseCaseTest extends TestCase
     {
         $user = UserBuilder::given()->create();
         $userPassword = "myPassword";
-        $this->userRepository->addWithPassword($user, md5($userPassword));
+        $this->userRepository->addUserWithPassword($user, md5($userPassword));
 
         $loginRequest = new LoginRequest($user->email, "badPassword");
         $this->expectException(UserNotExistException::class);
@@ -54,7 +54,7 @@ class LoginUseCaseTest extends TestCase
     {
         $user = UserBuilder::given()->create();
         $userPassword = "myPassword";
-        $this->userRepository->addWithPassword($user, md5($userPassword));
+        $this->userRepository->addUserWithPassword($user, md5($userPassword));
 
         $loginRequest = new LoginRequest("bad.email@provider.fr", $userPassword);
         $this->expectException(UserNotExistException::class);

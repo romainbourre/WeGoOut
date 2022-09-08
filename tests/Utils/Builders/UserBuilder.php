@@ -16,7 +16,7 @@ class UserBuilder
     public ?string      $description     = null;
     private FrenchDate  $birthDate;
     private Location    $location;
-    private string      $validationToken = '1';
+    private ?string     $validationToken = '1';
     private string      $genre           = 'M';
     private FrenchDate  $createdAt;
     private ?FrenchDate $deletedAt       = null;
@@ -31,6 +31,12 @@ class UserBuilder
     public function withEmail(string $email): UserBuilder
     {
         $this->email = $email;
+        return $this;
+    }
+
+    public function withValidationToken(?string $validationToken): UserBuilder
+    {
+        $this->validationToken = $validationToken;
         return $this;
     }
 

@@ -1,38 +1,22 @@
 <?php
 
 
-namespace Domain\Interfaces
+namespace Domain\Interfaces;
+
+
+use Domain\Entities\User;
+
+interface IUserRepository
 {
+    public function setPassword(string $email, string $pwd): bool;
 
+    public function setAccountAsValid(int $userId): void;
 
-    use Domain\Entities\User;
-    use Domain\Exceptions\DatabaseErrorException;
+    public function setValidationToken(int $userId, string $token): void;
 
-    interface IUserRepository
-    {
-        public function setPassword(string $email, string $pwd): bool;
-        public function getValidationCode(int $id);
+    public function getUserByEmailAndPassword(string $email, string $password);
 
-        /**
-         * Set user's account as valid account
-         * @param int $userId
-         * @throws DatabaseErrorException
-         */
-        public function setAccountAsValid(int $userId): void;
+    public function addUserWithPassword(User $user, string $password);
 
-        /**
-         * Set user's account validation token
-         * @param int $userId id of user
-         * @param string $token new validation token
-         * @return void
-         * @throws DatabaseErrorException
-         */
-        public function setValidationToken(int $userId, string $token): void;
-
-        public function getUserByEmailAndPassword(string $email, string $password);
-
-        public function addUserWithPassword(User $user, string $password);
-
-        public function isEmailExist(string $email): bool;
-    }
+    public function isEmailExist(string $email): bool;
 }

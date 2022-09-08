@@ -78,19 +78,19 @@ class SignUpController extends AppController
     private function extractSignUpRequest(Request $request): SignUpRequest
     {
         return new SignUpRequest(
-            firstname: $this->extractValueFromRequestOrThrow($request, 'registration-user-firstName-field'),
-            lastname: $this->extractValueFromRequestOrThrow($request, 'registration-user-lastName-field'),
-            email: $this->extractValueFromRequestOrThrow($request, 'registration-user-email-field'),
-            birthDate: $this->extractValueFromRequestOrThrow($request, 'registration-user-birthDate-field'),
-            label: $this->extractValueFromRequestOrThrow($request, 'registration-user-location-field'),
-            postalCode: $this->extractValueFromRequestOrThrow($request, 'registration-user-postalCode-hidden'),
-            city: $this->extractValueFromRequestOrThrow($request, 'registration-user-city-hidden'),
-            country: $this->extractValueFromRequestOrThrow($request, 'registration-user-country-hidden'),
-            longitude: $this->extractValueFromRequestOrThrow($request, 'registration-user-longitude-hidden'),
-            latitude: $this->extractValueFromRequestOrThrow($request, 'registration-user-latitude-hidden'),
-            placeId: $this->extractValueFromRequestOrThrow($request, 'registration-user-placeId-hidden'),
-            password: $this->extractValueFromRequestOrThrow($request, 'registration-user-password-field'),
-            genre: $this->extractValueFromRequestOrThrow($request, 'registration-user-sex-select')
+            firstname: $this->extractValueFromBodyOrThrow($request, 'registration-user-firstName-field'),
+            lastname: $this->extractValueFromBodyOrThrow($request, 'registration-user-lastName-field'),
+            email: $this->extractValueFromBodyOrThrow($request, 'registration-user-email-field'),
+            birthDate: $this->extractValueFromBodyOrThrow($request, 'registration-user-birthDate-field'),
+            label: $this->extractValueFromBodyOrThrow($request, 'registration-user-location-field'),
+            postalCode: $this->extractValueFromBodyOrThrow($request, 'registration-user-postalCode-hidden'),
+            city: $this->extractValueFromBodyOrThrow($request, 'registration-user-city-hidden'),
+            country: $this->extractValueFromBodyOrThrow($request, 'registration-user-country-hidden'),
+            longitude: $this->extractValueFromBodyOrThrow($request, 'registration-user-longitude-hidden'),
+            latitude: $this->extractValueFromBodyOrThrow($request, 'registration-user-latitude-hidden'),
+            placeId: $this->extractValueFromBodyOrThrow($request, 'registration-user-placeId-hidden'),
+            password: $this->extractValueFromBodyOrThrow($request, 'registration-user-password-field'),
+            genre: $this->extractValueFromBodyOrThrow($request, 'registration-user-sex-select')
         );
     }
 }

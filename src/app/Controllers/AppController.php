@@ -28,19 +28,25 @@ namespace App\Controllers
             $this->initListeners();
         }
 
+        protected function extractValueFromQuery(Request $request, string $valueName): ?string
+        {
+            $params = $request->getQueryParams();
+            return $params[$valueName] ?? null;
+        }
+
         /**
          * @throws MandatoryParamMissedException
          */
-        protected function extractValueFromRequestOrThrow(Request $request, string $valueName): string
+        protected function extractValueFromBodyOrThrow(Request $request, string $valueName): string
         {
-            $value = $this->extractValueFromRequest($request, $valueName);
+            $value = $this->extractValueFromBody($request, $valueName);
             if ($value == null) {
                 throw new MandatoryParamMissedException($valueName);
             }
             return $value;
         }
 
-        protected function extractValueFromRequest(Request $request, string $valueName): ?string
+        protected function extractValueFromBody(Request $request, string $valueName): ?string
         {
             $params = $request->getParsedBody();
             if (!isset($params[$valueName])) {
