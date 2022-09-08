@@ -2,6 +2,9 @@
   "name": "outside/outside",
   "description": "",
   "version": "0.0.0",
+  "scripts": {
+    "test": "./vendor/bin/phpunit tests/"
+  },
   "autoload": {
     "psr-4": {
       "App\\": "src/app/",
