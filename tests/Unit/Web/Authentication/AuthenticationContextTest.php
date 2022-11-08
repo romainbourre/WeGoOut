@@ -5,6 +5,7 @@ namespace Tests\Unit\Web\Authentication;
 use Business\Ports\AuthenticationContextInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Utils\Builders\UserBuilder;
+use WebApp\Authentication\AuthenticationContext;
 use WebApp\Exceptions\NotConnectedUserException;
 
 final class AuthenticationContextTest extends TestCase
@@ -15,7 +16,7 @@ final class AuthenticationContextTest extends TestCase
     public function __construct()
     {
         parent::__construct();
-        $this->authenticationContext = new AuthenticationContextInterface();
+        $this->authenticationContext = new AuthenticationContext();
     }
 
     public function testThatSavedUserInContextReturned(): void
