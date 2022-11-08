@@ -2,10 +2,10 @@
 
 namespace Tests\Utils\Contexts;
 
-use Domain\Entities\User;
-use Domain\Interfaces\IAuthenticationContext;
+use Business\Entities\User;
+use Business\Ports\AuthenticationContextInterface;
 
-class DeterministAuthenticationContext implements IAuthenticationContext
+class DeterministAuthenticationContext implements AuthenticationContextInterface
 {
     private ?User $connectedUser = null;
 

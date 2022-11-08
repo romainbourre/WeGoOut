@@ -2,8 +2,8 @@
 
 namespace Tests\Utils\Providers;
 
+use Business\Ports\DateTimeProviderInterface;
 use DateTime;
-use Domain\Interfaces\DateTimeProviderInterface;
 
 class DeterministDateTimeProvider implements DateTimeProviderInterface
 {

@@ -7,9 +7,9 @@
   },
   "autoload": {
     "psr-4": {
-      "App\\": "src/app/",
-      "Infrastructure\\": "src/infrastructure/",
-      "Domain\\": "src/domain/",
+      "WebApp\\": "src/WebApp/",
+      "Adapters\\": "src/Adapters/",
+      "Business\\": "src/Business/",
       "System\\": "src/system/",
       "Tests\\": "tests"
     }

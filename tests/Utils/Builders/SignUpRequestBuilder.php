@@ -2,7 +2,7 @@
 
 namespace Tests\Utils\Builders;
 
-use Domain\UseCases\SignUp\SignUpRequest;
+use Business\UseCases\SignUp\SignUpRequest;
 
 class SignUpRequestBuilder
 {

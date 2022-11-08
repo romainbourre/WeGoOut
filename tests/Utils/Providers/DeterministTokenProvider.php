@@ -2,7 +2,7 @@
 
 namespace Tests\Utils\Providers;
 
-use Domain\Interfaces\TokenProviderInterface;
+use Business\Ports\TokenProviderInterface;
 
 class DeterministTokenProvider implements TokenProviderInterface
 {

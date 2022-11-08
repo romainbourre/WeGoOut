@@ -2,9 +2,9 @@
 
 namespace Tests\Utils\Builders;
 
-use Domain\Entities\User;
-use Domain\ValueObjects\FrenchDate;
-use Domain\ValueObjects\Location;
+use Business\Entities\User;
+use Business\ValueObjects\FrenchDate;
+use Business\ValueObjects\Location;
 
 class UserBuilder
 {

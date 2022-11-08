@@ -1,0 +1,96 @@
+<?php
+
+namespace WebApp\Controllers;
+
+use Business\Entities\Alert;
+use Business\Exceptions\UserAlreadyExistException;
+use Business\Exceptions\ValidationException;
+use Business\Ports\AuthenticationContextInterface;
+use Business\UseCases\SignUp\SignUpRequest;
+use Business\UseCases\SignUp\SignUpUseCase;
+use Exception;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
+use System\Logging\ILogger;
+use System\Routing\Responses\RedirectedResponse;
+use WebApp\Authentication\AuthenticationConstants;
+use WebApp\Exceptions\MandatoryParamMissedException;
+
+
+class SignUpController extends AppController
+{
+
+    public function __construct(
+        private readonly AuthenticationContextInterface $authenticationGateway,
+        private readonly ILogger $logger
+    ) {
+        parent::__construct();
+    }
+
+    public function getView(Request $request): Response
+    {
+        // LOAD CSS AND JS SCRIPT FILES
+        $this->addCssStyle('css-register.css');
+        $this->addJsScript('js-register.js');
+
+        $connectedUser = $this->authenticationGateway->getConnectedUser();
+        $titleWebPage = CONF['Application']['Name'] . " - Inscription";
+        $navItems = self::render('register.navitems');
+
+        $content = self::render('register.view-register');
+
+        $view = self::render('templates.template', compact('titleWebPage', 'navItems', 'content', 'connectedUser'));
+
+        return $this->ok($view);
+    }
+
+    /**
+     * @param Request $request
+     * @param SignUpUseCase $useCase
+     * @return Response
+     */
+    public function signUp(Request $request, SignUpUseCase $useCase): Response
+    {
+        try {
+            $signUpRequest = $this->extractSignUpRequest($request);
+            $user = $useCase->handle($signUpRequest);
+            $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user->id;
+            $this->logger->logInfo("user with email $user->email signed up.");
+            return RedirectedResponse::to('/');
+        } catch (MandatoryParamMissedException|ValidationException $e) {
+            $this->logger->logWarning($e->getMessage());
+            Alert::addAlert('Certaines données du formulaire semblent incorrect. Rééssayez.', 2);
+            return RedirectedResponse::to('/sign-up');
+        } catch (UserAlreadyExistException $e) {
+            $this->logger->logWarning($e->getMessage());
+            Alert::addAlert('Cette adresse e-mail est déjà utilisé pour un autre compte.', 2);
+            return RedirectedResponse::to('/sign-up');
+        } catch (Exception $e) {
+            $this->logger->logCritical($e->getMessage(), $e);
+            Alert::addAlert('Une erreur est survenue lors de l\'inscription. Veuillez rééssayer plus tard', 3);
+            return RedirectedResponse::to('/sign-up');
+        }
+    }
+
+    /**
+     * @throws MandatoryParamMissedException
+     */
+    private function extractSignUpRequest(Request $request): SignUpRequest
+    {
+        return new SignUpRequest(
+            firstname: $this->extractValueFromBodyOrThrow($request, 'registration-user-firstName-field'),
+            lastname: $this->extractValueFromBodyOrThrow($request, 'registration-user-lastName-field'),
+            email: $this->extractValueFromBodyOrThrow($request, 'registration-user-email-field'),
+            birthDate: $this->extractValueFromBodyOrThrow($request, 'registration-user-birthDate-field'),
+            label: $this->extractValueFromBodyOrThrow($request, 'registration-user-location-field'),
+            postalCode: $this->extractValueFromBodyOrThrow($request, 'registration-user-postalCode-hidden'),
+            city: $this->extractValueFromBodyOrThrow($request, 'registration-user-city-hidden'),
+            country: $this->extractValueFromBodyOrThrow($request, 'registration-user-country-hidden'),
+            longitude: $this->extractValueFromBodyOrThrow($request, 'registration-user-longitude-hidden'),
+            latitude: $this->extractValueFromBodyOrThrow($request, 'registration-user-latitude-hidden'),
+            placeId: $this->extractValueFromBodyOrThrow($request, 'registration-user-placeId-hidden'),
+            password: $this->extractValueFromBodyOrThrow($request, 'registration-user-password-field'),
+            genre: $this->extractValueFromBodyOrThrow($request, 'registration-user-sex-select')
+        );
+    }
+}

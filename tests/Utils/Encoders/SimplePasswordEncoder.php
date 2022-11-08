@@ -2,7 +2,7 @@
 
 namespace Tests\Utils\Encoders;
 
-use Domain\Interfaces\PasswordEncoderInterface;
+use Business\Ports\PasswordEncoderInterface;
 
 class SimplePasswordEncoder implements PasswordEncoderInterface
 {
