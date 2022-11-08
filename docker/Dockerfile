@@ -3,9 +3,11 @@ FROM ubuntu:18.04
 USER root
 
 # Add package sources
+RUN apt-get update && apt-get install -y gnupg2
+RUN echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu bionic main" >> /etc/apt/sources.list
+RUN echo "deb-src http://ppa.launchpad.net/ondrej/php/ubuntu bionic main" >> /etc/apt/sources.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
 RUN apt-get update
-RUN apt-get install -y software-properties-common
-RUN add-apt-repository ppa:ondrej/php
 
 # Install Php
 RUN apt-get install -y php8.1-fpm \
