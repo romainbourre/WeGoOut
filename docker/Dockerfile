@@ -2,11 +2,12 @@ FROM ubuntu:18.04
 
 USER root
 
+# Add package sources
 RUN apt-get update
 RUN apt-get install -y software-properties-common
-RUN apt-get update
 RUN add-apt-repository ppa:ondrej/php
-RUN apt-get update
+
+# Install Php
 RUN apt-get install -y php8.1-fpm \
 php8.1-curl \
     php8.1-intl \
@@ -18,22 +19,15 @@ php8.1-curl \
     php8.1-tidy \
     php8.1-xml \
     php8.1-zip
-RUN apt-get install -y nginx
-RUN apt-get install -y curl
-RUN apt-get install -y sqlite3
-RUN apt-get install -y php-sqlite3
-RUN apt-get install -y vim
 
-# SSL CERTIFICATES PACKAGE
-RUN apt-get update
-RUN apt-get install software-properties-common
-RUN add-apt-repository universe
-RUN add-apt-repository ppa:certbot/certbot
-RUN apt-get update
+# Install Nginx and Certbot
+RUN apt-get install -y nginx
 RUN apt-get install -y \
     certbot \
     python-certbot-nginx
 
+# Install Composer
+RUN apt-get install -y curl
 RUN curl -sS https://getcomposer.org/installer | php \
       && chmod +x composer.phar && mv composer.phar /usr/local/bin/composer
 
