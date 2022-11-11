@@ -355,7 +355,8 @@ namespace WebApp\Routing
                                     new CreateEventMiddleware(
                                         $this->logger,
                                         $this->eventService,
-                                        $this->authenticationGateway
+                                        $this->authenticationGateway,
+                                        $this->toasterService
                                     )
                                 )
                                 ->addMiddleware(new AuthenticatedUserGuardMiddleware($this->authenticationGateway))
