@@ -2,7 +2,6 @@
 
 namespace WebApp\Controllers;
 
-use Business\Entities\Alert;
 use Business\Exceptions\UserAlreadyExistException;
 use Business\Exceptions\ValidationException;
 use Business\Ports\AuthenticationContextInterface;
@@ -15,6 +14,7 @@ use System\Logging\ILogger;
 use System\Routing\Responses\RedirectedResponse;
 use WebApp\Authentication\AuthenticationConstants;
 use WebApp\Exceptions\MandatoryParamMissedException;
+use WebApp\Services\ToasterService\ToasterInterface;
 
 
 class SignUpController extends AppController
@@ -22,7 +22,8 @@ class SignUpController extends AppController
 
     public function __construct(
         private readonly AuthenticationContextInterface $authenticationGateway,
-        private readonly ILogger $logger
+        private readonly ILogger $logger,
+        private readonly ToasterInterface $toaster
     ) {
         parent::__construct();
     }
@@ -59,15 +60,15 @@ class SignUpController extends AppController
             return RedirectedResponse::to('/');
         } catch (MandatoryParamMissedException|ValidationException $e) {
             $this->logger->logWarning($e->getMessage());
-            Alert::addAlert('Certaines données du formulaire semblent incorrect. Rééssayez.', 2);
+            $this->toaster->warning('Certaines données du formulaire semblent incorrect. Rééssayez.');
             return RedirectedResponse::to('/sign-up');
         } catch (UserAlreadyExistException $e) {
             $this->logger->logWarning($e->getMessage());
-            Alert::addAlert('Cette adresse e-mail est déjà utilisé pour un autre compte.', 2);
+            $this->toaster->warning('Cette adresse e-mail est déjà utilisé pour un autre compte.');
             return RedirectedResponse::to('/sign-up');
         } catch (Exception $e) {
             $this->logger->logCritical($e->getMessage(), $e);
-            Alert::addAlert('Une erreur est survenue lors de l\'inscription. Veuillez rééssayer plus tard', 3);
+            $this->toaster->error('Une erreur est survenue lors de l\'inscription. Veuillez rééssayer plus tard');
             return RedirectedResponse::to('/sign-up');
         }
     }

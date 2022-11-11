@@ -3,7 +3,6 @@
 namespace WebApp\Controllers;
 
 
-use Business\Entities\Alert;
 use Business\Exceptions\UserNotExistException;
 use Business\Exceptions\ValidationException;
 use Business\Ports\AuthenticationContextInterface;
@@ -17,6 +16,7 @@ use System\Logging\ILogger;
 use System\Routing\Responses\RedirectedResponse;
 use WebApp\Authentication\AuthenticationConstants;
 use WebApp\Exceptions\MandatoryParamMissedException;
+use WebApp\Services\ToasterService\ToasterInterface;
 
 
 class LoginController extends AppController
@@ -25,7 +25,8 @@ class LoginController extends AppController
     public function __construct(
         private readonly ILogger $logger,
         private readonly UserRepositoryInterface $userRepository,
-        private readonly AuthenticationContextInterface $authenticationGateway
+        private readonly AuthenticationContextInterface $authenticationGateway,
+        private readonly ToasterInterface $toaster
     ) {
         parent::__construct();
     }
@@ -58,19 +59,21 @@ class LoginController extends AppController
             $_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY] = $user->id;
             $this->logger->logTrace("user with id {$user->getID()} is now connected.");
             return RedirectedResponse::to('/');
-        } catch (ValidationException) {
-            Alert::addAlert("l'email saisi est mal formaté");
+        } catch (ValidationException $e) {
+            $this->logger->logTrace($e->getMessage());
+            $this->toaster->warning('l\'email saisi est mal formaté');
             return RedirectedResponse::to('/login');
         } catch (MandatoryParamMissedException $e) {
             $this->logger->logTrace($e->getMessage());
+            $this->toaster->warning('des arguments sont manquant');
             return RedirectedResponse::to('/login');
         } catch (UserNotExistException $e) {
             $this->logger->logWarning($e->getMessage());
-            Alert::addAlert($e->getMessage(), 2);
+            $this->toaster->warning($e->getMessage());
             return RedirectedResponse::to('/login');
         } catch (Exception $e) {
             $this->logger->logCritical($e->getMessage());
-            Alert::addAlert('Une erreur est survenue. Rééssayez plus tard.', 3);
+            $this->toaster->error('Une erreur est survenue. Rééssayez plus tard.');
             return RedirectedResponse::to('/login');
         }
     }

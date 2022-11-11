@@ -4,7 +4,6 @@ namespace WebApp\Controllers\EventExtensions\Extensions
 {
 
 
-    use Business\Entities\Alert;
     use Business\Entities\Event;
     use Business\Entities\User;
     use Business\Exceptions\UserDeletedException;
@@ -17,6 +16,7 @@ namespace WebApp\Controllers\EventExtensions\Extensions
     use WebApp\Controllers\EventExtensions\IEventExtension;
     use WebApp\Exceptions\NotConnectedUserException;
     use WebApp\Librairies\Emitter;
+    use WebApp\Services\ToasterService\ToasterInterface;
 
     class TabParticipants extends EventExtension implements IEventExtension
     {
@@ -28,6 +28,7 @@ namespace WebApp\Controllers\EventExtensions\Extensions
             private readonly EmailSenderInterface $emailSender,
             private readonly AuthenticationContextInterface $authenticationGateway,
             private readonly Event $event,
+            private readonly ToasterInterface $toaster
         ) {
             parent::__construct('participants');
         }
@@ -95,7 +96,7 @@ namespace WebApp\Controllers\EventExtensions\Extensions
         }
 
         /**
-         * Send invitation to an user of e-mail address
+         * Send invitation to a user of e-mail address
          * @throws Exception
          */
         public function sendInvitation()
@@ -145,9 +146,8 @@ namespace WebApp\Controllers\EventExtensions\Extensions
                                 "Invitation à un évènement",
                                 self::render("email.email-invitation", compact('user', 'connectedUser', 'event', 'link'))
                             )) {
-                                Alert::addAlert(
-                                    'L\'envoi de l\'email d\'invitation a échoué. Veuillez rééssayer plus tard',
-                                    3
+                                $this->toaster->error(
+                                    'L\'envoi de l\'email d\'invitation a échoué. Veuillez rééssayer plus tard'
                                 );
                             }
                         }
