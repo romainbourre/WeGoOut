@@ -3,7 +3,6 @@
 namespace WebApp\Controllers;
 
 
-use Business\Entities\Alert;
 use Business\Exceptions\NotAuthorizedException;
 use Business\Exceptions\ValidationException;
 use Business\Ports\AuthenticationContextInterface;
@@ -15,13 +14,15 @@ use Slim\Psr7\Response;
 use System\Logging\ILogger;
 use System\Routing\Responses\RedirectedResponse;
 use WebApp\Exceptions\MandatoryParamMissedException;
+use WebApp\Services\ToasterService\ToasterInterface;
 
 
 class ForgotPasswordController extends AppController
 {
     public function __construct(
         private readonly AuthenticationContextInterface $authenticationGateway,
-        private readonly ILogger $logger
+        private readonly ILogger $logger,
+        private readonly ToasterInterface $toaster
     ) {
         parent::__construct();
     }
@@ -51,19 +52,18 @@ class ForgotPasswordController extends AppController
             $emailOfUser = $this->extractValueFromBodyOrThrow($request, 'forgot-password-email-field');
             $resetPasswordRequest = new AskNewPasswordRequest($emailOfUser);
             $useCase->handle($resetPasswordRequest);
-            alert::addAlert('Un e-mail vous a été envoyé, consulter votre boîte de réception', 1);
+            $this->toaster->success('Un e-mail vous a été envoyé, consulter votre boîte de réception');
             return RedirectedResponse::to('/login');
         } catch (MandatoryParamMissedException) {
-            alert::addAlert('Il semble que des données soient manquantes, veuillez rééssayer', 2);
+            $this->toaster->warning('Il semble que des données soient manquantes, veuillez rééssayer');
             return $this->badRequest();
         } catch (ValidationException) {
-            alert::addAlert('Il semble que les informations fournis soient incorrects, veuillez rééssayer', 2);
+            $this->toaster->warning('Il semble que les informations fournis soient incorrects, veuillez rééssayer');
             return $this->badRequest();
         } catch (Exception $e) {
             $this->logger->logCritical($e->getMessage());
-            alert::addAlert(
-                'Un problème a été rencontré lors du changement de mot de passe. Veuillez rééssayer plus tard',
-                3
+            $this->toaster->error(
+                'Un problème a été rencontré lors du changement de mot de passe. Veuillez rééssayer plus tard'
             );
             return $this->internalServerError();
         }

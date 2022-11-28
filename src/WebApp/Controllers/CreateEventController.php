@@ -4,7 +4,6 @@ namespace WebApp\Controllers
 {
 
 
-    use Business\Entities\Alert;
     use Business\Exceptions\BadArgumentException;
     use Business\Exceptions\DatabaseErrorException;
     use Business\Exceptions\UserHadAlreadyEventsException;
@@ -17,6 +16,7 @@ namespace WebApp\Controllers
     use Slim\Psr7\Response;
     use System\Logging\ILogger;
     use WebApp\Librairies\AppSettings;
+    use WebApp\Services\ToasterService\ToasterInterface;
 
     class  CreateEventController extends AppController
     {
@@ -24,7 +24,8 @@ namespace WebApp\Controllers
         public function __construct(
             private readonly ILogger $logger,
             private readonly IEventService $eventService,
-            private readonly AuthenticationContextInterface $authenticationGateway
+            private readonly AuthenticationContextInterface $authenticationGateway,
+            private readonly ToasterInterface $toaster
         ) {
             parent::__construct();
         }
@@ -111,7 +112,7 @@ namespace WebApp\Controllers
                 return $this->ok();
             } catch (BadArgumentException|UserHadAlreadyEventsException $e) {
                 $this->logger->logWarning($e->getMessage());
-                Alert::addAlert("Impossible de créer l'évennement : {$e->getMessage()}", 3);
+                $this->toaster->warning("Impossible de créer l'évennement : {$e->getMessage()}");
                 echo "<script>document.getElementById('form_group_create').className += ' has-danger'</script>";
                 echo "<script>document.getElementById('create_feedback').innerHTML = 'Des champs semblent incorrects'</script>";
                 return $this->badRequest();
@@ -235,7 +236,7 @@ namespace WebApp\Controllers
                     );
                 }
             } else {
-                Alert::addAlert("Veuillez remplir tous les champs", 3);
+                $this->toaster->warning('Veuillez remplir tous les champs');
                 echo "<script>document.getElementById('form_group_create').className += ' has-danger'</script>";
                 echo "<script>document.getElementById('create_feedback').innerHTML = 'Veuillez remplir tous les champs'</script>";
             }

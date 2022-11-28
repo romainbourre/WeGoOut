@@ -4,7 +4,6 @@ namespace WebApp\Controllers
 {
 
 
-    use Business\Entities\Alert;
     use Business\Exceptions\IncorrectValidationTokenException;
     use Business\Exceptions\UserAlreadyValidatedException;
     use Business\Ports\AuthenticationContextInterface;
@@ -17,6 +16,7 @@ namespace WebApp\Controllers
     use System\Logging\ILogger;
     use System\Routing\Responses\RedirectedResponse;
     use WebApp\Exceptions\NotConnectedUserException;
+    use WebApp\Services\ToasterService\ToasterInterface;
 
     class ValidationController extends AppController
     {
@@ -24,7 +24,8 @@ namespace WebApp\Controllers
         public function __construct(
             private readonly ILogger $logger,
             private readonly IAccountService $accountService,
-            private readonly AuthenticationContextInterface $authenticationGateway
+            private readonly AuthenticationContextInterface $authenticationGateway,
+            private readonly ToasterInterface $toaster
         ) {
             parent::__construct();
         }
@@ -64,18 +65,17 @@ namespace WebApp\Controllers
                 return RedirectedResponse::to('/');
             } catch (IncorrectValidationTokenException $e) {
                 $this->logger->logWarning($e->getMessage());
-                Alert::addAlert(
-                    "Le code de validation est incorrect. Veuillez cliquez sur le lien contenu dans le dernier e-mail de validation.",
-                    2
+                $this->toaster->warning(
+                    'Le code de validation est incorrect. Veuillez cliquez sur le lien contenu dans le dernier e-mail de validation.'
                 );
                 return RedirectedResponse::to('/');
             } catch (UserAlreadyValidatedException $e) {
                 $this->logger->logWarning($e->getMessage());
-                Alert::addAlert("Vous avez déjà un compte validé.", 2);
+                $this->toaster->warning('Vous avez déjà un compte validé.');
                 return RedirectedResponse::to('/');
             } catch (Exception $e) {
                 $this->logger->logCritical($e->getMessage());
-                Alert::addAlert("la validation n'a pas pu s'executer correctement. Rééssayez plus tard.", 3);
+                $this->toaster->error('la validation n\'a pas pu s\'executer correctement. Rééssayez plus tard.');
                 return RedirectedResponse::to('/');
             }
         }
@@ -87,24 +87,21 @@ namespace WebApp\Controllers
         {
             try {
                 $user = $this->authenticationGateway->getConnectedUser();
-
                 if (is_null($user)) {
                     return $this->unauthorized()->withRedirectTo('/validation');
                 }
-
                 $userId = $user->getID();
                 $this->accountService->sendNewValidationToken($userId);
-
                 $this->logger->logInfo("new account validation token sent to user with id $userId");
-                Alert::addAlert("Nous vous avons envoyé un email pour valider votre compte.", 1);
-
+                $this->toaster->success('Nous vous avons envoyé un email pour valider votre compte.');
                 return $this->ok()->withRedirectTo('/');
             } catch (Exception $e) {
                 $this->logger->logCritical($e->getMessage());
-                Alert::addAlert("Nous n'avons pas pu générer un nouveau lien de validation. Rééssayez plus tard.", 3);
+                $this->toaster->error(
+                    'Nous n\'avons pas pu générer un nouveau lien de validation. Rééssayez plus tard.'
+                );
                 return $this->internalServerError()->withRedirectTo('/');
             }
         }
-
     }
 }

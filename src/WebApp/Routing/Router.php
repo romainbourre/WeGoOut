@@ -14,7 +14,6 @@ namespace WebApp\Routing
     use Adapters\TokenProvider\TokenProvider;
     use Adapters\TwigRenderer\TwigRendererAdapter;
     use Business\Entities\Event;
-    use Business\Ports\AuthenticationContextInterface;
     use Business\Ports\DateTimeProviderInterface;
     use Business\Ports\EmailSenderInterface;
     use Business\Ports\PasswordEncoderInterface;
@@ -66,19 +65,21 @@ namespace WebApp\Routing
     use WebApp\Middleware\NonAuthenticatedUserGuardMiddleware;
     use WebApp\Middleware\NotificationDisplayMiddleware;
     use WebApp\Middleware\SearchResultsDisplayMiddleware;
+    use WebApp\Services\ToasterService\ToasterService;
 
     class Router
     {
-        private ILogger                        $logger;
-        private IEventService                  $eventService;
-        private IAccountService                $accountService;
-        private UserRepository                 $userRepository;
-        private AuthenticationContextInterface $authenticationGateway;
-        private PasswordEncoderInterface       $passwordEncoder;
-        private DateTimeProviderInterface      $dateTimeProvider;
-        private TokenProviderInterface         $tokenProvider;
-        private EmailSenderInterface           $emailSender;
-        private PasswordGeneratorInterface     $passwordGenerator;
+        private ILogger                    $logger;
+        private IEventService              $eventService;
+        private IAccountService            $accountService;
+        private UserRepository             $userRepository;
+        private AuthenticationContext      $authenticationGateway;
+        private PasswordEncoderInterface   $passwordEncoder;
+        private DateTimeProviderInterface  $dateTimeProvider;
+        private TokenProviderInterface     $tokenProvider;
+        private EmailSenderInterface       $emailSender;
+        private PasswordGeneratorInterface $passwordGenerator;
+        private ToasterService             $toasterService;
 
         /**
          * @throws IncorrectConfigurationVariableException
@@ -100,6 +101,7 @@ namespace WebApp\Routing
          */
         private function configureService(IConfiguration $configuration): void
         {
+            $this->toasterService = new ToasterService();
             $databaseContext = new PDO(
                 $configuration->getRequired('Database:ConnectionString'),
                 $configuration->getRequired('Database:User'),
@@ -137,21 +139,21 @@ namespace WebApp\Routing
                 $group->get('login', function (Request $request)
                 {
                     return (new LoginController(
-                        $this->logger, $this->userRepository, $this->authenticationGateway
+                        $this->logger, $this->userRepository, $this->authenticationGateway, $this->toasterService
                     ))->getView($request);
                 });
 
                 $group->post('login', function (Request $request)
                 {
                     return (new LoginController(
-                        $this->logger, $this->userRepository, $this->authenticationGateway
+                        $this->logger, $this->userRepository, $this->authenticationGateway, $this->toasterService
                     ))->login($request);
                 });
 
                 $group->get('sign-up', function (Request $request)
                 {
                     return (new SignUpController(
-                        $this->authenticationGateway, $this->logger
+                        $this->authenticationGateway, $this->logger, $this->toasterService
                     ))->getView($request);
                 });
 
@@ -164,7 +166,11 @@ namespace WebApp\Routing
                         $this->emailSender,
                         $this->userRepository
                     );
-                    $controller = new SignUpController($this->authenticationGateway, $this->logger);
+                    $controller = new SignUpController(
+                        $this->authenticationGateway,
+                        $this->logger,
+                        $this->toasterService
+                    );
                     return $controller->signUp($request, $useCase);
                 });
 
@@ -172,7 +178,8 @@ namespace WebApp\Routing
                 {
                     return (new ForgotPasswordController(
                         $this->authenticationGateway,
-                        $this->logger
+                        $this->logger,
+                        $this->toasterService
                     ))->getView();
                 });
 
@@ -186,11 +193,12 @@ namespace WebApp\Routing
                     );
                     return (new ForgotPasswordController(
                         $this->authenticationGateway,
-                        $this->logger
+                        $this->logger,
+                        $this->toasterService
                     ))->resetPassword($request, $useCase);
                 });
             })->addMiddleware(new NonAuthenticatedUserGuardMiddleware($this->authenticationGateway))->addMiddleware(
-                new AlertDisplayMiddleware()
+                new AlertDisplayMiddleware($this->toasterService)
             )->addMiddleware(new AuthenticationMiddleware($this->authenticationGateway))->addMiddleware(
                 new ErrorManagerMiddleware($this->logger)
             );
@@ -202,7 +210,7 @@ namespace WebApp\Routing
                 $group->post('events', function (Request $request)
                 {
                     return (new CreateEventController(
-                        $this->logger, $this->eventService, $this->authenticationGateway
+                        $this->logger, $this->eventService, $this->authenticationGateway, $this->toasterService
                     ))->createEvent($request);
                 })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
 
@@ -213,7 +221,12 @@ namespace WebApp\Routing
                     if (!is_null($eventId)) {
                         $event = new Event($eventId);
                         $eventExtensions = [
-                            new TabParticipants($this->emailSender, $this->authenticationGateway, $event),
+                            new TabParticipants(
+                                $this->emailSender,
+                                $this->authenticationGateway,
+                                $event,
+                                $this->toasterService
+                            ),
                             new TabPublications($this->authenticationGateway, $event),
                             new TabToDoList($this->authenticationGateway, $event),
                             new TabReviews($this->authenticationGateway, $event),
@@ -247,7 +260,12 @@ namespace WebApp\Routing
 
                         $event = new Event($eventId);
                         $eventExtensions = [
-                            new TabParticipants($this->emailSender, $this->authenticationGateway, $event),
+                            new TabParticipants(
+                                $this->emailSender,
+                                $this->authenticationGateway,
+                                $event,
+                                $this->toasterService
+                            ),
                             new TabPublications($this->authenticationGateway, $event),
                             new TabToDoList($this->authenticationGateway, $event),
                             new TabReviews($this->authenticationGateway, $event),
@@ -285,7 +303,8 @@ namespace WebApp\Routing
                     $controller = new CreateEventController(
                         $this->logger,
                         $this->eventService,
-                        $this->authenticationGateway
+                        $this->authenticationGateway,
+                        $this->toasterService
                     );
                     return $controller->getCreateEventForm();
                 })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
@@ -311,7 +330,7 @@ namespace WebApp\Routing
                 {
                     $useCase = new ValidateUserAccountUseCase($this->authenticationGateway, $this->userRepository);
                     $controller = new ValidationController(
-                        $this->logger, $this->accountService, $this->authenticationGateway
+                        $this->logger, $this->accountService, $this->authenticationGateway, $this->toasterService
                     );
                     return $controller->index($request, $useCase);
                 })->add(new AccountNotValidatedGuardMiddleware($this->authenticationGateway));
@@ -319,7 +338,7 @@ namespace WebApp\Routing
                 $group->get('validation/new-token', function ()
                 {
                     return (new ValidationController(
-                        $this->logger, $this->accountService, $this->authenticationGateway
+                        $this->logger, $this->accountService, $this->authenticationGateway, $this->toasterService
                     ))->askNewValidationToken();
                 })->add(new AccountNotValidatedGuardMiddleware($this->authenticationGateway));
 
@@ -329,14 +348,15 @@ namespace WebApp\Routing
                     return RedirectedResponse::to('/');
                 });
             })
-                                ->addMiddleware(new AlertDisplayMiddleware())
+                                ->addMiddleware(new AlertDisplayMiddleware($this->toasterService))
                                 ->addMiddleware(new NotificationDisplayMiddleware($this->authenticationGateway))
                                 ->addMiddleware(new SearchResultsDisplayMiddleware($this->authenticationGateway))
                                 ->addMiddleware(
                                     new CreateEventMiddleware(
                                         $this->logger,
                                         $this->eventService,
-                                        $this->authenticationGateway
+                                        $this->authenticationGateway,
+                                        $this->toasterService
                                     )
                                 )
                                 ->addMiddleware(new AuthenticatedUserGuardMiddleware($this->authenticationGateway))
