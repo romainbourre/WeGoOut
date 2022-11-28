@@ -8,7 +8,7 @@ export function initAutocompletePlace(selector, resultSelector, onSelect) {
         const result = $(resultSelector);
 
         const searchPlace = (query) => {
-            if (!query) {
+            if (!query || query.length < 3) {
                 result.html('<li class="location-item collection-item">No result</li>')
                 return;
             }
