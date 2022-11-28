@@ -176,7 +176,6 @@ namespace Business\Services\EventService
             {
                 $eventLocation = $event->getLocation();
                 $distance = $location->getDistance($eventLocation);
-
                 return $distance <= $kilometersRadius;
             });
 

@@ -20,8 +20,6 @@ class GeometricCoordinates
         $destinationLongitudeRadian = deg2rad($coordinates->longitude);
         $originKilometersAltitude = $this->altitude / 1000;
         $destinationKilometersAltitude = $coordinates->altitude / 1000;
-
-        //calcul précis
         $dp = 2 * asin(
                 sqrt(
                     pow(sin(($originLatitudeRadian - $destinationLatitudeRadian) / 2), 2) + cos(
@@ -32,14 +30,7 @@ class GeometricCoordinates
                     )
                 )
             );
-
-        //sortie en km
         $d = $dp * $earthRayon;
-
-        //Pythagore a dit que :
-        $h = sqrt(pow($d, 2) + pow($destinationKilometersAltitude - $originKilometersAltitude, 2));
-
-        //On remet le résultat en kilomètre
-        return $h * 1000;
+        return sqrt(pow($d, 2) + pow($destinationKilometersAltitude - $originKilometersAltitude, 2));
     }
 }
