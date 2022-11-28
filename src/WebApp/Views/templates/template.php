@@ -107,8 +107,10 @@
 <script src="/assets/jquery/jquery-3.2.1.js"></script>
 <script src="/assets/elastic/jquery.elastic.source.js"></script>
 <script src="/assets/materialize/js/materialize.js"></script>
-<script type="module" src="//ajax/ctrl-a.js"></script>
+<script type="module" src="/app/ajax/ctrl-a.js"></script>
 <script type="module" src="/assets/js/js-global.js"></script>
+<script type="module" src="/assets/js/js-notifications.js"></script>
+
 <?php if (isset($js)) echo $js ?>
 
 </body>
