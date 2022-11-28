@@ -6,7 +6,7 @@ namespace Business\ValueObjects
 
     use Business\Exceptions\ValidationException;
 
-    class Location
+    class Location extends GeometricCoordinates
     {
 
         private string $label         = '';
@@ -22,9 +22,9 @@ namespace Business\ValueObjects
         public function __construct(
             public readonly string $postalCode,
             public readonly string $city,
-            public readonly float $latitude,
-            public readonly float $longitude,
-            public readonly float $altitude = 0
+            float $latitude,
+            float $longitude,
+            float $altitude = 0
         ) {
             if ($city == '') {
                 throw new ValidationException('incorrect city given');
@@ -37,6 +37,7 @@ namespace Business\ValueObjects
                     throw new ValidationException('incorrect postal code given');
                 }
             }
+            parent::__construct($latitude, $longitude, $altitude);
         }
 
         public function getLabel(): string
@@ -110,38 +111,6 @@ namespace Business\ValueObjects
         public function setCountry(string $country): void
         {
             $this->country = $country;
-        }
-
-        public function getDistance(Location $location): float
-        {
-            $earthRayon = 6371;
-            $originLatitudeRadian = deg2rad($this->latitude);
-            $destinationLatitudeRadian = deg2rad($location->latitude);
-            $originLongitudeRadian = deg2rad($this->longitude);
-            $destinationLongitudeRadian = deg2rad($location->longitude);
-            $originKilometersAltitude = $this->altitude / 1000;
-            $destinationKilometersAltitude = $location->altitude / 1000;
-
-            //calcul précis
-            $dp = 2 * asin(
-                    sqrt(
-                        pow(sin(($originLatitudeRadian - $destinationLatitudeRadian) / 2), 2) + cos(
-                            $originLatitudeRadian
-                        ) * cos($destinationLatitudeRadian) * pow(
-                            sin(($originLongitudeRadian - $destinationLongitudeRadian) / 2),
-                            2
-                        )
-                    )
-                );
-
-            //sortie en km
-            $d = $dp * $earthRayon;
-
-            //Pythagore a dit que :
-            $h = sqrt(pow($d, 2) + pow($destinationKilometersAltitude - $originKilometersAltitude, 2));
-
-            //On remet le résultat en kilomètre
-            return $h * 1000;
         }
     }
 }

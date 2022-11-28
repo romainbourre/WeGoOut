@@ -8,7 +8,7 @@ namespace WebApp\Controllers
     use Business\Ports\AuthenticationContextInterface;
     use Business\Services\EventService\IEventService;
     use Business\Services\EventService\Requests\SearchEventsRequest;
-    use Business\ValueObjects\Location;
+    use Business\ValueObjects\GeometricCoordinates;
     use Exception;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -91,7 +91,8 @@ namespace WebApp\Controllers
                 $latitude = isset($params['lat']) && !empty($params['lat']) ? (float)$params['lat'] : null;
                 $longitude = isset($params['lng']) && !empty($params['lng']) ? (float)$params['lng'] : null;
 
-                $location = is_null($latitude) || is_null($longitude) ? $connectedUser->getLocation() : new Location(
+                $location = is_null($latitude) || is_null($longitude) ? $connectedUser->getLocation(
+                ) : new GeometricCoordinates(
                     $latitude,
                     $longitude
                 );

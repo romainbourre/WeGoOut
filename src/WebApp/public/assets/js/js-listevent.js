@@ -45,8 +45,8 @@ $('.datepicker').pickadate({
 initAutocompletePlace('#list_input_city', '#search-location-result', (selected, input, _) => {
     const props = selected['properties'];
     const geo = selected['geometry'];
-    const latitude = geo['coordinates'][0];
-    const longitude = geo['coordinates'][1];
+    const longitude = geo['coordinates'][0];
+    const latitude = geo['coordinates'][1];
 
     input.val(props.label);
     $('#list_input_lat').val(latitude);
@@ -55,7 +55,7 @@ initAutocompletePlace('#list_input_city', '#search-location-result', (selected, 
     filterList();
 
     const cityClearFilterButton = $('#filter_city_clear');
-    if(input.length > 0) {
+    if (input.length > 0) {
         cityClearFilterButton.css('display', 'block');
         cityClearFilterButton.on('click', () => {
             input.val('');

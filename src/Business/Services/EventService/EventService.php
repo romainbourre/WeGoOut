@@ -177,7 +177,7 @@ namespace Business\Services\EventService
                 $eventLocation = $event->getLocation();
                 $distance = $location->getDistance($eventLocation);
 
-                return $distance <= ($kilometersRadius * 1000);
+                return $distance <= $kilometersRadius;
             });
 
             $eventsByDate = [];
