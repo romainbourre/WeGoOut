@@ -50,7 +50,6 @@ namespace WebApp\Controllers
             try {
                 $eventCategories = $this->eventService->getCategories()->toArray();
                 $content = $this->render('create.view-create', compact('eventCategories'));
-
                 return $this->ok($content);
             } catch (Exception $exception) {
                 $this->logger->logCritical($exception->getMessage(), $exception);

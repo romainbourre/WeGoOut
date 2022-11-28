@@ -4,13 +4,13 @@ namespace System\Controllers
 {
 
 
-    use System\Routing\Responses\NotFoundResponse;
-    use System\Routing\Responses\UnauthorizedResponse;
     use Exception;
     use PhpLinq\PhpLinq;
     use System\Routing\Responses\BadRequestResponse;
     use System\Routing\Responses\InternalServerErrorResponse;
+    use System\Routing\Responses\NotFoundResponse;
     use System\Routing\Responses\OkResponse;
+    use System\Routing\Responses\UnauthorizedResponse;
 
     abstract class Controller implements IResponseController
     {
@@ -78,7 +78,7 @@ namespace System\Controllers
                 if (isset($js)) $js .= $this->getJsScript();
                 else $js = $this->getJsScript();
 
-                require(APP . "/Views/" . str_replace(".", "/", $view) . ".php");
+                require_once(APP . "/Views/" . str_replace(".", "/", $view) . ".php");
 
                 return ob_get_clean();
 

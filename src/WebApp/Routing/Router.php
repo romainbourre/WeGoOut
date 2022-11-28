@@ -58,6 +58,7 @@ namespace WebApp\Routing
     use WebApp\Librairies\Emitter;
     use WebApp\Middleware\AccountNotValidatedGuardMiddleware;
     use WebApp\Middleware\AccountValidatedGuardMiddleware;
+    use WebApp\Middleware\AccountValidatedGuardMiddlewareAsUnauthorized;
     use WebApp\Middleware\AlertDisplayMiddleware;
     use WebApp\Middleware\AuthenticatedUserGuardMiddleware;
     use WebApp\Middleware\CreateEventMiddleware;
@@ -307,7 +308,7 @@ namespace WebApp\Routing
                         $this->toasterService
                     );
                     return $controller->getCreateEventForm();
-                })->add(new AccountValidatedGuardMiddleware($this->authenticationGateway));
+                })->add(new AccountValidatedGuardMiddlewareAsUnauthorized($this->authenticationGateway));
 
                 $group->post('events/view', function (Request $request) use ($configuration)
                 {
