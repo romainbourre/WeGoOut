@@ -122,7 +122,11 @@ namespace WebApp\Librairies
                         $events = array();
 
                         while ($result = $request->fetch()) {
-                            $events[] = new Search($this->research, new Event($result['EVENT_ID']));
+                            $events[] = new Search(
+                                $this->authenticationGateway,
+                                $this->research,
+                                new Event($result['EVENT_ID'])
+                            );
                         }
 
                         return $events;
