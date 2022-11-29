@@ -136,15 +136,21 @@ namespace WebApp\Controllers\EventExtensions\Extensions
                         }
                     } catch (UserNotExistException|UserSignaledException|UserDeletedException $e) {
                         $email = $text;
-                        $link = "https://" . $_SERVER['HTTP_HOST'] . "/events/" . $event->getID();
+                        $applicationDomain = CONF['Application']['Domain'];
+                        $link = "$applicationDomain/events/{$event->getID()}";
+                        $applicationEmail = CONF['Application']['Email'];
+                        $applicationName = CONF['Application']['Name'];
                         if ($event->sendInvitation(null, $email)) {
                             if (!$this->emailSender->sendHtmlEmail(
                                 $email,
                                 null,
-                                CONF['Application']['Email'],
-                                CONF['Application']['Name'],
+                                $applicationEmail,
+                                $applicationName,
                                 "Invitation à un évènement",
-                                self::render("email.email-invitation", compact('user', 'connectedUser', 'event', 'link'))
+                                self::render(
+                                    "email.email-invitation",
+                                    compact('connectedUser', 'event', 'link', 'applicationName')
+                                )
                             )) {
                                 $this->toaster->error(
                                     'L\'envoi de l\'email d\'invitation a échoué. Veuillez rééssayer plus tard'

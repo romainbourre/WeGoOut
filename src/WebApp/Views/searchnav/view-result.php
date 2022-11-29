@@ -2,15 +2,20 @@
 
     <?php foreach ($results as $result): ?>
 
-        <?php $element = $result->getResult() ?>
+        <?php
+        $element = $result->getResult() ?>
 
-        <?php if(is_a($element, "Domain\Entities\User")): ?>
-            <li class="results-item"><a data-link="?page=profile&id=<?= $element->getID() ?>" data-id="<?= $element->getID() ?>"><?= $element->firstname . " " . $element->lastname ?></a></li>
-        <?php elseif(is_a($element, "App\Lib\Event")): ?>
-
-            <li class="results-item"><a data-link="?page=event&id=<?= $element->getID() ?>" data-id="<?= $element->getID() ?>"><?= $element->getTitle() ?></a></li>
-
-        <?php endif; ?>
+        <?php
+        if (is_a($element, "Business\Entities\User")): ?>
+            <li class="results-item"><a data-link="?page=profile&id=<?= $element->getID() ?>"
+                                        data-id="<?= $element->getID(
+                                        ) ?>"><?= $element->firstname . " " . $element->lastname ?></a></li>
+        <?php
+        elseif (is_a($element, "Business\Entities\Event")): ?>
+            <li class="results-item"><a data-link="?page=event&id=<?= $element->getID() ?>"
+                                        data-id="<?= $element->getID() ?>"><?= $element->getTitle() ?></a></li>
+        <?php
+        endif; ?>
 
     <?php endforeach; ?>
 

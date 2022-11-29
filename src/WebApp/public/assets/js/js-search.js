@@ -7,23 +7,23 @@ const CtrlSearch = {
     },
 
 
-    ajax_exec: function (action, target, type, options) {
-
-        if(type === undefined) type = 0;
-
+    ajax_exec: function (action, target, type, research) {
+        if (type === undefined) type = 0;
         const page = 'search';
-
-        const data = "a-request=" + page + "&a-action=" + action + options;
+        const url = `/app/ajax/switch.php?a-request=${page}&a-action=${action}`;
+        const request = {
+            research: research,
+        }
 
         $.ajax({
-            url: '/app/ajax/switch.php',
+            url: url,
             type: 'POST',
-            data: data,
+            data: request,
             dataType: 'html',
             success: function (code_html) {
                 let baliseStart = "";
                 let baliseEnd = "";
-                if($(target).length === 0) {
+                if ($(target).length === 0) {
                     baliseStart = "<ul id=\"results-autocomplete\" class=\"white dropdown-content\">";
                     baliseEnd = "</ul>";
                     target = "nav";
@@ -53,7 +53,7 @@ const CtrlSearch = {
     }
 
 };
-const ViewSearch = {
+export const ViewSearch = {
 
     classInputSearch: ".search-autocomplete",
     term: undefined,
@@ -66,7 +66,7 @@ const ViewSearch = {
 
         $(ViewSearch.classInputSearch).on('focus keyup', function () {
             ViewSearch.inputResearch = this;
-            CtrlSearch.ajax_exec($(this).attr('data-search'), ViewSearch.target, 0, "&research=" + this.value);
+            CtrlSearch.ajax_exec($(this).attr('data-search'), ViewSearch.target, 0, this.value);
             if ($(ViewSearch.target + ":focus").length > 0) ViewSearch.replace();
         });
 

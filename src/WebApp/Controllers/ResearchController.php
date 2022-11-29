@@ -4,6 +4,8 @@ namespace WebApp\Controllers
 {
 
     use Business\Ports\AuthenticationContextInterface;
+    use Exception;
+    use System\Logging\ILogger;
     use WebApp\Librairies\Search;
 
     /**
@@ -13,8 +15,10 @@ namespace WebApp\Controllers
      */
     class ResearchController extends AppController
     {
-        public function __construct(private readonly AuthenticationContextInterface $authenticationContext)
-        {
+        public function __construct(
+            private readonly AuthenticationContextInterface $authenticationContext,
+            private readonly ILogger $logger
+        ) {
             parent::__construct();
         }
 
@@ -36,8 +40,7 @@ namespace WebApp\Controllers
         private function all(string $research): string
         {
             $results = array();
-            if (!empty($research))
-            {
+            if (!empty($research)) {
                 $results = Search::found($this->authenticationContext, $research)->all();
             }
             return $this->getAutocompleteView($results);
@@ -51,8 +54,7 @@ namespace WebApp\Controllers
         private function user(string $research): string
         {
             $results = array();
-            if (!empty($research))
-            {
+            if (!empty($research)) {
                 $results = Search::found($this->authenticationContext, $research)->user();
             }
             return $this->getAutocompleteView($results);
@@ -62,12 +64,12 @@ namespace WebApp\Controllers
          * Recsearh events from term
          * @param string $research
          * @return string
+         * @throws Exception
          */
         private function event(string $research): string
         {
             $results = array();
-            if (!empty($research))
-            {
+            if (!empty($research)) {
                 $results = Search::found($this->authenticationContext, $research)->event();
             }
             return $this->getAutocompleteView($results);
@@ -77,6 +79,7 @@ namespace WebApp\Controllers
          * Get view of list of results
          * @param iterable $results
          * @return string
+         * @throws Exception
          */
         public function getAutocompleteView(iterable $results): string
         {
@@ -90,13 +93,9 @@ namespace WebApp\Controllers
          */
         public function ajaxRouter(string $action): ?string
         {
-
-            if (isset($_POST['research']))
-            {
-
-                switch ($action)
-                {
-
+            $this->logger->logTrace(isset($_POST['research']));
+            if (isset($_POST['research'])) {
+                switch ($action) {
                     case "all":
                         return $this->all($_POST['research']);
 
@@ -105,9 +104,7 @@ namespace WebApp\Controllers
 
                     case "event":
                         return $this->event($_POST['research']);
-
                 }
-
             }
 
             return null;

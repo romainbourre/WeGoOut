@@ -86,7 +86,7 @@ namespace WebApp\Librairies
                     $bdd = Database::getDB();
 
                     $request = $bdd->prepare(
-                        'SELECT DISTINCT USER_ID FROM USER LEFT JOIN META_USER_CLI USING(USER_ID) LEFT JOIN META_USER_PRO USING(USER_ID) WHERE lower(concat(CLI_FIRSTNAME, " ", CLI_LASTNAME)) LIKE lower(concat(:search,\'%\')) OR lower(concat(CLI_LASTNAME, " ", CLI_FIRSTNAME)) LIKE lower(concat(:search,\'%\')) OR lower(PRO_NAME) like lower(concat(:search,\'%\')) OR lower(USER_EMAIL) LIKE lower(:search)'
+                        'SELECT DISTINCT USER_ID FROM USER LEFT JOIN META_USER_CLI USING(USER_ID) LEFT JOIN META_USER_PRO USING(USER_ID) WHERE lower(concat(CLI_FIRSTNAME, \' \', CLI_LASTNAME)) LIKE lower(concat(:search,\'%\')) OR lower(concat(CLI_LASTNAME, \' \', CLI_FIRSTNAME)) LIKE lower(concat(:search,\'%\')) OR lower(PRO_NAME) like lower(concat(:search,\'%\')) OR lower(USER_EMAIL) LIKE lower(concat(:search,\'%\'))'
                     );
                     $request->bindValue(':search', $this->research);
 

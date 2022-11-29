@@ -81,7 +81,6 @@ class SwitchStartup implements IStartUp
             $action = $_POST['a-action'];
         }
 
-        $this->logger->logInfo(implode($_POST));
         switch($request) {
             case "event":
                 $eventId = $_GET['id'] ?? ($_POST['id'] ?? null);
@@ -112,7 +111,7 @@ class SwitchStartup implements IStartUp
                 break;
 
             case "search":
-                echo (new ResearchController($authenticationGateway))->ajaxRouter($action);
+                echo (new ResearchController($authenticationGateway, $this->logger))->ajaxRouter($action);
                 break;
 
         }

@@ -351,7 +351,9 @@ namespace WebApp\Routing
             })
                                 ->addMiddleware(new AlertDisplayMiddleware($this->toasterService))
                                 ->addMiddleware(new NotificationDisplayMiddleware($this->authenticationGateway))
-                                ->addMiddleware(new SearchResultsDisplayMiddleware($this->authenticationGateway))
+                                ->addMiddleware(
+                                    new SearchResultsDisplayMiddleware($this->authenticationGateway, $this->logger)
+                                )
                                 ->addMiddleware(
                                     new CreateEventMiddleware(
                                         $this->logger,

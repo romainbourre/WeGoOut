@@ -1,4 +1,4 @@
-import ViewSearch from './js-search.js';
+import {ViewSearch} from './js-search.js';
 
 const ctrlTabParticipant = {
 
@@ -18,8 +18,6 @@ const ctrlTabParticipant = {
 
         let correct = true;
         if(display) viewTabParticipant.set_feedback("");
-
-        console.log('prout');
 
         if(autocomplete.val().length > 0) {
 

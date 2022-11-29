@@ -1,22 +1,17 @@
 import {aj_request_update_numb_part} from '../../app/ajax/a-listevent.js'
 
 function sendInvitation() {
-
     const source = '#send-invitation';
-
     const page = 'event';
     const action = 'part.invite';
-
-    const url = window.location.href;
-    const id = url.substring(url.lastIndexOf('/') + 1)
-    const head = "a-request=" + page + "&a-action=" + action + "&id=" + id;
-
-    const data = head + "&" + $(source).serialize();
+    const currentUrl = window.location.href;
+    const eventId = currentUrl.substring(currentUrl.lastIndexOf('/') + 1)
+    const params = `a-request=${page}&a-action=${action}&id=${eventId}&` + $(source).serialize();
 
     $.ajax({
         url: '/app/ajax/switch.php',
         type: 'POST',
-        data: data,
+        data: params,
         dataType: 'html',
         success: function () {
             $(source)[0].reset();
@@ -116,19 +111,19 @@ function updateParticipantsFilter() {
         },
 
         complete: function () {
-            $('#part_filter_all').click(function() {
+            $('#part_filter_all').click(function () {
                 updateParticipantsList('all');
             });
-            $('#part_filter_valid').click(function() {
+            $('#part_filter_valid').click(function () {
                 updateParticipantsList('valid');
             });
-            $('#part_filter_inv').click(function() {
+            $('#part_filter_inv').click(function () {
                 updateParticipantsList('invited');
             });
-            $('#part_filter_wait').click(function() {
+            $('#part_filter_wait').click(function () {
                 updateParticipantsList('wait');
             });
-            $('#coll_part_filter .btn-flat').click(function() {
+            $('#coll_part_filter .btn-flat').click(function () {
                 $('#coll_part_filter .btn-flat').removeClass('on');
                 $(this).addClass('on');
             });
@@ -161,10 +156,10 @@ function updateParticipantsList(filter) {
         },
 
         complete: function () {
-            $('.part_set_valid').click(function() {
+            $('.part_set_valid').click(function () {
                 acceptParticipant($(this).attr('data-id'));
             });
-            $('.part-set-delete').click(function() {
+            $('.part-set-delete').click(function () {
                 deleteParticipant($(this).attr('data-id'));
             });
         }
@@ -172,35 +167,35 @@ function updateParticipantsList(filter) {
 
 }
 
-$('#part_filter_all').click(function() {
-   updateParticipantsList('all');
+$('#part_filter_all').click(function () {
+    updateParticipantsList('all');
 });
 
-$('#part_filter_valid').click(function() {
+$('#part_filter_valid').click(function () {
     updateParticipantsList('valid');
 });
 
-$('#part_filter_inv').click(function() {
+$('#part_filter_inv').click(function () {
     updateParticipantsList('invited');
 });
 
-$('#part_filter_wait').click(function() {
+$('#part_filter_wait').click(function () {
     updateParticipantsList('wait');
 });
 
-$('.part_set_valid').click(function() {
+$('.part_set_valid').click(function () {
     acceptParticipant($(this).attr('data-id'));
 });
 
-$('.part-set-delete').click(function() {
-   deleteParticipant($(this).attr('data-id'));
+$('.part-set-delete').click(function () {
+    deleteParticipant($(this).attr('data-id'));
 });
 
-$('#coll_part_filter .btn-flat').click(function() {
-   $('#coll_part_filter .btn-flat').removeClass('on');
-   $(this).addClass('on');
+$('#coll_part_filter .btn-flat').click(function () {
+    $('#coll_part_filter .btn-flat').removeClass('on');
+    $(this).addClass('on');
 });
 
-$('#event-participant-sendGuest-submit').on('click', function() {
+$('#event-participant-sendGuest-submit').on('click', function () {
     sendInvitation();
 });
