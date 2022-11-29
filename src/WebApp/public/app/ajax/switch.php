@@ -62,6 +62,7 @@ class SwitchStartup implements IStartUp
         $eventService = new EventService($authenticationGateway, $eventRepository, Emitter::getInstance());
         $emailTemplateRenderer = new TwigRendererAdapter(ROOT . '/Business/Templates/Emails');
         $emailSender = new SendGridAdapter($this->configuration, $this->logger, $emailTemplateRenderer);
+        $toasterService = new WebApp\Services\ToasterService\ToasterService();
         $connectedUser = $authenticationGateway->getConnectedUser();
 
         $request = null;
@@ -87,7 +88,7 @@ class SwitchStartup implements IStartUp
                 if(!is_null($eventId)) {
                     $event = new Event((int)$eventId);
                     $eventExtensions = [
-                        new TabParticipants($emailSender, $authenticationGateway, $event),
+                        new TabParticipants($emailSender, $authenticationGateway, $event, $toasterService),
                         new TabPublications($authenticationGateway, $event),
                         new TabToDoList($authenticationGateway, $event),
                         new TabReviews($authenticationGateway, $event),
