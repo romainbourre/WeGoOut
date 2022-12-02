@@ -74,8 +74,9 @@ namespace Business\ValueObjects
                 '7' => ['Juil.', 'Juillet'],
                 '8' => ['Août', 'Août'],
                 '9' => ['Sep.', 'Septembre'],
-                '10' => ['Nov.', 'Novembre'],
-                '11' => ['Déc.', 'Décembre'],
+                '10' => ['Oct.', 'Octobre'],
+                '11' => ['Nov.', 'Novembre'],
+                '12' => ['Déc.', 'Décembre'],
                 default => throw new IncorrectDateIndexException($numberOfMonth)
             };
             return $isShortMonthFormat ? $monthText[0] : $monthText[1];
