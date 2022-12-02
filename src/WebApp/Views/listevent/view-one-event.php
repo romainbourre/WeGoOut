@@ -102,13 +102,14 @@
                     <div class="item row">
                         <div class="col s12">
                             <i class="material-icons">location_on</i> à <?= $event->getCity() ?>
-                            (<?php if(($distance = $userLocation->getDistance($event->getLocation())) > 1000) {
-                                echo round($distance/1000, 0) . " Km";
+                            <?php
+                            $distance = $userLocation->getDistance($event->getLocation());
+                            if ($distance < 5) {
+                                echo floor($distance * 100) / 100 . " Km";
+                            } else {
+                                echo round($distance) . " km";
                             }
-                            else {
-                                echo round($distance, 0) . " m";
-                            }
-                            ?>)
+                            ?>
                         </div>
                     </div>
 
@@ -116,7 +117,7 @@
                         <div class="sheet-event-part col s12">
                             <?php
 
-                            if($event->getStatus() == 1) {
+                            if ($event->getStatus() == 1) {
                                 echo "<i class=\"material-icons\">public</i> public";
                             }
                             else {

@@ -7,7 +7,7 @@
 
         <?php
         if (is_a($element, "Business\Entities\User")): ?>
-            <li class="results-item"><a data-link="<?= "profile/{$element->getID()}" ?>"
+            <li class="results-item"><a data-link="<?= "/profile/{$element->getID()}" ?>"
                                         data-id="<?= $element->getID(
                                         ) ?>"><?= $element->firstname . " " . $element->lastname ?></a></li>
         <?php
