@@ -113,7 +113,7 @@ namespace WebApp\Controllers\EventExtensions\Extensions
                     list($textPublication, $eventId) = $cleaned_data;
                     if (Publication::saveNewPublication($connectedUser, $eventId, $textPublication)) {
                         $emitter = Emitter::getInstance();
-                        $emitter->emit('event.pub.add', new Event($this->event->getPlaceID()), $connectedUser);
+                        $emitter->emit('event.pub.add', new Event($this->event->getID()), $connectedUser);
                     }
                 }
             }
