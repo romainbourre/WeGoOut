@@ -91,16 +91,19 @@ namespace WebApp\Controllers
 
         /**
          * Load view of content profile of user
-         * @param User $user
+         * @param User $userThatLoadProfile
          * @return string
          * @throws Exception
          */
-        public function getViewContentProfile(User $user): string
+        public function getViewContentProfile(User $userThatLoadProfile): string
         {
-            $friendsList = $this->getViewFriendsList($user);
-            $friendsRequestList = $this->getViewFriendsRequestList($user);
-            $contentProfileEvents = $this->getViewContentProfileEvents($user);
-            return $this->render('profil.profile-content', compact('user', 'friendsList', 'friendsRequestList', 'contentProfileEvents'));
+            $friendsList = $this->getViewFriendsList($userThatLoadProfile);
+            $friendsRequestList = $this->getViewFriendsRequestList($userThatLoadProfile);
+            $contentProfileEvents = $this->getViewContentProfileEvents($userThatLoadProfile);
+            return $this->render(
+                'profil.profile-content',
+                compact('userThatLoadProfile', 'friendsList', 'friendsRequestList', 'contentProfileEvents')
+            );
         }
 
         /**
@@ -175,24 +178,24 @@ namespace WebApp\Controllers
 
         /**
          * Load view of event list of the user
-         * @param User $user
+         * @param User $userThatLoadProfile
          * @return null|string
          * @throws Exception
          */
-        public function getViewContentProfileEvents(User $user): ?string
+        public function getViewContentProfileEvents(User $userThatLoadProfile): ?string
         {
             $connectedUser = $this->authenticationGateway->getConnectedUser();
-            if ($connectedUser->equals($user) || $connectedUser->isFriend($user))
-            {
-                $participation = $user->getEventsWhichUserParticipate(1);
-                $organisation = $user->getEventsWhichUserOrganize($connectedUser, 1);
+            if ($connectedUser->equals($userThatLoadProfile) || $connectedUser->isFriend($userThatLoadProfile)) {
+                $participation = $userThatLoadProfile->getEventsWhichUserParticipate(1);
+                $organisation = $userThatLoadProfile->getEventsWhichUserOrganize($connectedUser, 1);
+            } else {
+                $participation = $userThatLoadProfile->getEventsWhichUserParticipate();
+                $organisation = $userThatLoadProfile->getEventsWhichUserOrganize($connectedUser);
             }
-            else
-            {
-                $participation = $user->getEventsWhichUserParticipate();
-                $organisation = $user->getEventsWhichUserOrganize($connectedUser);
-            }
-            return $this->render("profil.content-profile-events", compact('user', 'participation', 'organisation'));
+            return $this->render(
+                "profil.content-profile-events",
+                compact('userThatLoadProfile', 'participation', 'organisation')
+            );
         }
 
         /**

@@ -118,23 +118,37 @@ use Business\ValueObjects\FrenchDate;
                                         <i class="material-icons">schedule</i>
                                         <?php if($element->isOver()): ?>
                                             Terminé
-                                        <?php elseif($element->isStarted()): ?>
+                                        <?php
+                                        elseif ($element->isStarted()): ?>
                                             Commencé
-                                        <?php elseif(is_null($element->getDatetimeEnd())): ?>
+                                        <?php
+                                        elseif (is_null($element->getDatetimeEnd())): ?>
                                             à <?= date("H\hi", $element->getDatetimeBegin()) ?>
-                                        <?php else: ?>
-                                            de <?= date("H\hi", $element->getDatetimeBegin()) ?> <?php if ( date("d/m/Y", $element->getDatetimeEnd()) == date("d/m/Y", $element->getDatetimeBegin()) ): ?> à <?= date("H\hi", $element->getDatetimeEnd()) ?> <?php else: ?> au <?= date("d/m/Y", $element->getDatetimeEnd()) ?> à <?= date("H\hm", $element->getDatetimeEnd()) ?> <?php endif; ?>
-                                        <?php endif; ?>
+                                        <?php
+                                        else: ?>
+                                            de <?= date("H\hi", $element->getDatetimeBegin()) ?><?php
+                                            if (date("d/m/Y", $element->getDatetimeEnd()) == date(
+                                                    "d/m/Y",
+                                                    $element->getDatetimeBegin()
+                                                )): ?> à <?= date("H\hi", $element->getDatetimeEnd()) ?><?php
+                                            else: ?> au <?= date("d/m/Y", $element->getDatetimeEnd()) ?> à <?= date(
+                                                "H\hm",
+                                                $element->getDatetimeEnd()
+                                            ) ?><?php
+                                            endif; ?>
+                                        <?php
+                                        endif; ?>
                                     </small>
                                     <small>
                                         <i class="material-icons">location_on</i> à <?= $element->getCity() ?>
-                                        (<?php if(($distance = $location->getDistance($element->getLocation())) > 1000) {
-                                            echo round($distance/1000, 0) . " Km";
+                                        <?php
+                                        $distance = $location->getDistance($element->getLocation());
+                                        if ($distance < 5) {
+                                            echo floor($distance * 100) / 100 . " Km";
+                                        } else {
+                                            echo round($distance) . " km";
                                         }
-                                        else {
-                                            echo round($distance, 0) . " m";
-                                        }
-                                        ?>)
+                                        ?>
                                     </small>
                                 </div>
                             </div>
@@ -143,7 +157,7 @@ use Business\ValueObjects\FrenchDate;
                         <div class="col s12 xl4">
                             <?php
                             $price = $element->getPrice();
-                            if(!is_null($price)): ?>
+                            if (!is_null($price)): ?>
                                 <div class="row">
                                     <div class="card-event-price left-align col s12 xl12">
 

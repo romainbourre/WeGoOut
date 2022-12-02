@@ -346,7 +346,7 @@ namespace Business\Entities
                 $SQL = '';
             }
             $request = $bdd->prepare(
-                'SELECT distinct PARTICIPATE.event_id, event_datetime_begin FROM PARTICIPATE LEFT JOIN EVENT ON PARTICIPATE.event_id = EVENT.event_id LEFT JOIN GUEST  ON PARTICIPATE.user_id = GUEST.user_id AND PARTICIPATE.event_id = GUEST.event_id WHERE PARTICIPATE.user_id = :userId AND PART_DATETIME_ACCEPT is not null AND PART_DATETIME_DELETE is null AND ( event_circle = 1 OR ( event_circle = 2 AND event_guest_only = 1  AND  ( GUEST.GUEST_DATETIME_SEND is not null AND GUEST_DATETIME_DELETE is null ) ) ' . $SQL . ' ) AND event_datetime_end < sysdate() ORDER BY event_datetime_begin ASC'
+                'SELECT distinct PARTICIPATE.event_id, event_datetime_begin FROM PARTICIPATE LEFT JOIN EVENT ON PARTICIPATE.event_id = EVENT.event_id LEFT JOIN GUEST  ON PARTICIPATE.user_id = GUEST.user_id AND PARTICIPATE.event_id = GUEST.event_id WHERE PARTICIPATE.user_id = :userId AND PART_DATETIME_ACCEPT is not null AND PART_DATETIME_DELETE is null AND ( event_circle = 1 OR ( event_circle = 2 AND event_guest_only = 1  AND  ( GUEST.GUEST_DATETIME_SEND is not null AND GUEST_DATETIME_DELETE is null ) ) ' . $SQL . ' ) AND (event_datetime_end is null OR event_datetime_end < sysdate()) ORDER BY event_datetime_begin ASC'
             );
             $request->bindValue(':userId', $this->id);
 
@@ -397,7 +397,7 @@ namespace Business\Entities
                 $SQL1 = "";
             }
             $request = $bdd->prepare(
-                'SELECT distinct EVENT.event_id, event_datetime_begin FROM EVENT LEFT JOIN GUEST  ON EVENT.event_id = GUEST.event_id WHERE EVENT.user_id = :userId ' . $SQL1 . ' AND event_datetime_end < sysdate() ORDER BY event_datetime_begin ASC'
+                'SELECT distinct EVENT.event_id, event_datetime_begin FROM EVENT LEFT JOIN GUEST  ON EVENT.event_id = GUEST.event_id WHERE EVENT.user_id = :userId ' . $SQL1 . ' AND (event_datetime_end is null OR event_datetime_end < sysdate()) ORDER BY event_datetime_begin ASC'
             );
             $request->bindValue(':userId', $this->id);
 

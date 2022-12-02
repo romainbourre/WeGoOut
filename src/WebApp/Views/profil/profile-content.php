@@ -8,16 +8,15 @@ use Business\ValueObjects\FrenchDate;
 
 
         <div class="panel-top-card center-align col s2">
-            <p class="card-content"><?= $user->getNumberOfEventsWhichUserParticipate() ?></p>
+            <p class="card-content"><?= $userThatLoadProfile->getNumberOfEventsWhichUserParticipate() ?></p>
             <span class="card-title grey-text">
                     Participation
                 </span>
         </div>
 
 
-
         <div class="panel-top-card center-align col s2">
-            <p class="card-content"><?= $user->getNumberOfEventsWhichUserOrganize() ?></p>
+            <p class="card-content"><?= $userThatLoadProfile->getNumberOfEventsWhichUserOrganize() ?></p>
             <span class="card-title grey-text">
                     Organisation
                 </span>
@@ -31,7 +30,8 @@ use Business\ValueObjects\FrenchDate;
 
     <div class="col s12 l4">
 
-        <?php if(!empty($desc = $user->description)): ?>
+        <?php
+        if (!empty($desc = $userThatLoadProfile->description)): ?>
             <div class="row">
                 <div class="card light-blue">
                     <div class="card-content white-text">
@@ -55,7 +55,7 @@ use Business\ValueObjects\FrenchDate;
                             Sexe
                         </div>
                         <div class="col s5 grey-text text-darken-4 right-align">
-                            <?= $user->computeGenre() ?>
+                            <?= $userThatLoadProfile->computeGenre() ?>
                         </div>
                     </div>
                 </li>
@@ -66,7 +66,7 @@ use Business\ValueObjects\FrenchDate;
                             Ville
                         </div>
                         <div class="col s5 grey-text text-darken-4 right-align">
-                            <?= $user->getLocation()->getCity() ?>
+                            <?= $userThatLoadProfile->getLocation()->getCity() ?>
                         </div>
                     </div>
                 </li>
@@ -77,7 +77,7 @@ use Business\ValueObjects\FrenchDate;
                             Date de naissance
                         </div>
                         <div class="col s5 grey-text text-darken-4 right-align">
-                            <?= $user->getBirthDate()->getDate(FrenchDate::SHORT_FORMAT) ?>
+                            <?= $userThatLoadProfile->getBirthDate()->getDate(FrenchDate::SHORT_FORMAT) ?>
                         </div>
                     </div>
                 </li>
@@ -89,7 +89,7 @@ use Business\ValueObjects\FrenchDate;
                 <div class="card-content white-text">
                 <span class="card-title">
                     <i class="material-icons">group_add</i>
-                    <?= $user->getNumberOfFriends() ?>
+                    <?= $userThatLoadProfile->getNumberOfFriends() ?>
                 </span>
                     <p>
                         Amis
