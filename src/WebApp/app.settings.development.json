@@ -4,7 +4,7 @@
     "Email": "contact@stoodent.fr"
   },
   "Database": {
-    "ConnectionString": "mysql:host=127.0.0.1;dbname=EVENT_PROJECT;port=3307;charset=utf8",
+    "ConnectionString": "mysql:host=127.0.0.1;dbname=EVENT_PROJECT;port=3307;charset=utf8mb4",
     "User": "root",
     "Password": "root"
   },
