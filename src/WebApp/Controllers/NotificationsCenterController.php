@@ -34,10 +34,10 @@ namespace WebApp\Controllers
         private function getViewNotifications(): string
         {
 
-            $me = $this->authenticationGateway->getConnectedUser();
+            $connectedUser = $this->authenticationGateway->getConnectedUser();
 
             // LOAD NOTIFICATIONS CENTER
-            $notifications = Notifications::manager($me)->load(100);
+            $notifications = Notifications::manager($connectedUser)->load(100);
 
             $notificationsContent = "";
             $_SESSION['UNREAD_NOTIFICATIONS'] = array();
@@ -229,7 +229,9 @@ namespace WebApp\Controllers
                         case Notifications::CATEGORY_ENJOY_WELCOME:
                             $user = $notification->getRecipient();
                             $name = $user->firstname;
-                            $notification->setMessage("Bienvenue sur " . CONF['Application:Name'] . " $name. regardez les évènements près de vous et/ou créez en un ! Bonne découverte !");
+                            $notification->setMessage(
+                                "Bienvenue sur " . CONF['Application']['Name'] . " $name. regardez les évènements près de vous et/ou créez en un ! Bonne découverte !"
+                            );
                             return true;
 
                         /**
