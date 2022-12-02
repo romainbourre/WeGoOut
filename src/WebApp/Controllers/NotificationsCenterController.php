@@ -87,40 +87,56 @@ namespace WebApp\Controllers
                          * An user send a participant request to an event
                          */
                         case Notifications::CATEGORY_EVENT_REQUEST:
-                            $notification->setMessage($notification->getTargetUser()->firstname . " demande a participer à " . $notification->getTargetEvent()->getTitle());
-                            $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
+                            $notification->setMessage(
+                                $notification->getTargetUser(
+                                )->firstname . " demande a participer à " . $notification->getTargetEvent()->getTitle()
+                            );
+                            $notification->setAction("/events/{$notification->getTargetEvent()->getID()}");
                             return true;
 
                         /**
                          * An creator or organiser accept a participant request to an event
                          */
                         case Notifications::CATEGORY_EVENT_ACCEPT:
-                            $notification->setMessage($notification->getTargetUser()->firstname . " a accepté votre demande de participation à " . $notification->getTargetEvent()->getTitle());
-                            $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
+                            $notification->setMessage(
+                                $notification->getTargetUser(
+                                )->firstname . " a accepté votre demande de participation à " . $notification->getTargetEvent(
+                                )->getTitle()
+                            );
+                            $notification->setAction("/events/{$notification->getTargetEvent()->getID()}");
                             return true;
 
                         /**
                          * An user subscribe to an event
                          */
                         case Notifications::CATEGORY_EVENT_SUBSCRIBE:
-                            $notification->setMessage($notification->getTargetUser()->firstname . " participe à " . $notification->getTargetEvent()->getTitle());
-                            $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
+                            $notification->setMessage(
+                                $notification->getTargetUser(
+                                )->firstname . " participe à " . $notification->getTargetEvent()->getTitle()
+                            );
+                            $notification->setAction("/events/{$notification->getTargetEvent()->getID()}");
                             return true;
 
                         /**
                          * An user un-subscribe from an event
                          */
                         case Notifications::CATEGORY_EVENT_UNSUBSCRIBE:
-                            $notification->setMessage($notification->getTargetUser()->firstname . " ne participe plus à " . $notification->getTargetEvent()->getTitle());
-                            $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
+                            $notification->setMessage(
+                                $notification->getTargetUser(
+                                )->firstname . " ne participe plus à " . $notification->getTargetEvent()->getTitle()
+                            );
+                            $notification->setAction("/events/{$notification->getTargetEvent()->getID()}");
                             return true;
 
                         /**
                          * An user is invited
                          */
                         case Notifications::CATEGORY_EVENT_SEND_INVITATION:
-                            $notification->setMessage($notification->getTargetUser()->getName() . " vous invite à son évènement " . $notification->getTargetEvent()->getTitle());
-                            $notification->setAction("?page=event&id=" . $notification->getTargetEvent()->getID());
+                            $notification->setMessage(
+                                $notification->getTargetUser()->getName(
+                                ) . " vous invite à son évènement " . $notification->getTargetEvent()->getTitle()
+                            );
+                            $notification->setAction("/events/{$notification->getTargetEvent()->getID()}");
                             return true;
 
                         /**
@@ -144,16 +160,20 @@ namespace WebApp\Controllers
                          * An user send a friend request
                          */
                         case Notifications::CATEGORY_USER_REQUEST:
-                            $notification->setMessage($notification->getTargetUser()->firstname . " vous a envoyé une demande d'ami");
-                            $notification->setAction("?page=profile");
+                            $notification->setMessage(
+                                $notification->getTargetUser()->firstname . " vous a envoyé une demande d'ami"
+                            );
+                            $notification->setAction("/profile");
                             return true;
 
                         /**
                          * An user accept a friend request
                          */
                         case Notifications::CATEGORY_USER_ACCEPT:
-                            $notification->setMessage($notification->getTargetUser()->firstname . " a accepté votre demande d'ami");
-                            $notification->setAction("?page=profile&id=" . $notification->getTargetUser()->getID());
+                            $notification->setMessage(
+                                $notification->getTargetUser()->firstname . " a accepté votre demande d'ami"
+                            );
+                            $notification->setAction("/profile/{$notification->getTargetUser()->getID()}");
                             return true;
 
                         /**
@@ -178,8 +198,10 @@ namespace WebApp\Controllers
                          */
                         case Notifications::CATEGORY_PUBLICATION_PUBLICATION:
                             $event = $notification->getTargetEvent();
-                            $notification->setMessage($notification->getTargetUser()->firstname . " a publié dans " . $event->getTitle());
-                            $notification->setAction("?page=event&id=" . $event->getID());
+                            $notification->setMessage(
+                                $notification->getTargetUser()->firstname . " a publié dans " . $event->getTitle()
+                            );
+                            $notification->setAction("/events/{$event->getID()}");
                             return true;
 
                         default:
@@ -201,8 +223,11 @@ namespace WebApp\Controllers
                          */
                         case Notifications::CATEGORY_REVIEW_REVIEW:
                             $event = $notification->getTargetEvent();
-                            $notification->setMessage($notification->getTargetUser()->firstname . " a laissé un avis dans " . $event->getTitle());
-                            $notification->setAction("?page=event&id=" . $event->getID());
+                            $notification->setMessage(
+                                $notification->getTargetUser(
+                                )->firstname . " a laissé un avis dans " . $event->getTitle()
+                            );
+                            $notification->setAction("/events/{$event->getID()}");
                             return true;
 
                         /**
