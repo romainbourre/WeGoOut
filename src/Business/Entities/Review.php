@@ -4,7 +4,7 @@ namespace Business\Entities
 {
 
     use Business\ValueObjects\FrenchDate;
-    use System\Configuration\Librairies\Database;
+    use System\Librairies\Database;
 
 
     /**
