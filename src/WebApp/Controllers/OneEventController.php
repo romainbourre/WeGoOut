@@ -16,8 +16,9 @@ namespace WebApp\Controllers
     use Business\Services\EventService\IEventService;
     use Exception;
     use PhpLinq\Interfaces\ILinq;
-    use Slim\Psr7\Response;
     use System\Logging\ILogger;
+    use System\Routing\Responses\OkResponse;
+    use System\Routing\Responses\Response;
     use WebApp\Controllers\EventExtensions\IEventExtension;
 
     /**
@@ -138,32 +139,30 @@ namespace WebApp\Controllers
         }
 
         /**
-         * Generate view of registration and edit command
-         * @param Event $event
-         * @return string|null
          * @throws Exception
          */
-        private function getViewRegistrationCmd(Event $event): ?string
+        private function getViewRegistrationCmd(Event $event): string
         {
             $currentUser = $this->authenticationGateway->getConnectedUser();
+            $view = '';
             if (!$event->isStarted() && !$event->isOver()) {
                 if ($event->isCreator($currentUser) || $event->isOrganizer($currentUser)) {
-                    return $this->render('listevent.one-event.cmd-edit', compact('event'));
+                    $view = $this->render('listevent.one-event.cmd-edit', compact('event'));
                 } elseif ($event->isParticipantWait($currentUser)) {
-                    return $this->render('listevent.one-event.cmd-wait-enrolled');
+                    $view = $this->render('listevent.one-event.cmd-wait-enrolled');
                 } elseif (!$event->isParticipant($currentUser)) {
-                    return $this->render("listevent.one-event.cmd-not-enrolled");
+                    $view = $this->render("listevent.one-event.cmd-not-enrolled");
                 } elseif ($event->isParticipantValid($currentUser)) {
-                    return $this->render('listevent.one-event.cmd-accept-enrolled');
+                    $view = $this->render('listevent.one-event.cmd-accept-enrolled');
                 }
             } elseif ($event->isStarted() && !$event->isOver()) {
-                return $this->render('listevent.one-event.cmd-started');
+                $view = $this->render('listevent.one-event.cmd-started');
             } elseif ($event->isOver()) {
                 $averageRating = $this->getViewAverageRating($event);
-                return $this->render('listevent.one-event.cmd-over', compact('averageRating'));
+                $view = $this->render('listevent.one-event.cmd-over', compact('averageRating'));
             }
 
-            return null;
+            return $view;
         }
 
         /**
@@ -181,10 +180,10 @@ namespace WebApp\Controllers
             return null;
         }
 
+
         /**
-         * Generate view of event window
-         * @param Event $event
-         * @return string view of event window
+         * @throws DatabaseErrorException
+         * @throws Exception
          */
         private function getViewEventWindow(Event $event): string
         {
@@ -205,9 +204,6 @@ namespace WebApp\Controllers
         }
 
         /**
-         * Generate view of number of participants item for panel
-         * @param Event $event
-         * @return string view of panel participants
          * @throws Exception
          */
         private function getViewEventNumbPart(Event $event): string
@@ -239,24 +235,26 @@ namespace WebApp\Controllers
         }
 
         /**
-         * Generate view from ajax request
-         * @param $action string action to be taken
-         * @return null|string view requested
+         * @throws DatabaseErrorException
+         * @throws EventNotExistException
          * @throws Exception
          */
-        public function getAjaxEventView(string $action, string $eventId): ?string
+        public function computeActionResponseForEvent(string $action, string $eventId): Response
         {
             $event = new Event((int)$eventId);
             switch ($action) {
                 case "update.cmd":
-                    return $this->getViewRegistrationCmd($event);
+                    $view = $this->getViewRegistrationCmd($event);
+                    return new OkResponse($view);
                 case "update.window":
-                    return $this->getViewEventWindow($event);
+                    $view = $this->getViewEventWindow($event);
+                    return new OkResponse($view);
                 case "update.partitem":
-                    return $this->getViewEventNumbPart($event);
+                    $view = $this->getViewEventNumbPart($event);
+                    return new OkResponse($view);
             }
             $this->extensions->forEach(fn(IEventExtension $extension) => $extension->computeActionQuery($action));
-            return null;
+            return new OkResponse();
         }
     }
 }

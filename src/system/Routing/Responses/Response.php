@@ -40,5 +40,12 @@ namespace System\Routing\Responses
         {
             return $this->withHeader('Location', $route);
         }
+
+        public function __toString(): string
+        {
+            return $this->getBody()->getContents();
+        }
+
+
     }
 }

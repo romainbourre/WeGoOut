@@ -98,7 +98,7 @@ class SwitchStartup implements IStartUp
                         $eventService,
                         $authenticationGateway,
                         PhpLinq\PhpLinq::fromArray($eventExtensions)
-                    ))->getAjaxEventView($action, $eventId);
+                    ))->computeActionResponseForEvent($action, $eventId);
                 }
                 break;
             case "profile":
