@@ -22,6 +22,8 @@ namespace WebApp\Controllers\EventExtensions
             $this->autoloaderJS();
         }
 
+        abstract public function computeActionQuery(string $action): void;
+
         /**
          * Load the CSS file of the extension
          */
@@ -44,15 +46,6 @@ namespace WebApp\Controllers\EventExtensions
         public function autoloaderAjax(): void
         {
             $this->addJsScript("ajax-{$this->extensionId}.js");
-        }
-
-        /**
-         * Get by include the ajax switch of the extension
-         * @param string $action parameters for the ajax switch
-         */
-        public function getAjaxSwitch(string $action): void
-        {
-            include APP . "/Controllers/EventExtensions/Views/tab-{$this->extensionId}/ajax/switch.php";
         }
 
         /**

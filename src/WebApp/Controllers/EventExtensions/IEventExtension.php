@@ -12,7 +12,5 @@ interface IEventExtension
 
     public function getContent(): string;
 
-    public function getAjaxSwitch(string $action);
-
     public function isActivated(): bool;
 }

@@ -70,5 +70,8 @@ namespace WebApp\Controllers\EventExtensions\Extensions
                 ) || $event->isParticipantValid($connectedUser) || $event->isInvited($connectedUser));
         }
 
+        public function computeActionQuery(string $action): void
+        {
+        }
     }
 }

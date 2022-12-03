@@ -255,7 +255,7 @@ namespace WebApp\Controllers
                 case "update.partitem":
                     return $this->getViewEventNumbPart($event);
             }
-            $this->extensions->forEach(fn(IEventExtension $extension) => $extension->getAjaxSwitch($action));
+            $this->extensions->forEach(fn(IEventExtension $extension) => $extension->computeActionQuery($action));
             return null;
         }
     }
