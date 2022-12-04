@@ -12,6 +12,9 @@ use Business\Exceptions\UserSignaledException;
 use Business\Ports\AuthenticationContextInterface;
 use Business\Ports\EmailSenderInterface;
 use Exception;
+use System\Routing\Responses\NotFoundResponse;
+use System\Routing\Responses\OkResponse;
+use System\Routing\Responses\Response;
 use WebApp\Controllers\EventExtensions\EventExtension;
 use WebApp\Controllers\EventExtensions\IEventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
@@ -100,15 +103,13 @@ class TabParticipants extends EventExtension implements IEventExtension
      * Send invitation to a user of e-mail address
      * @throws Exception
      */
-    public function sendInvitation()
+    public function sendInvitation(): string
     {
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
         $event = $this->event;
-
         if (($event->isCreator($connectedUser) || $event->isOrganizer($connectedUser)) && !$event->isStarted(
             ) && !$event->isOver()) {
             $emitter = Emitter::getInstance();
-
             if (
                 isset($_POST['invit-user-id'])
                 && isset($_POST['invit-user-text'])
@@ -162,6 +163,7 @@ class TabParticipants extends EventExtension implements IEventExtension
                 }
             }
         }
+        return '';
     }
 
     /**
@@ -266,34 +268,23 @@ class TabParticipants extends EventExtension implements IEventExtension
      * @throws DatabaseErrorException
      * @throws Exception
      */
-    public function computeActionQuery(string $action): void
+    public function computeActionQuery(string $action): Response
     {
-        switch ($action) {
-            case "filter.update":
-                echo $this->getViewParticipantsFilter();
-                break;
-            case "filter.all":
-                echo $this->getViewParticipantsList(0);
-                break;
-            case "filter.valid":
-                echo $this->getViewParticipantsList(1);
-                break;
-            case "filter.wait":
-                echo $this->getViewParticipantsList(2);
-                break;
-            case "filter.invited":
-                echo $this->getViewParticipantsList(3);
-                break;
-            case "part.accept":
-                $this->setParticipantAsValid(User::load($_POST['userId']));
-                break;
-            case "part.delete":
-                $this->unsetParticipant($_POST['userId']);
-                break;
-            case "part.invite":
-                $this->sendInvitation();
-                break;
+        $view = match ($action) {
+            "filter.update" => $this->getViewParticipantsFilter(),
+            "filter.all" => $this->getViewParticipantsList(0),
+            "filter.valid" => $this->getViewParticipantsList(1),
+            "filter.wait" => $this->getViewParticipantsList(2),
+            "filter.invited" => $this->getViewParticipantsList(3),
+            "part.accept" => $this->setParticipantAsValid(User::load($_POST['userId'])),
+            "part.delete" => $this->unsetParticipant($_POST['userId']),
+            "part.invite" => $this->sendInvitation(),
+            default => null
+        };
+        if (is_null($view)) {
+            return new NotFoundResponse();
         }
+        return new OkResponse($view);
     }
 }
 

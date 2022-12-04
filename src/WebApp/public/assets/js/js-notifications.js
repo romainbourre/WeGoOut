@@ -4,31 +4,25 @@ export const ViewNotifications = {
     idCounter: '.notifications-counter',
     idDropDown: '#notifications-down',
 
-    construct: function () {
-
-        $(ViewNotifications.idButton).on('click', function () {
+    construct() {
+        $(ViewNotifications.idButton).on('click', () => {
             CtrlNotifications.ajax_exec('read');
             CtrlNotifications.ajax_exec('update.counter', ViewNotifications.idCounter);
         });
-
-        setInterval('CtrlNotifications.update_notification()', 60000);
-
+        setInterval(() => CtrlNotifications.update_notification(), 60000);
     }
 
 };
 
 export const CtrlNotifications = {
 
-    construct: function() {
-
+    construct() {
         ViewNotifications.construct();
-
         CtrlNotifications.update_notification();
-
     },
 
-    update_notification: function() {
-        if($(ViewNotifications.idDropDown).css('display') === 'none') {
+    update_notification() {
+        if ($(ViewNotifications.idDropDown).css('display') === 'none') {
             CtrlNotifications.ajax_exec('update.notifications', ViewNotifications.idDropDown);
             CtrlNotifications.ajax_exec('update.counter', ViewNotifications.idCounter);
         }

@@ -35,15 +35,16 @@
                     <div class="review-content row">
                         <div class="col s12">
                             <a href="?page=profile&id=<?= $review->getUser()->getID() ?>"><?= $review->getUser(
-                                )->getLastName() . " review.php" . $review->getUser()->getFirstName() ?></a>
+                                )->lastname . " " . $review->getUser()->firstname ?></a>
                             : <?= $review->getComment() ?>
                         </div>
                     </div>
-                <?php endif; ?>
+                <?php
+                endif; ?>
 
                 <div class="row">
                     <div class="grey-text col s12">
-                        <small><?= $review->getDatetimeLeave()->getFrenchSmartDate() ?></small>
+                        <small><?= $review->getDatetimeLeave()->getRelativeDateAndHours() ?></small>
                     </div>
                 </div>
 

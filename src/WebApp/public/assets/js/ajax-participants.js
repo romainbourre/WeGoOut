@@ -2,16 +2,15 @@ import {aj_request_update_numb_part} from '../../app/ajax/a-listevent.js'
 
 function sendInvitation() {
     const source = '#send-invitation';
-    const page = 'event';
-    const action = 'part.invite';
+    const action = 'participants.part.invite';
     const currentUrl = window.location.href;
     const eventId = currentUrl.substring(currentUrl.lastIndexOf('/') + 1)
-    const params = `a-request=${page}&a-action=${action}&id=${eventId}&` + $(source).serialize();
+    const request = `a-action=${action}&${$(source).serialize()}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: params,
+        data: request,
         dataType: 'html',
         success: function () {
             $(source)[0].reset();
@@ -30,18 +29,15 @@ function sendInvitation() {
 }
 
 function acceptParticipant(userId) {
-
-    const page = 'event';
-    const action = 'part.accept';
-
-    const url = window.location.href;
-    const id = url.substring(url.lastIndexOf('/') + 1)
-    const data = "a-request=" + page + "&a-action=" + action + "&id=" + id + "&userId=" + userId;
+    const action = 'participants.part.accept';
+    const currentUrl = window.location.href;
+    const eventId = currentUrl.substring(currentUrl.lastIndexOf('/') + 1)
+    const request = `a-action=${action}&userId=${userId}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
         success: function (result, status) {
         },
@@ -59,18 +55,15 @@ function acceptParticipant(userId) {
 }
 
 function deleteParticipant(userId) {
-
-    const page = 'event';
-    const action = 'part.delete';
-
-    const url = window.location.href;
-    const id = url.substring(url.lastIndexOf('/') + 1)
-    const data = "a-request=" + page + "&a-action=" + action + "&id=" + id + "&userId=" + userId;
+    const action = 'participants.part.delete';
+    const currentUrl = window.location.href;
+    const eventId = currentUrl.substring(currentUrl.lastIndexOf('/') + 1)
+    const request = `a-action=${action}&userId=${userId}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
         success: function (result, status) {
         },
@@ -88,20 +81,16 @@ function deleteParticipant(userId) {
 }
 
 function updateParticipantsFilter() {
-
     const target = '#coll_part_filter';
-
-    const page = 'event';
-    const action = 'filter.update';
-
-    const url = window.location.href;
-    const id = url.substring(url.lastIndexOf('/') + 1)
-    const data = "a-request=" + page + "&a-action=" + action + "&id=" + id;
+    const action = 'participants.filter.update';
+    const currentUrl = window.location.href;
+    const eventId = currentUrl.substring(currentUrl.lastIndexOf('/') + 1)
+    const request = `a-action=${action}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
         success: function (result) {
             $(target).html(result);
@@ -133,20 +122,16 @@ function updateParticipantsFilter() {
 }
 
 function updateParticipantsList(filter) {
-
     const target = '#coll_part_list';
-
-    const page = 'event';
-    const action = 'filter.' + filter;
-
-    const url = window.location.href;
-    const id = url.substring(url.lastIndexOf('/') + 1)
-    const data = "a-request=" + page + "&a-action=" + action + "&id=" + id;
+    const action = 'participants.filter.' + filter;
+    const currentUrl = window.location.href;
+    const eventId = currentUrl.substring(currentUrl.lastIndexOf('/') + 1)
+    const request = `a-action=${action}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
         success: function (result) {
             $(target).html(result);

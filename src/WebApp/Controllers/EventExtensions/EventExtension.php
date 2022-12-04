@@ -4,25 +4,23 @@ namespace WebApp\Controllers\EventExtensions
 {
 
 
+    use System\Routing\Responses\Response;
     use WebApp\Controllers\AppController;
 
     abstract class EventExtension extends AppController
     {
-        private string $extensionId;
-
         /**
          * EventExtension constructor.
          */
-        public function __construct(string $extensionId)
+        public function __construct(public readonly string $extensionId)
         {
             parent::__construct();
-            $this->extensionId = $extensionId;
             $this->autoloaderCSS();
             $this->autoloaderAjax();
             $this->autoloaderJS();
         }
 
-        abstract public function computeActionQuery(string $action): void;
+        abstract public function computeActionQuery(string $action): Response;
 
         /**
          * Load the CSS file of the extension

@@ -1,20 +1,20 @@
 import {getEventId} from "./one-event.js";
 
-function initListTask() {
-    const taskItemSelector = '.task-item > *:not("a, b")';
-    $(taskItemSelector).on('click', function() {
+(function () {
+    const taskItemSelector = '.task-item > *:not(".task-checkbox, .task-actor")';
+    $(taskItemSelector).on('click', function () {
         loadSlideOfTask($(this).parent().attr('data-task'));
     });
 
-    $('.task-item .task-actor .btn').on('click', function() {
+    $('.task-item .task-actor .btn').on('click', function () {
         const taskId = $(this).parent().parent('.task-item').attr('data-task');
         saveUserDesignated(taskId);
     });
 
-    $('#task-list-content > .task-item .task-checkbox').one('click', function() {
+    $('#task-list-content > .task-item .task-checkbox').one('click', function () {
         checkTask(this);
     });
-}
+})()
 
 function iniTask(button, full) {
 
@@ -79,238 +79,189 @@ function iniTask(button, full) {
 
 
 function loadSlideOfTask(taskId) {
-
     const target = '#tab-task-content';
-
     const eventId = getEventId();
-    const page = 'event';
-    const action = 'task.load';
-
-    const data = `a-request=${page}&a-action=${action}&id=${eventId}&task=${taskId}`;
-    let slide;
+    const action = 'todolist.task.load';
+    const request = `a-action=${action}&task=${taskId}`;
+    const slide = $('#task-slide-out');
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function (result) {
-            slide = $('#task-slide-out');
-            if(slide.html() === undefined) {
+        success(result) {
+            if (slide.html() === undefined) {
                 $(result).appendTo($(target));
-            }
-            else {
+            } else {
                 slide.html($(result).html());
             }
             iniTask(target, (slide.html() === undefined));
-
         },
 
-        error: function () {
+        error() {
         },
 
-        complete: function () {
-            $(document).ready(function() {
+        complete() {
+            $(document).ready(function () {
                 $('#task-form-edit select').material_select();
             });
-            if(slide.html() === undefined) $(target + ' #task-slide-out #task-close').sideNav('show');
-
-
+            if (slide.html() === undefined) $(target + ' #task-slide-out #task-close').sideNav('show');
         }
     });
 
 }
 
 function addTask() {
-
     const form = '#task-form-add';
-
-    const page = 'event';
-    const action = 'task.add';
-
+    const action = 'todolist.task.add';
     const eventId = document.getElementById('event_id').value;
-    const head = "a-request=" + page + "&a-action=" + action + "&id=" + eventId;
-
-    const data = head + "&" + $(form).serialize();
+    const request = `a-action=${action}&${$(form).serialize()}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function (result) {
+        success(result) {
             $(result).appendTo($('#tab-task-content'));
         },
 
-        error: function () {
+        error() {
         },
 
-        complete: function () {
+        complete() {
             updateTaskList();
             $(form)[0].reset();
         }
-
     });
-
 }
 
 
 
 function saveTask() {
-
     const form = '#task-form-edit';
     const taskId = $(form).attr('data-task');
-
-    const page = 'event';
-    const action = 'task.save';
-
+    const action = 'todolist.task.save';
     const eventId = document.getElementById('event_id').value;
-    const request = `a-request=${page}&a-action=${action}&id=${eventId}&task=${taskId}`;
-    const data = request + "&" + $(form).serialize();
+    const request = `a-action=${action}&task=${taskId}&${$(form).serialize()}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function (result) {
+        success(result) {
             $(result).appendTo($('#tab-task-content'));
         },
 
-        error: function () {
+        error() {
         },
 
-        complete: function () {
+        complete() {
             updateTaskList();
             loadSlideOfTask(taskId);
         }
-
     });
-
 }
 
 function saveUserDesignated(numTask) {
-
-    const form = '#task-form-edit';
     const eventId = getEventId();
-    const page = 'event';
-    const action = 'task.user.set';
-
-    const request = `a-request=${page}&a-action=${action}&id=${eventId}`;
-    const data = request + "&task=" + numTask;
+    const action = 'todolist.task.user.set';
+    const request = `a-action=${action}&task=${numTask}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function (result) {
+        success(result) {
             $(result).appendTo($('#tab-task-content'));
         },
 
-        error: function () {
+        error() {
         },
 
-        complete: function () {
+        complete() {
             updateTaskList();
         }
-
     });
-
 }
 
 function deleteTask() {
-
     const form = '#task-form-edit';
     const taskId = $(form).attr('data-task');
-
-    const page = 'event';
-    const action = 'task.delete';
-
-    const request = `"a-request=${page}&a-action=${action}&id=${taskId}`;
-    const data = request + "&task=" + taskId;
+    const eventId = getEventId();
+    const action = 'todolist.task.delete';
+    const request = `a-action=${action}&task=${taskId}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function (result) {
+        success(result) {
             $(result).appendTo($('#tab-task-content'));
         },
 
-        error: function () {
+        error() {
         },
 
-        complete: function () {
+        complete() {
             $('#tab-task-content #task-slide-out #task-close').sideNav('destroy');
             updateTaskList();
         }
-
     });
-
 }
 
 function checkTask(task) {
     const eventId = getEventId();
     const taskId = $(task).parent().attr('data-task');
-
-    const page = 'event';
-    const action = 'task.check';
-
-    const request = `a-request=${page}&a-action=${action}&id=${eventId}`;
-    const data = request + "&task=" + taskId;
+    const action = 'todolist.task.check';
+    const request = `a-action=${action}&task=${taskId}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function () {
-            //$(result).appendTo($('#tab-task-content'));
+        success(result) {
+            $(result).appendTo($('#tab-task-content'));
         },
 
-        error: function () {
+        error() {
         },
 
-        complete: function () {
+        complete() {
             updateTaskList();
         }
-
     });
-
 }
 
 function updateTaskList() {
-
     const target = '#task-list-content';
-
-    const page = 'event';
-    const action = 'task.list.update';
-
+    const action = 'todolist.task.list.update';
     const eventId = document.getElementById('event_id').value;
-    const data = "a-request=" + page + "&a-action=" + action + "&id=" + eventId;
+    const request = `a-action=${action}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function (result) {
+        success(result) {
             $(target).html(result);
         },
 
-        error: function () {
+        error() {
         },
 
-        complete: function () {
+        complete() {
             initListTask();
         }
     });
 
 }
-
-initListTask();
 
 $('#task-form-add #task-add-label').on('focus', function() {
     $('#task-add-label').on('keyup', function(e) {

@@ -1,67 +1,52 @@
-function Listener() {
-
-    $('#form_new_publication_send').click(function() {
-        let run = true;
-        if($('#form_new_publication_text').val() == "") {
-            run = false;
+(function () {
+    $('#form_new_publication_send').click(() => {
+        if ($('#form_new_publication_text').val() !== "") {
+            savePublication();
         }
-        if(run) savePublication();
     });
+    setInterval(() => updatePublications(false), 60000);
+})();
 
-    setInterval("updatePublications(false)", 60000);
-
-}
-Listener();
-
-function updatePublications(spin) {
-
-    if(spin === undefined) spin = true;
-
+function updatePublications(spin = true) {
     const target = '#list_publications';
+    const action = 'publications.publications';
+    const currentUrl = window.location.href;
+    const eventId = currentUrl.substring(currentUrl.lastIndexOf('/') + 1)
+    const request = `a-action=${action}`;
 
-    const page = 'event';
-    const action = 'publications';
-
-    const url = window.location.href;
-    const id = url.substring(url.lastIndexOf('/') + 1)
-    const data = "a-request=" + page + "&a-action=" + action + "&id=" + id;
-
-    if(spin) $(target).html('<div class="preloader-wrapper big active" style="margin-top:25px;"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div> </div><div class="gap-patch"> <div class="circle"></div></div><div class="circle-clipper right"> <div class="circle"></div></div></div></div>' + $(target).html());
+    if (spin) {
+        $(target).html('<div class="preloader-wrapper big active" style="margin-top:25px;"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div> </div><div class="gap-patch"> <div class="circle"></div></div><div class="circle-clipper right"> <div class="circle"></div></div></div></div>' + $(target).html());
+    }
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function (result) {
+        success(result) {
             $(target).html(result);
         },
 
-        error: function (result, status, error) {
+        error(result, status, error) {
         },
 
-        complete: function (result, status) {
-
+        complete(result, status) {
         }
     });
-
 }
 
 function savePublication() {
-
-    const page = 'event';
-    const action = 'new.publication';
-
-    const url = window.location.href;
-    const id = url.substring(url.lastIndexOf('/') + 1)
-    const data = "a-request=" + page + "&a-action=" + action + "&id=" + id + "&" + $('#form_new_publication').serialize();
+    const action = 'publications.new.publication';
+    const currentUrl = window.location.href;
+    const eventId = currentUrl.substring(currentUrl.lastIndexOf('/') + 1).replace('#!', '');
+    const request = `a-action=${action}&${$('#form_new_publication').serialize()}`;
 
     $.ajax({
-        url: '/app/ajax/switch.php',
+        url: `/app/ajax/switch.php/api/events/${eventId}`,
         type: 'POST',
-        data: data,
+        data: request,
         dataType: 'html',
-        success: function () {
+        success() {
             $('#form_new_publication')[0].reset();
             updatePublications();
         },
@@ -70,7 +55,6 @@ function savePublication() {
         },
 
         complete: function (result, status) {
-
         }
     });
 

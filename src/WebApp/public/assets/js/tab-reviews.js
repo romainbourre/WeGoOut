@@ -19,11 +19,10 @@ $('.star-note').hover(function() {
     var note = $(this).attr('data-note');
     var noteInput = $('#form_new_review_note').val();
     var tab = ['one', 'two', 'three', 'for', 'five'];
-    for(i = 0; i < tab.length; i++) {
-        if( (i+1) > note ) {
+    for (let i = 0; i < tab.length; i++) {
+        if ((i + 1) > note) {
             $('.star-note.' + tab[i]).html('star_border');
-        }
-        else {
+        } else {
             $('.star-note.' + tab[i]).html('star');
         }
     }
@@ -35,11 +34,10 @@ $('.star-note').hover(function() {
 
     $(this).mouseout(function() {
         if(noteInput > 0 && noteInput <= 5) {
-            for(i = 0; i < tab.length; i++) {
-                if( (i+1) > noteInput ) {
+            for (let i = 0; i < tab.length; i++) {
+                if ((i + 1) > noteInput) {
                     $('.star-note.' + tab[i]).html('star_border');
-                }
-                else {
+                } else {
                     $('.star-note.' + tab[i]).html('star');
                 }
             }

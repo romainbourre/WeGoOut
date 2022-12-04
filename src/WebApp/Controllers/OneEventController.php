@@ -17,8 +17,10 @@ namespace WebApp\Controllers
     use Exception;
     use PhpLinq\Interfaces\ILinq;
     use System\Logging\ILogger;
+    use System\Routing\Responses\NotFoundResponse;
     use System\Routing\Responses\OkResponse;
     use System\Routing\Responses\Response;
+    use WebApp\Controllers\EventExtensions\EventExtension;
     use WebApp\Controllers\EventExtensions\IEventExtension;
 
     /**
@@ -253,8 +255,22 @@ namespace WebApp\Controllers
                     $view = $this->getViewEventNumbPart($event);
                     return new OkResponse($view);
             }
-            $this->extensions->forEach(fn(IEventExtension $extension) => $extension->computeActionQuery($action));
-            return new OkResponse();
+            return $this->computeResponseFromEventExtensions($action);
+        }
+
+        private function computeResponseFromEventExtensions(string $action): Response
+        {
+            $actionElements = explode('.', $action);
+            $extractedExtensionId = $actionElements[0];
+            foreach ($this->extensions as $extension) {
+                /** @var $extension EventExtension */
+                if ($extractedExtensionId != $extension->extensionId) {
+                    continue;
+                }
+                $extensionAction = implode('.', array_slice($actionElements, 1));
+                return $extension->computeActionQuery($extensionAction);
+            }
+            return new NotFoundResponse();
         }
     }
 }

@@ -9,6 +9,9 @@ use Business\Exceptions\DatabaseErrorException;
 use Business\Exceptions\EventNotExistException;
 use Business\Ports\AuthenticationContextInterface;
 use Exception;
+use System\Routing\Responses\NotFoundResponse;
+use System\Routing\Responses\OkResponse;
+use System\Routing\Responses\Response;
 use WebApp\Controllers\EventExtensions\EventExtension;
 use WebApp\Controllers\EventExtensions\IEventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
@@ -96,27 +99,24 @@ class TabPublications extends EventExtension implements IEventExtension
     }
 
     /**
-     * Save a new publication for the event
-     * @param array $args
-     * @return bool
-     * @throws EventNotExistException
-     * @throws NotConnectedUserException
      * @throws DatabaseErrorException
+     * @throws NotConnectedUserException
+     * @throws EventNotExistException
      * @throws Exception
      */
-    public function setAjaxNewPublication($args = array()): bool
+    public function setAjaxNewPublication(): string
     {
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
         if ($this->isActivated()) {
             if ($cleaned_data = $this->getDataNewPublication()) {
-                list($textPublication, $eventId) = $cleaned_data;
-                if (Publication::saveNewPublication($connectedUser, $eventId, $textPublication)) {
+                list($textPublication) = $cleaned_data;
+                if (Publication::saveNewPublication($connectedUser, $this->event->getID(), $textPublication)) {
                     $emitter = Emitter::getInstance();
                     $emitter->emit('event.pub.add', new Event($this->event->getID()), $connectedUser);
                 }
             }
         }
-        return false;
+        return "";
     }
 
     /**
@@ -125,22 +125,12 @@ class TabPublications extends EventExtension implements IEventExtension
      */
     private function getDataNewPublication(): ?array
     {
-        if (
-            isset($_POST['id']) &&
-            isset($_POST['form_new_publication_text'])
-        ) {
-            if (
-                !empty($_POST['id']) &&
-                !empty($_POST['form_new_publication_text'])
-            ) {
+        if (isset($_POST['form_new_publication_text'])) {
+            if (!empty($_POST['form_new_publication_text'])) {
                 $textPublication = htmlspecialchars($_POST['form_new_publication_text']);
-                $eventId = (int)htmlspecialchars($_POST['id']);
-
-
-                return array($textPublication, $eventId);
+                return array($textPublication);
             }
         }
-
         return null;
     }
 
@@ -149,16 +139,17 @@ class TabPublications extends EventExtension implements IEventExtension
      * @throws DatabaseErrorException
      * @throws EventNotExistException
      */
-    public function computeActionQuery(string $action): void
+    public function computeActionQuery(string $action): Response
     {
-        switch ($action) {
-            case "publications":
-                echo $this->getAjaxPublications();
-                break;
-            case "new.publication":
-                $this->setAjaxNewPublication();
-                break;
+        $view = match ($action) {
+            "publications" => $this->getAjaxPublications(),
+            "new.publication" => $this->setAjaxNewPublication(),
+            default => null,
+        };
+        if (is_null($view)) {
+            return new NotFoundResponse();
         }
+        return new OkResponse($view);
     }
 }
 

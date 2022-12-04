@@ -11,12 +11,16 @@ use Business\Exceptions\DatabaseErrorException;
 use Business\Exceptions\UserNotExistException;
 use Business\Ports\AuthenticationContextInterface;
 use Business\Services\EventService\EventService;
+use Slim\Exception\HttpNotFoundException;
+use Slim\Factory\AppFactory;
+use Slim\Routing\RouteCollectorProxy;
 use System\Configuration\IConfiguration;
 use System\Configuration\IConfigurationBuilder;
 use System\Host\Host;
 use System\Host\IStartUp;
 use System\Logging\ILogger;
 use System\Logging\ILoggingBuilder;
+use System\Logging\Logger\ConsoleLogger\FileLogger;
 use WebApp\Authentication\AuthenticationConstants;
 use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\EventExtensions\Extensions\TabAbout;
@@ -34,6 +38,7 @@ use WebApp\Logging\Logger\SentryLogger;
 use function Sentry\init;
 
 error_reporting(E_ALL ^ E_DEPRECATED);
+
 
 class SwitchStartup implements IStartUp
 {
@@ -81,10 +86,62 @@ class SwitchStartup implements IStartUp
             $action = $_POST['a-action'];
         }
 
-        switch($request) {
+        $app = AppFactory::create();
+
+        $app->group(
+            '/app/ajax/switch.php/api/',
+            function (RouteCollectorProxy $group) use (
+                $eventService,
+                $authenticationGateway,
+                $toasterService,
+                $emailSender,
+                $action
+            )
+            {
+                $group->post(
+                    'events/{id:[0-9]*}',
+                    function ($request, $response, array $args) use (
+                        $eventService,
+                        $authenticationGateway,
+                        $toasterService,
+                        $emailSender,
+                        $action
+                    )
+                    {
+                        $eventId = $args['id'] ?? null;
+                        $event = new Event((int)$eventId);
+                        $eventExtensions = [
+                            new TabParticipants($emailSender, $authenticationGateway, $event, $toasterService),
+                            new TabPublications($authenticationGateway, $event),
+                            new TabToDoList($authenticationGateway, $event),
+                            new TabReviews($authenticationGateway, $event),
+                            new TabAbout($authenticationGateway, $event)
+                        ];
+                        return (new OneEventController(
+                            $this->logger,
+                            $eventService,
+                            $authenticationGateway,
+                            PhpLinq\PhpLinq::fromArray($eventExtensions)
+                        ))->computeActionResponseForEvent($action, $eventId);
+                    }
+                );
+            }
+        );
+
+        $app->any('/app/ajax/switch.php', fn() => new \System\Routing\Responses\OkResponse());
+
+        try {
+            $app->run();
+        } catch (HttpNotFoundException $e) {
+            $this->logger->logTrace("not found: {$e->getRequest()->getUri()}");
+        }
+
+
+        switch ($request) {
             case "event":
+                $this->logger->logTrace("$request / $action");
                 $eventId = $_GET['id'] ?? ($_POST['id'] ?? null);
-                if(!is_null($eventId)) {
+                if (!is_null($eventId)) {
                     $event = new Event((int)$eventId);
                     $eventExtensions = [
                         new TabParticipants($emailSender, $authenticationGateway, $event, $toasterService),
@@ -162,6 +219,7 @@ Host::createDefaultHostBuilder(__DIR__ . '/../../../')
     {
         $sentryLogLevel = $configuration['Sentry:Logging:Level'];
         $builder->addLogger(new SentryLogger($sentryLogLevel ?? SentryLogger::SentryInfo));
+        $builder->addLogger(new FileLogger(ROOT . "/../application.log"));
     })
     ->build()
     ->run();

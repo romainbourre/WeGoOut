@@ -12,6 +12,9 @@ use Business\Exceptions\UserNotExistException;
 use Business\Exceptions\UserSignaledException;
 use Business\Ports\AuthenticationContextInterface;
 use DateTime;
+use System\Routing\Responses\NotFoundResponse;
+use System\Routing\Responses\OkResponse;
+use System\Routing\Responses\Response;
 use WebApp\Controllers\EventExtensions\EventExtension;
 use WebApp\Controllers\EventExtensions\IEventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
@@ -87,7 +90,6 @@ class TabToDoList extends EventExtension implements IEventExtension
         $event = $this->event;
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
         $tasksList = Task::getEventTasksForUser($event, $connectedUser);
-        $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
         return $this->render('view-list-task', compact('tasksList', 'connectedUser'));
     }
 
@@ -178,11 +180,7 @@ class TabToDoList extends EventExtension implements IEventExtension
         return false;
     }
 
-    /**
-     * Save edited data of task
-     * @throws NotConnectedUserException
-     */
-    protected function saveFormTask()
+    protected function saveFormTask(): string
     {
         try {
             $task = new Task((int)$_POST['task']);
@@ -264,7 +262,9 @@ class TabToDoList extends EventExtension implements IEventExtension
                     }
                 }
             }
+            return "";
         } catch (TaskNotExistException $e) {
+            return "";
         }
     }
 
@@ -284,31 +284,22 @@ class TabToDoList extends EventExtension implements IEventExtension
      * @throws NotConnectedUserException
      * @throws TaskNotExistException
      */
-    public function computeActionQuery(string $action): void
+    public function computeActionQuery(string $action): Response
     {
-        switch ($action) {
-            case "task.load":
-                echo $this->getSlideTaskView();
-                break;
-            case "task.save":
-                $this->saveFormTask();
-                break;
-            case "task.add":
-                echo $this->addTask();
-                break;
-            case "task.list.update":
-                echo $this->getTasksListView();
-                break;
-            case "task.user.set":
-                echo $this->setUserDesignated();
-                break;
-            case "task.delete":
-                echo $this->deleteTask();
-                break;
-            case "task.check":
-                $this->checkTask();
-                break;
+        $view = match ($action) {
+            "task.load" => $this->getSlideTaskView(),
+            "task.save" => $this->saveFormTask(),
+            "task.add" => $this->addTask(),
+            "task.list.update" => $this->getTasksListView(),
+            "task.user.set" => $this->setUserDesignated(),
+            "task.delete" => $this->deleteTask(),
+            "task.check" => $this->checkTask(),
+            default => null,
+        };
+        if (is_null($view)) {
+            return new NotFoundResponse();
         }
+        return new OkResponse($view);
     }
 
 

@@ -6,6 +6,8 @@ namespace WebApp\Controllers\EventExtensions\Extensions
 
     use Business\Entities\Event;
     use Business\Ports\AuthenticationContextInterface;
+    use System\Routing\Responses\NotFoundResponse;
+    use System\Routing\Responses\Response;
     use WebApp\Controllers\EventExtensions\EventExtension;
     use WebApp\Controllers\EventExtensions\IEventExtension;
     use WebApp\Exceptions\NotConnectedUserException;
@@ -70,8 +72,9 @@ namespace WebApp\Controllers\EventExtensions\Extensions
                 ) || $event->isParticipantValid($connectedUser) || $event->isInvited($connectedUser));
         }
 
-        public function computeActionQuery(string $action): void
+        public function computeActionQuery(string $action): Response
         {
+            return new NotFoundResponse();
         }
     }
 }

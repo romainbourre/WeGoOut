@@ -1,15 +1,15 @@
 $(".button-collapse").sideNav();
 
-function $_GET(param) {
+export const $_GET = (param) => {
     var vars = {};
-    window.location.href.replace( location.hash, '' ).replace(
+    window.location.href.replace(location.hash, '').replace(
         /[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
-        function( m, key, value ) { // callback
+        function (m, key, value) { // callback
             vars[key] = value !== undefined ? value : '';
         }
     );
 
-    if ( param ) {
+    if (param) {
         return vars[param] ? vars[param] : '';
     }
     return vars;
@@ -30,6 +30,3 @@ $(window).resize(function () {
 $(document).ready(function () {
     $("#notifications-button").dropdown();
 });
-
-
-export {$_GET};

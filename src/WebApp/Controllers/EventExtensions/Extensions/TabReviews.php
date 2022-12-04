@@ -8,6 +8,9 @@ use Business\Entities\Review;
 use Business\Exceptions\DatabaseErrorException;
 use Business\Ports\AuthenticationContextInterface;
 use Exception;
+use System\Routing\Responses\NotFoundResponse;
+use System\Routing\Responses\OkResponse;
+use System\Routing\Responses\Response;
 use WebApp\Controllers\EventExtensions\EventExtension;
 use WebApp\Controllers\EventExtensions\IEventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
@@ -156,19 +159,18 @@ class TabReviews extends EventExtension implements IEventExtension
      * @throws NotConnectedUserException
      * @throws Exception
      */
-    public function computeActionQuery(string $action): void
+    public function computeActionQuery(string $action): Response
     {
-        switch ($action) {
-            case "reviews.form":
-                echo $this->getViewReviewsForm();
-                break;
-            case "reviews.update":
-                echo $this->getViewReviewsList();
-                break;
-            case "reviews.new":
-                $this->saveNewReview();
-                break;
+        $view = match ($action) {
+            "reviews.form" => $this->getViewReviewsForm(),
+            "reviews.update" => $this->getViewReviewsList(),
+            "reviews.new" => $this->saveNewReview(),
+            default => null,
+        };
+        if ($view == null) {
+            return new NotFoundResponse();
         }
+        return new OkResponse($view);
     }
 
 
