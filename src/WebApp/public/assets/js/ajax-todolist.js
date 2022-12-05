@@ -1,6 +1,6 @@
 import {getEventId} from "./one-event.js";
 
-(function () {
+const initListTask = () => {
     const taskItemSelector = '.task-item > *:not(".task-checkbox, .task-actor")';
     $(taskItemSelector).on('click', function () {
         loadSlideOfTask($(this).parent().attr('data-task'));
@@ -14,13 +14,14 @@ import {getEventId} from "./one-event.js";
     $('#task-list-content > .task-item .task-checkbox').one('click', function () {
         checkTask(this);
     });
-})()
+};
+initListTask();
 
 function iniTask(button, full) {
 
-    if(full === undefined) full = true;
+    if (full === undefined) full = true;
 
-    if(full === true) {
+    if (full === true) {
         $(button + ' #task-slide-out #task-close').sideNav({
             menuWidth: 300, // Default is 300
             edge: 'right', // Choose the horizontal origin
