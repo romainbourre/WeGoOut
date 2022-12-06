@@ -191,14 +191,13 @@ namespace WebApp\Controllers
         {
             if ($this->globalConfidentiality($event)) {
                 $tabs = array();
-                $this->extensions->where(fn(IEventExtension $e) => $e->isActivated())
-                                 ->forEach(function (IEventExtension $extension) use (&$tabs)
-                                 {
-                                     $tabs[$extension->getTabPosition()] = array(
-                                         $extension->getExtensionName(),
-                                         $extension->getContent()
-                                     );
-                                 });
+                $this->extensions->where(fn(EventExtension $e) => $e->isActivated())
+                    ->forEach(function (EventExtension $extension) use (&$tabs) {
+                        $tabs[$extension->order] = array(
+                            $extension->extensionName,
+                            $extension->getContent()
+                        );
+                    });
                 ksort($tabs);
                 return $this->render('listevent.one-event.event-window', compact('tabs'));
             }

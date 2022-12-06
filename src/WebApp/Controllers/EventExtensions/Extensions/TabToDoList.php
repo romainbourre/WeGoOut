@@ -6,69 +6,43 @@ namespace WebApp\Controllers\EventExtensions\Extensions;
 use Business\Entities\Event;
 use Business\Entities\Task;
 use Business\Entities\User;
+use Business\Exceptions\DatabaseErrorException;
 use Business\Exceptions\TaskNotExistException;
-use Business\Exceptions\UserDeletedException;
 use Business\Exceptions\UserNotExistException;
-use Business\Exceptions\UserSignaledException;
-use Business\Ports\AuthenticationContextInterface;
 use DateTime;
+use Exception;
 use System\Routing\Responses\NotFoundResponse;
 use System\Routing\Responses\OkResponse;
 use System\Routing\Responses\Response;
+use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\EventExtensions\EventExtension;
-use WebApp\Controllers\EventExtensions\IEventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
 
-class TabToDoList extends EventExtension implements IEventExtension
+class TabToDoList extends EventExtension
 {
-    private const TAB_EXTENSION_NAME = "To Do List";
     public const ORDER = 3;
 
-
     public function __construct(
-        private readonly AuthenticationContextInterface $authenticationGateway,
-        private readonly Event $event
-    ) {
-        parent::__construct('todolist');
-    }
-
-    /**
-     * Get name of the tab
-     * @return string name of the tab
-     */
-    public function getExtensionName(): string
+        private readonly AuthenticationContext $authenticationGateway,
+        private readonly Event                 $event
+    )
     {
-        return self::TAB_EXTENSION_NAME;
+        parent::__construct('todolist', 'To Do List', self::ORDER);
     }
 
     /**
-     * Get the order of the tab
-     * @return int order
-     */
-    public function getTabPosition(): int
-    {
-        return self::ORDER;
-    }
-
-    /**
-     * Generate global content view of the tab
-     * @return string global content
-     * @throws NotConnectedUserException
      * @throws TaskNotExistException
+     * @throws Exception
      */
     public function getContent(): string
     {
-        $me = $this->authenticationGateway->getConnectedUserOrThrow();
-        $event = $this->event;
         $taskForm = $this->getAddOnFormView();
         $tasksList = $this->getTasksListView();
         return $this->render("view-content", compact('taskForm', 'tasksList'));
     }
 
     /**
-     * Get a form for add task
-     * @return string|null
-     * @throws NotConnectedUserException
+     * @throws Exception
      */
     private function getAddOnFormView(): ?string
     {
@@ -80,23 +54,21 @@ class TabToDoList extends EventExtension implements IEventExtension
     }
 
     /**
-     * Get list of tasks for the event
-     * @return string
-     * @throws NotConnectedUserException
      * @throws TaskNotExistException
+     * @throws NotConnectedUserException
+     * @throws Exception
      */
     public function getTasksListView(): string
     {
-        $event = $this->event;
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-        $tasksList = Task::getEventTasksForUser($event, $connectedUser);
+        $tasksList = Task::getEventTasksForUser($this->event, $connectedUser);
         return $this->render('view-list-task', compact('tasksList', 'connectedUser'));
     }
 
+
     /**
-     * Get view of a task slider
-     * @return string|null
      * @throws NotConnectedUserException
+     * @throws Exception
      */
     protected function getSlideTaskView(): ?string
     {
@@ -105,30 +77,27 @@ class TabToDoList extends EventExtension implements IEventExtension
                 $task = new Task((int)$_POST['task']);
                 $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
                 return $this->render("slide-task", compact('task', 'connectedUser'));
-            } catch (TaskNotExistException $e) {
+            } catch (TaskNotExistException) {
             }
         }
         return null;
     }
 
     /**
-     * Add task in event
      * @throws NotConnectedUserException
      */
     protected function addTask(): bool
     {
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-        if (isset($_POST['task-add-label']) && ($this->event->isCreator(
-                    $connectedUser
-                ) || $this->event->isOrganizer($connectedUser))) {
+        if (isset($_POST['task-add-label'])
+            && ($this->event->isCreator($connectedUser)
+                || $this->event->isOrganizer($connectedUser))) {
             return $this->event->addTask(htmlspecialchars($_POST['task-add-label']));
         }
         return false;
     }
 
     /**
-     * Set user designated as me
-     * @return bool
      * @throws NotConnectedUserException
      */
     protected function setUserDesignated(): bool
@@ -137,14 +106,12 @@ class TabToDoList extends EventExtension implements IEventExtension
             $task = new Task((int)$_POST['task']);
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
             return $task->setUserDesignated($connectedUser);
-        } catch (TaskNotExistException $e) {
+        } catch (TaskNotExistException) {
         }
         return false;
     }
 
     /**
-     * Check task
-     * @return bool
      * @throws NotConnectedUserException
      */
     protected function checkTask(): bool
@@ -157,7 +124,7 @@ class TabToDoList extends EventExtension implements IEventExtension
             } else {
                 return $task->uncheck($connectedUser);
             }
-        } catch (TaskNotExistException $e) {
+        } catch (TaskNotExistException) {
         }
         return false;
     }
@@ -174,12 +141,16 @@ class TabToDoList extends EventExtension implements IEventExtension
             try {
                 $task = new Task((int)$_POST['task']);
                 return $task->delete();
-            } catch (TaskNotExistException $e) {
+            } catch (TaskNotExistException) {
             }
         }
         return false;
     }
 
+    /**
+     * @throws NotConnectedUserException
+     * @throws DatabaseErrorException
+     */
     protected function saveFormTask(): string
     {
         try {
@@ -224,10 +195,9 @@ class TabToDoList extends EventExtension implements IEventExtension
                     if (isset($_POST['task-designation'])) {
                         try {
                             $user = User::load((int)$_POST['task-designation']);
-                        } catch (UserNotExistException|UserDeletedException|UserSignaledException $e) {
+                        } catch (UserNotExistException) {
                             $user = null;
-                        }
-                        finally {
+                        } finally {
                             $task->setUserDesignated($user);
                         }
                     }
@@ -257,13 +227,13 @@ class TabToDoList extends EventExtension implements IEventExtension
 
                     // SAVE NOTE OF TASK
                     if (isset($_POST['task-notes'])) {
-                        $notes = (string)htmlspecialchars($_POST['task-notes']);
+                        $notes = htmlspecialchars($_POST['task-notes']);
                         $task->setNote($notes);
                     }
                 }
             }
             return "";
-        } catch (TaskNotExistException $e) {
+        } catch (TaskNotExistException) {
             return "";
         }
     }
@@ -283,6 +253,7 @@ class TabToDoList extends EventExtension implements IEventExtension
     /**
      * @throws NotConnectedUserException
      * @throws TaskNotExistException
+     * @throws DatabaseErrorException
      */
     public function computeActionQuery(string $action): Response
     {

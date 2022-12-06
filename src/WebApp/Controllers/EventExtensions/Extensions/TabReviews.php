@@ -6,52 +6,32 @@ namespace WebApp\Controllers\EventExtensions\Extensions;
 use Business\Entities\Event;
 use Business\Entities\Review;
 use Business\Exceptions\DatabaseErrorException;
-use Business\Ports\AuthenticationContextInterface;
+use Business\Exceptions\EventNotExistException;
 use Exception;
 use System\Routing\Responses\NotFoundResponse;
 use System\Routing\Responses\OkResponse;
 use System\Routing\Responses\Response;
+use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\EventExtensions\EventExtension;
-use WebApp\Controllers\EventExtensions\IEventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
 use WebApp\Librairies\Emitter;
 
-class TabReviews extends EventExtension implements IEventExtension
+class TabReviews extends EventExtension
 {
-    private const TAB_EXTENSION_NAME = "Avis";
     private const ORDER = 5;
 
-
     public function __construct(
-        private readonly AuthenticationContextInterface $authenticationGateway,
-        private readonly Event $event
-    ) {
-        parent::__construct('reviews');
-    }
-
-    /**
-     * Get name of the tab
-     * @return string name of the tab
-     */
-    public function getExtensionName(): string
+        private readonly AuthenticationContext $authenticationGateway,
+        private readonly Event                 $event
+    )
     {
-        return self::TAB_EXTENSION_NAME;
+        parent::__construct('reviews', 'Avis', self::ORDER);
     }
 
     /**
-     * Get the order of the tab
-     * @return int order
-     */
-    public function getTabPosition(): int
-    {
-        return self::ORDER;
-    }
-
-    /**
-     * Generate global content view of the tab
-     * @return string global content
      * @throws NotConnectedUserException
      * @throws DatabaseErrorException
+     * @throws Exception
      */
     public function getContent(): string
     {
@@ -59,17 +39,14 @@ class TabReviews extends EventExtension implements IEventExtension
             $event = $this->event;
             $reviewsForm = $this->getViewReviewsForm();
             $reviews = $this->getViewReviewsList();
-
             return $this->render("view-reviews", compact('event', 'reviews', 'reviewsForm'));
-        } else {
-            return $this->render('content-no-over');
         }
+        return $this->render('content-no-over');
     }
 
     /**
-     * Generate view of form
-     * @return null|string view of form
      * @throws NotConnectedUserException
+     * @throws Exception
      */
     public function getViewReviewsForm(): ?string
     {
@@ -85,20 +62,21 @@ class TabReviews extends EventExtension implements IEventExtension
     }
 
     /**
-     * Generate view of list of reviews for the event
-     * @return null|string view of list of reviews
-     * @throws NotConnectedUserException
      * @throws DatabaseErrorException
+     * @throws NotConnectedUserException
+     * @throws Exception
      */
     public function getViewReviewsList(): ?string
     {
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
         $event = $this->event;
-        if ($event->isPublic() || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend(
-                    $connectedUser
-                )) || $this->isActivated()) {
+        if (
+            $event->isPublic()
+            || ($event->isPrivate() && !$event->isGuestOnly() && $event->getUser()->isFriend($connectedUser))
+            || $this->isActivated()
+        ) {
             $reviewsContent = $this->event->getReviews();
-            if (!is_null($reviewsContent) && !empty($reviewsContent)) {
+            if (!empty($reviewsContent)) {
                 return $this->render('review', compact('reviewsContent'));
             }
             return $this->render('no-review');
@@ -107,17 +85,15 @@ class TabReviews extends EventExtension implements IEventExtension
     }
 
     /**
-     * Save new review from a user for the event
-     * @return bool|null
+     * @throws NotConnectedUserException
+     * @throws EventNotExistException
      * @throws Exception
      */
     public function saveNewReview(): ?bool
     {
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-        if ($this->event->isOver() && $this->isActivated() && !Review::checkUserPostReview(
-                $connectedUser,
-                $this->event
-            )) {
+        if ($this->event->isOver()
+            && $this->isActivated() && !Review::checkUserPostReview($connectedUser, $this->event)) {
             if (isset($_POST['form_new_review_note']) && isset($_POST['form_new_review_text'])) {
                 $run = true;
                 $reviewNote = (int)htmlspecialchars($_POST['form_new_review_note']);
@@ -125,7 +101,7 @@ class TabReviews extends EventExtension implements IEventExtension
                 if (strlen($reviewText) > 200) {
                     $run = false;
                 }
-                if (empty($reviewNote) || ($reviewNote <= 0 && $reviewNote > 5)) {
+                if (empty($reviewNote) || $reviewNote <= 0 || $reviewNote > 5) {
                     $run = false;
                 }
                 if ($run) {
@@ -141,17 +117,16 @@ class TabReviews extends EventExtension implements IEventExtension
     }
 
     /**
-     * Check the global confidentiality for the tab
-     * @return bool
      * @throws NotConnectedUserException
      */
     public function isActivated(): bool
     {
-        $event = $this->event;
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-        return ($event->isCreator($connectedUser) || $event->isOrganizer(
-                $connectedUser
-            ) || $event->isParticipantValid($connectedUser));
+        return (
+            $this->event->isCreator($connectedUser)
+            || $this->event->isOrganizer($connectedUser)
+            || $this->event->isParticipantValid($connectedUser)
+        );
     }
 
     /**

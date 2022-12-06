@@ -5,55 +5,32 @@ namespace WebApp\Controllers\EventExtensions\Extensions;
 
 use Business\Entities\Event;
 use Business\Entities\Publication;
-use Business\Exceptions\DatabaseErrorException;
 use Business\Exceptions\EventNotExistException;
-use Business\Ports\AuthenticationContextInterface;
 use Exception;
 use System\Routing\Responses\NotFoundResponse;
 use System\Routing\Responses\OkResponse;
 use System\Routing\Responses\Response;
+use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\EventExtensions\EventExtension;
-use WebApp\Controllers\EventExtensions\IEventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
 use WebApp\Librairies\Emitter;
 
-class TabPublications extends EventExtension implements IEventExtension
+class TabPublications extends EventExtension
 {
-    private const TAB_EXTENSION_NAME = "discussions";
     private const ORDER = 1;
 
-
     public function __construct(
-        private readonly AuthenticationContextInterface $authenticationGateway,
-        private readonly Event $event
-    ) {
-        parent::__construct('publications');
-    }
-
-    /**
-     * Get the name of the tab
-     * @return string name
-     */
-    public function getExtensionName(): string
+        private readonly AuthenticationContext $authenticationGateway,
+        private readonly Event                 $event
+    )
     {
-        return self::TAB_EXTENSION_NAME;
+        parent::__construct('publications', 'discussions', self::ORDER);
     }
 
     /**
-     * Get order of the tab
-     * @return int order
-     */
-    public function getTabPosition(): int
-    {
-        return self::ORDER;
-    }
-
-    /**
-     * Generate global content of the tab
-     * @return string
-     * @throws EventNotExistException
      * @throws NotConnectedUserException
-     * @throws DatabaseErrorException
+     * @throws EventNotExistException
+     * @throws Exception
      */
     public function getContent(): string
     {
@@ -66,11 +43,8 @@ class TabPublications extends EventExtension implements IEventExtension
     }
 
     /**
-     * Check the global confidentiality for the tab
-     * @return bool
      * @throws EventNotExistException
      * @throws NotConnectedUserException
-     * @throws DatabaseErrorException
      */
     public function isActivated(): bool
     {
@@ -89,8 +63,7 @@ class TabPublications extends EventExtension implements IEventExtension
     }
 
     /**
-     * Get the publications view
-     * @return string publications view
+     * @throws Exception
      */
     public function getAjaxPublications(): string
     {
@@ -99,7 +72,6 @@ class TabPublications extends EventExtension implements IEventExtension
     }
 
     /**
-     * @throws DatabaseErrorException
      * @throws NotConnectedUserException
      * @throws EventNotExistException
      * @throws Exception
@@ -119,10 +91,6 @@ class TabPublications extends EventExtension implements IEventExtension
         return "";
     }
 
-    /**
-     * Retrieve data form of the publication
-     * @return array|null data form checked
-     */
     private function getDataNewPublication(): ?array
     {
         if (isset($_POST['form_new_publication_text'])) {
@@ -136,8 +104,8 @@ class TabPublications extends EventExtension implements IEventExtension
 
     /**
      * @throws NotConnectedUserException
-     * @throws DatabaseErrorException
      * @throws EventNotExistException
+     * @throws Exception
      */
     public function computeActionQuery(string $action): Response
     {
@@ -152,4 +120,3 @@ class TabPublications extends EventExtension implements IEventExtension
         return new OkResponse($view);
     }
 }
-

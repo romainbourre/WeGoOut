@@ -771,13 +771,16 @@ namespace Business\Entities
         }
 
         /**
+         * @param User $requestingUser
          * @param int $level 0 = All | 1 = Valid participants | 2 = Bending participants | 3 = Invited
+         * @return array|null
+         * @throws DatabaseErrorException
+         * @throws UserNotExistException
          */
-        public function getParticipants(User $requestingUser, int $level = 0): ?iterable
+        public function getParticipants(User $requestingUser, int $level = 0): ?array
         {
             $bdd = Database::getDB();
-            switch ($level)
-            {
+            switch ($level) {
                 case 0: // ALL
                     if ($this->isManagerOfEvent($requestingUser)) $WAIT = '';
                     else $WAIT = 'AND PART_DATETIME_ACCEPT is not null';
@@ -816,11 +819,7 @@ namespace Business\Entities
 
         }
 
-        /**
-         * Get invitation to e-mail address
-         * @return iterable|null
-         */
-        public function getEmailInvitation(): ?iterable
+        public function getEmailInvitation(): ?array
         {
 
             $bdd = Database::getDB();
@@ -828,8 +827,7 @@ namespace Business\Entities
             $request = $bdd->prepare('SELECT GUEST_EMAIL FROM GUEST_TEMP_EMAIL WHERE event_id = :eventId AND GUEST_DATETIME_SEND is not null AND GUEST_DATETIME_DELETE is null ORDER BY GUEST_EMAIL ASC');
             $request->bindValue(':eventId', $this->id);
 
-            if ($request->execute())
-            {
+            if ($request->execute()) {
 
                 $user = array();
 
