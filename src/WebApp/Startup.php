@@ -37,7 +37,7 @@ namespace WebApp
         {
             try
             {
-                $this->logger->logInfo("Host running...");
+                $this->logger->logTrace("Host running...");
                 $app = AppFactory::create();
 
                 $app->addBodyParsingMiddleware();
@@ -53,7 +53,7 @@ namespace WebApp
             }
             finally
             {
-                $this->logger->logInfo("Host stopped");
+                $this->logger->logTrace("Host stopped");
             }
         }
     }

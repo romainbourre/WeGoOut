@@ -26,7 +26,7 @@ namespace System\Logging\Logger\ConsoleLogger
          * ConsoleLogger constructor.
          * @param int $minimumLevelToDisplay set minimum ti display log in console
          */
-        public function __construct(string $file, string $mode = "w", int $minimumLevelToDisplay = self::LOG_TYPE_TRACE)
+        public function __construct(string $file, string $mode = "a", int $minimumLevelToDisplay = self::LOG_TYPE_INFO)
         {
             $this->minimumLevelDisplay = $minimumLevelToDisplay;
             $this->resource = fopen($file, $mode);
