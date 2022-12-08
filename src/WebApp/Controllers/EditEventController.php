@@ -4,41 +4,30 @@ namespace WebApp\Controllers
 {
 
 
-    use Business\Ports\AuthenticationContextInterface;
     use Business\Services\EventService\IEventService;
     use Exception;
     use Slim\Psr7\Response;
     use System\Logging\ILogger;
+    use WebApp\Attributes\Page;
+    use WebApp\Authentication\AuthenticationContext;
 
     class EditEventController extends AppController
     {
 
-        /**
-         * @var ILogger
-         */
-        private ILogger       $logger;
+        private ILogger $logger;
         private IEventService $eventService;
 
-        /**
-         * EditEvent constructor.
-         * @param ILogger $logger
-         * @param IEventService $eventService
-         */
         public function __construct(
-            ILogger $logger,
-            IEventService $eventService,
-            private readonly AuthenticationContextInterface $authenticationGateway
+            ILogger                                $logger,
+            IEventService                          $eventService,
+            private readonly AuthenticationContext $authenticationGateway
         ) {
             parent::__construct();
             $this->logger = $logger;
             $this->eventService = $eventService;
         }
 
-        /**
-         * Compose edition web page of one event
-         * @param string $eventId
-         * @return Response
-         */
+        #[Page('edit-events.css', 'edit-event.js')]
         public function getView(string $eventId): Response
         {
             try
@@ -48,10 +37,6 @@ namespace WebApp\Controllers
 
                 // WEB PAGE NAME
                 $titleWebPage = "Édition - " . $event->getTitle();
-
-                // LOAD CSS AND JS FILE
-                $this->addCssStyle('css-editevent.css');
-                $this->addJsScript('js-editevent.js');
 
                 // NAVIGATION
                 $userItems = $this->render('templates.nav-useritems');

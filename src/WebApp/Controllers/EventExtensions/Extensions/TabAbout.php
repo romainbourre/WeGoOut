@@ -7,10 +7,12 @@ use Business\Entities\Event;
 use Exception;
 use System\Routing\Responses\NotFoundResponse;
 use System\Routing\Responses\Response;
+use WebApp\Attributes\Page;
 use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\EventExtensions\EventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
 
+#[Page('css-about.css', 'tab-about.js')]
 class TabAbout extends EventExtension
 {
     private const ORDER = 4;

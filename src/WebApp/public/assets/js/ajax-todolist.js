@@ -1,4 +1,4 @@
-import {getEventId} from "./one-event.js";
+import {getEventId} from "./event.js";
 
 const initListTask = () => {
     const taskItemSelector = '.task-item > *:not(".task-checkbox, .task-actor")';

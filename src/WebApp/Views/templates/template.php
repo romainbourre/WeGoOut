@@ -8,10 +8,8 @@
 
     <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <link rel="stylesheet" href="/assets/materialize/css/materialize.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/toolkit.css">
-    <link rel="stylesheet" href="/assets/css/create-event.css">
+    <link rel="stylesheet" href="styles.css">
     <?php if (isset($css)) echo $css ?>
 
 </head>
@@ -104,12 +102,7 @@
     </div>
 </footer>
 
-<script src="/assets/jquery/jquery-3.2.1.js"></script>
-<script src="/assets/elastic/jquery.elastic.source.js"></script>
-<script src="/assets/materialize/js/materialize.js"></script>
-<script type="module" src="/app/ajax/ctrl-a.js"></script>
-<script type="module" src="/assets/js/js-global.js"></script>
-<script type="module" src="/assets/js/js-notifications.js"></script>
+<script type="module" src="main.js"></script>
 
 <?php if (isset($js)) echo $js ?>
 

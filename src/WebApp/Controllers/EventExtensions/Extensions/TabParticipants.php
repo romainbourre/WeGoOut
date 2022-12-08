@@ -13,12 +13,14 @@ use InvalidArgumentException;
 use System\Routing\Responses\NotFoundResponse;
 use System\Routing\Responses\OkResponse;
 use System\Routing\Responses\Response;
+use WebApp\Attributes\Page;
 use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\EventExtensions\EventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
 use WebApp\Librairies\Emitter;
 use WebApp\Services\ToasterService\ToasterInterface;
 
+#[Page('css-participants.css', 'tab-participants.js')]
 class TabParticipants extends EventExtension
 {
     private const ORDER = 2;

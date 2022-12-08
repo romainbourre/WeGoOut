@@ -13,6 +13,7 @@ use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use System\Logging\ILogger;
 use System\Routing\Responses\RedirectedResponse;
+use WebApp\Attributes\Page;
 use WebApp\Exceptions\MandatoryParamMissedException;
 use WebApp\Services\ToasterService\ToasterInterface;
 
@@ -31,15 +32,13 @@ class ForgotPasswordController extends AppController
      * @throws NotAuthorizedException
      * @throws Exception
      */
+    #[Page('forgot-password.css', 'forgot-password.js')]
     public function getView(): Response
     {
         $connectedUser = $this->authenticationGateway->getConnectedUser();
         if ($connectedUser != null) {
             throw new NotAuthorizedException('user should not be connected');
         }
-
-        $this->addCssStyle('css-forgotpwd.css');
-        $this->addJsScript('js-forgotpwd.js');
         $navItems = self::render('forgotpwd.navitems');
         $content = self::render('forgotpwd.view-forgotpwd');
         $view = self::render('templates.template', compact('navItems', 'content', 'connectedUser'));

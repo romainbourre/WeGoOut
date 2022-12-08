@@ -15,6 +15,7 @@ namespace WebApp\Controllers
     use Slim\Psr7\Response;
     use System\Logging\ILogger;
     use System\Routing\Responses\RedirectedResponse;
+    use WebApp\Attributes\Page;
     use WebApp\Exceptions\NotConnectedUserException;
     use WebApp\Services\ToasterService\ToasterInterface;
 
@@ -34,6 +35,7 @@ namespace WebApp\Controllers
          * @throws NotConnectedUserException
          * @throws Exception
          */
+        #[Page('validation.css', 'validation.js')]
         public function index(Request $request, ValidateUserAccountUseCase $useCase): Response
         {
             $validationToken = $this->extractValueFromQuery($request, 'token');
@@ -42,8 +44,6 @@ namespace WebApp\Controllers
             }
 
             $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-            $this->addCssStyle('css-validation.css');
-            $this->addJsScript('js-validation.js');
 
             $userItems = null;
             $userMenu = $this->render('templates.nav-usermenu', compact('userItems'));
@@ -75,7 +75,7 @@ namespace WebApp\Controllers
                 return RedirectedResponse::to('/');
             } catch (Exception $e) {
                 $this->logger->logCritical($e->getMessage());
-                $this->toaster->error('la validation n\'a pas pu s\'executer correctement. Rééssayez plus tard.');
+                $this->toaster->error('la validation n\'a pas pu s\'exécuter correctement. Réessayez plus tard.');
                 return RedirectedResponse::to('/');
             }
         }

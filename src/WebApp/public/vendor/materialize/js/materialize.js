@@ -8387,30 +8387,29 @@ if (Vel) {
         }
       }
 
-      // Materialize modified
-      if (override === 'raw' && selectedObject != null) {
-        return _.node('div', selectedObject.year);
-      }
+        // Materialize modified
+        if (override === 'raw' && selectedObject != null) {
+            return _.node('div', selectedObject.year);
+        }
 
-      // Otherwise just return the year focused
-      return _.node('div', focusedYear, settings.klass.year);
-    }; //createYearLabel
+        // Otherwise just return the year focused
+        return _.node('div', focusedYear, settings.klass.year);
+    }, //createYearLabel
 
+        // Materialize modified
+        createDayLabel = function () {
+            if (selectedObject != null) return selectedObject.date; else return nowObject.date;
+        },
 
-    // Materialize modified
-    createDayLabel = function () {
-      if (selectedObject != null) return selectedObject.date;else return nowObject.date;
-    };
-    createWeekdayLabel = function () {
-      var display_day;
+        createWeekdayLabel = function () {
+            var display_day;
 
-      if (selectedObject != null) display_day = selectedObject.day;else display_day = nowObject.day;
-      var weekday = settings.weekdaysShort[display_day];
-      return weekday;
-    };
+            if (selectedObject != null) display_day = selectedObject.day; else display_day = nowObject.day;
+            var weekday = settings.weekdaysShort[display_day];
+            return weekday;
+        }
 
     // Create and return the entire calendar.
-
     return _.node(
     // Date presentation View
     'div', _.node(

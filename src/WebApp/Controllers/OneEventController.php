@@ -20,6 +20,7 @@ namespace WebApp\Controllers
     use System\Routing\Responses\NotFoundResponse;
     use System\Routing\Responses\OkResponse;
     use System\Routing\Responses\Response;
+    use WebApp\Attributes\Page;
     use WebApp\Controllers\EventExtensions\EventExtension;
     use WebApp\Controllers\EventExtensions\IEventExtension;
 
@@ -41,11 +42,7 @@ namespace WebApp\Controllers
             parent::__construct();
         }
 
-        /**
-         * Generate global view for one event
-         * @param string $eventId
-         * @return Response
-         */
+        #[Page('one-events.css', 'event.js')]
         public function getView(string $eventId): Response
         {
             try {
@@ -53,12 +50,6 @@ namespace WebApp\Controllers
                 $connectedUser = $this->authenticationGateway->getConnectedUser();
 
                 $titleWebPage = CONF['Application']['Name'] . " - " . $event->getTitle();
-
-                // LOAD CSS AND JS FILE
-                $this->addCssStyle('css-listevent.css');
-                $this->addCssStyle('css-oneevent.css');
-                $this->addJsScript('js-listevent.js');
-                $this->addJsScript('one-event.js');
 
                 // NAVIGATION
                 $userItems = $this->render('templates.nav-useritems');

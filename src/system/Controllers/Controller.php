@@ -58,89 +58,52 @@ namespace System\Controllers
         }
 
         /**
-         * Load template
-         * @param string $view view to load
-         * @param array|null $variables necessary variables for template
-         * @return string $content view
          * @throws Exception
          */
         protected function render(string $view, array $variables = null): string
         {
-            try
-            {
-
+            try {
                 ob_start();
-
                 if (!is_null($variables)) extract($variables);
-
                 if (isset($css)) $css .= $this->getCssStyle();
                 else $css = $this->getCssStyle();
                 if (isset($js)) $js .= $this->getJsScript();
                 else $js = $this->getJsScript();
-
                 require_once(APP . "/Views/" . str_replace(".", "/", $view) . ".php");
-
                 return ob_get_clean();
-
-            }
-            catch (Exception $e)
-            {
+            } catch (Exception $e) {
                 ob_clean();
                 throw $e;
             }
         }
 
-        /**
-         * Get all css scripts set
-         * @return string|null $css
-         */
         protected function getCssStyle(): ?string
         {
             $cssFiles = PhpLinq::fromArray(self::$cssFiles);
             $css = $cssFiles
                 ->select(fn(string $file) => "<link rel='stylesheet' href='/assets/css/$file'/>")
                 ->toArray();
-
             return implode($css);
         }
 
-        /**
-         * Add css script
-         * @param string $cssLink source of css script
-         * @return string|null all css scripts set
-         */
         protected function addCssStyle(string $cssLink): ?string
         {
-            array_push(self::$cssFiles, $cssLink);
-
+            self::$cssFiles[] = $cssLink;
             return self::getCssStyle();
         }
 
-        /**
-         * Get all javascript scripts set
-         * @return string
-         */
         protected function getJsScript(): string
         {
             $jsFiles = PhpLinq::fromArray(self::$jsFiles);
-
             $js = $jsFiles
                 ->select(fn(string $file) => "<script type='module' src='/assets/js/$file'></script>")
                 ->toArray();
-
             return implode($js);
         }
 
-
-        /**
-         * Add javascript script
-         * @param string $jsLink source of javascript script
-         * @return string all javascript script set
-         */
         protected function addJsScript(string $jsLink): string
         {
-            array_push(self::$jsFiles, $jsLink);
-
+            self::$jsFiles[] = $jsLink;
             return self::getJsScript();
         }
     }

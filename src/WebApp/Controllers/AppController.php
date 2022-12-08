@@ -7,8 +7,10 @@ namespace WebApp\Controllers
     use Business\Entities\Event;
     use Business\Entities\Notifications;
     use Business\Entities\User;
+    use ReflectionClass;
     use Slim\Psr7\Request;
     use System\Controllers\Controller;
+    use WebApp\Attributes\Page;
     use WebApp\Exceptions\MandatoryParamMissedException;
     use WebApp\Librairies\Emitter;
 
@@ -26,6 +28,22 @@ namespace WebApp\Controllers
         public function __construct()
         {
             $this->initListeners();
+            $this->parsePageAttributes();
+        }
+
+        private function parsePageAttributes(): void
+        {
+            $reflection = new ReflectionClass($this);
+            $attributes = $reflection->getAttributes();
+            foreach ($reflection->getMethods() as $method) {
+                $attributes = array_merge($attributes, $method->getAttributes(Page::class));
+            }
+            foreach ($attributes as $attribute) {
+                $page = $attribute->newInstance();
+                /** @var Page $page */
+                $this->addCssStyle($page->css);
+                $this->addJsScript($page->js);
+            }
         }
 
         protected function extractValueFromQuery(Request $request, string $valueName): ?string

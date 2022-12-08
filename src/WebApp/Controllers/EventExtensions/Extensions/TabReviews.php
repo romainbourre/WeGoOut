@@ -11,11 +11,13 @@ use Exception;
 use System\Routing\Responses\NotFoundResponse;
 use System\Routing\Responses\OkResponse;
 use System\Routing\Responses\Response;
+use WebApp\Attributes\Page;
 use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\EventExtensions\EventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
 use WebApp\Librairies\Emitter;
 
+#[Page('css-reviews.css', 'tab-reviews.js')]
 class TabReviews extends EventExtension
 {
     private const ORDER = 5;
@@ -48,7 +50,7 @@ class TabReviews extends EventExtension
      * @throws NotConnectedUserException
      * @throws Exception
      */
-    public function getViewReviewsForm(): ?string
+    public function getViewReviewsForm(): string
     {
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
         $event = $this->event;
@@ -58,7 +60,7 @@ class TabReviews extends EventExtension
             }
             return $this->render('reviews-no-form');
         }
-        return null;
+        return '';
     }
 
     /**
@@ -142,7 +144,7 @@ class TabReviews extends EventExtension
             "reviews.new" => $this->saveNewReview(),
             default => null,
         };
-        if ($view == null) {
+        if (is_null($view)) {
             return new NotFoundResponse();
         }
         return new OkResponse($view);

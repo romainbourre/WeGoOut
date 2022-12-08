@@ -8,10 +8,11 @@ namespace WebApp\Controllers
     use Business\Exceptions\UserDeletedException;
     use Business\Exceptions\UserNotExistException;
     use Business\Exceptions\UserSignaledException;
-    use Business\Ports\AuthenticationContextInterface;
     use Exception;
     use Slim\Psr7\Response;
     use System\Logging\ILogger;
+    use WebApp\Attributes\Page;
+    use WebApp\Authentication\AuthenticationContext;
     use WebApp\Exceptions\NotConnectedUserException;
     use WebApp\Librairies\Emitter;
 
@@ -23,8 +24,8 @@ namespace WebApp\Controllers
     class ProfileController extends AppController
     {
         public function __construct(
-            private readonly ILogger $logger,
-            private readonly AuthenticationContextInterface $authenticationGateway
+            private readonly ILogger               $logger,
+            private readonly AuthenticationContext $authenticationGateway
         ) {
             parent::__construct();
         }
@@ -34,16 +35,13 @@ namespace WebApp\Controllers
          * @throws NotConnectedUserException
          * @throws Exception
          */
+        #[Page('profile.css', 'profile.js')]
         public function getView(?string $id = null): Response
         {
 
-            try
-            {
+            try {
                 $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
                 $userToLoadProfile = is_null($id) ? $connectedUser : User::load((int)$id);
-
-                $this->addCssStyle('css-profil.css');
-                $this->addJsScript('js-profil.js');
 
                 // NAVIGATION
                 $userItems = $this->render('templates.nav-useritems');
@@ -61,9 +59,7 @@ namespace WebApp\Controllers
 
                 return $this->ok($view);
 
-            }
-            catch (UserNotExistException | UserSignaledException | UserDeletedException $e)
-            {
+            } catch (UserNotExistException | UserSignaledException | UserDeletedException $e) {
                 $this->logger->logError($e->getMessage());
                 return $this->internalServerError()->withRedirectTo('/profile');
             }

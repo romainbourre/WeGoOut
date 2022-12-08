@@ -12,6 +12,7 @@ use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use System\Logging\ILogger;
 use System\Routing\Responses\RedirectedResponse;
+use WebApp\Attributes\Page;
 use WebApp\Authentication\AuthenticationConstants;
 use WebApp\Exceptions\MandatoryParamMissedException;
 use WebApp\Services\ToasterService\ToasterInterface;
@@ -22,26 +23,24 @@ class SignUpController extends AppController
 
     public function __construct(
         private readonly AuthenticationContextInterface $authenticationGateway,
-        private readonly ILogger $logger,
-        private readonly ToasterInterface $toaster
-    ) {
+        private readonly ILogger                        $logger,
+        private readonly ToasterInterface               $toaster
+    )
+    {
         parent::__construct();
     }
 
+    /**
+     * @throws Exception
+     */
+    #[Page('signup.css', 'signup.js')]
     public function getView(Request $request): Response
     {
-        // LOAD CSS AND JS SCRIPT FILES
-        $this->addCssStyle('css-register.css');
-        $this->addJsScript('js-register.js');
-
         $connectedUser = $this->authenticationGateway->getConnectedUser();
         $titleWebPage = CONF['Application']['Name'] . " - Inscription";
         $navItems = self::render('register.navitems');
-
         $content = self::render('register.view-register');
-
         $view = self::render('templates.template', compact('titleWebPage', 'navItems', 'content', 'connectedUser'));
-
         return $this->ok($view);
     }
 

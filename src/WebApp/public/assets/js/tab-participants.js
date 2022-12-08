@@ -1,8 +1,9 @@
-import {ViewSearch} from './js-search.js';
+import './ajax-participants.js';
+import {ViewSearch} from './research.js';
 
 const ctrlTabParticipant = {
 
-    construct: function() {
+    construct: function () {
 
         viewTabParticipant.construct();
 

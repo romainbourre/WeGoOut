@@ -5,7 +5,6 @@ namespace WebApp\Controllers
 
 
     use Business\Entities\Event;
-    use Business\Ports\AuthenticationContextInterface;
     use Business\Services\EventService\IEventService;
     use Business\Services\EventService\Requests\SearchEventsRequest;
     use Business\ValueObjects\GeometricCoordinates;
@@ -14,23 +13,23 @@ namespace WebApp\Controllers
     use Slim\Psr7\Response;
     use System\Configuration\IConfiguration;
     use System\Logging\ILogger;
+    use WebApp\Attributes\Page;
+    use WebApp\Authentication\AuthenticationContext;
 
     class EventController extends AppController
     {
 
         public function __construct(
-            private readonly IConfiguration $configuration,
-            private readonly ILogger $logger,
-            private readonly IEventService $eventService,
-            private readonly AuthenticationContextInterface $authenticationGateway
-        ) {
+            private readonly IConfiguration        $configuration,
+            private readonly ILogger               $logger,
+            private readonly IEventService         $eventService,
+            private readonly AuthenticationContext $authenticationGateway
+        )
+        {
             parent::__construct();
         }
 
-        /**
-         * Generate global view of list of event or view of one event
-         * @return Response
-         */
+        #[Page("events.css", "events.js")]
         public function getView(): Response
         {
             try {
@@ -39,13 +38,6 @@ namespace WebApp\Controllers
                 // WEB PAGE NAME
                 $applicationName = $this->configuration['Application:Name'];
                 $titleWebPage = "$applicationName - Évènements";
-
-                // LOAD CSS AND JS FILE
-                $this->addCssStyle('css-listevent.css');
-                $this->addCssStyle('css-oneevent.css');
-                $this->addJsScript('js-listevent.js');
-                $this->addJsScript('one-event.js');
-
 
                 // NAVIGATION
                 $userItems = $this->render('templates.nav-useritems');

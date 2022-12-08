@@ -5,6 +5,7 @@ namespace WebApp\Controllers
 
     use Business\Entities\Notifications;
     use Business\Ports\AuthenticationContextInterface;
+    use WebApp\Attributes\Page;
 
     /**
      * Class NotificationsCenter
@@ -21,10 +22,9 @@ namespace WebApp\Controllers
         /**
          * Load js and css script of notifications center
          */
+        #[Page('notifications.css', 'notifications.js')]
         public function getView()
         {
-            $this->addJsScript('js-notifications.js');
-            $this->addCssStyle('css-notifications.css');
         }
 
         /**

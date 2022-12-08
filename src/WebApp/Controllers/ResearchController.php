@@ -6,6 +6,7 @@ namespace WebApp\Controllers
     use Business\Ports\AuthenticationContextInterface;
     use Exception;
     use System\Logging\ILogger;
+    use WebApp\Attributes\Page;
     use WebApp\Librairies\Search;
 
     /**
@@ -26,10 +27,9 @@ namespace WebApp\Controllers
         /**
          * Load stylesheets and scripts
          */
+        #[Page('research.css', 'research.js')]
         public function getView()
         {
-            $this->addJsScript('js-search.js');
-            $this->addCssStyle('css-search.css');
         }
 
         /**

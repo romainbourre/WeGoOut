@@ -14,6 +14,7 @@ use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use System\Logging\ILogger;
 use System\Routing\Responses\RedirectedResponse;
+use WebApp\Attributes\Page;
 use WebApp\Authentication\AuthenticationConstants;
 use WebApp\Exceptions\MandatoryParamMissedException;
 use WebApp\Services\ToasterService\ToasterInterface;
@@ -34,12 +35,11 @@ class LoginController extends AppController
     /**
      * @throws Exception
      */
+    #[Page('login.css', 'login.js')]
     public function getView(Request $request): Response
     {
         $connectedUser = $this->authenticationGateway->getConnectedUser();
         $titleWebPage = CONF['Application']['Name'] . " - Connexion";
-        $this->addCssStyle('css-login.css');
-        $this->addJsScript('js-login.js');
         $navItems = self::render('login.navitems');
         $content = self::render('login.view-login');
         $view = self::render('templates.template', compact('titleWebPage', 'navItems', 'content', 'connectedUser'));

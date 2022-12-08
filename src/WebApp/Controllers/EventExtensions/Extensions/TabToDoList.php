@@ -14,10 +14,12 @@ use Exception;
 use System\Routing\Responses\NotFoundResponse;
 use System\Routing\Responses\OkResponse;
 use System\Routing\Responses\Response;
+use WebApp\Attributes\Page;
 use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\EventExtensions\EventExtension;
 use WebApp\Exceptions\NotConnectedUserException;
 
+#[Page('css-todolist.css', 'tab-todolist.js')]
 class TabToDoList extends EventExtension
 {
     public const ORDER = 3;

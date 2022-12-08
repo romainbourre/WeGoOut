@@ -1,16 +1,17 @@
+import './ajax-reviews.js';
+
 $('textarea').elastic();
 
-$(document).ready(function() {
+$(document).ready(function () {
     $('#form_new_review_text').characterCounter();
 });
 
-$('#form_new_review_text').keypress(function() {
+$('#form_new_review_text').keypress(function () {
     var lenght = $('#form_new_review_text').val().length;
     var max = $('#form_new_review_text').attr('data-length');
     if(lenght >= max) {
         $('.character-counter').addClass('red-text');
-    }
-    else {
+    } else {
         $('.character-counter').removeClass('red-text');
     }
 });
@@ -28,8 +29,8 @@ $('.star-note').hover(function() {
     }
 
     $(this).click(function() {
-       $('#form_new_review_note').val(note);
-       noteInput = $('#form_new_review_note').val();
+        $('#form_new_review_note').val(note);
+        noteInput = $('#form_new_review_note').val();
     });
 
     $(this).mouseout(function() {
@@ -41,8 +42,7 @@ $('.star-note').hover(function() {
                     $('.star-note.' + tab[i]).html('star');
                 }
             }
-        }
-        else {
+        } else {
             $('.star-note').html('star_border');
         }
 
