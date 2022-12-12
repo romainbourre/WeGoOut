@@ -5,6 +5,7 @@ namespace WebApp\Controllers
 
 
     use Business\Entities\Event;
+    use Business\Exceptions\EventNotExistException;
     use Business\Services\EventService\IEventService;
     use Business\Services\EventService\Requests\SearchEventsRequest;
     use Business\ValueObjects\GeometricCoordinates;
@@ -128,6 +129,15 @@ namespace WebApp\Controllers
                 $this->logger->logCritical($exception->getMessage(), $exception);
                 return $this->internalServerError();
             }
+        }
+
+        /**
+         * @throws EventNotExistException
+         */
+        public function forEvent(int $eventId): OneEventController
+        {
+            $event = new Event($eventId);
+            return new OneEventController($this->logger, $this->eventService, $this->authenticationGateway, $event);
         }
     }
 }

@@ -16,6 +16,8 @@ use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 use System\Configuration\IConfiguration;
 use System\Configuration\IConfigurationBuilder;
+use System\DependencyInjection\ContainerBuilderInterface;
+use System\DependencyInjection\ContainerInterface;
 use System\Host\Host;
 use System\Host\IStartUp;
 use System\Logging\ILogger;
@@ -34,7 +36,6 @@ use WebApp\Controllers\ProfileController;
 use WebApp\Controllers\ResearchController;
 use WebApp\Librairies\Emitter;
 use WebApp\Logging\Logger\SentryLogger;
-
 use function Sentry\init;
 
 error_reporting(E_ALL ^ E_DEPRECATED);
@@ -51,10 +52,7 @@ class SwitchStartup implements IStartUp
         $this->logger = $logger;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function run(): void
+    public function run(IConfiguration $configuration, ContainerInterface $servicesProvider): void
     {
         $connectionString = $this->configuration->getRequired('Database:ConnectionString');
         $databaseContext = new PDO(
@@ -187,6 +185,11 @@ class SwitchStartup implements IStartUp
             $authenticationGateway->setConnectedUser($connectedUser);
         }
         return $authenticationGateway;
+    }
+
+    public function configure(IConfiguration $configuration, ContainerBuilderInterface $services): void
+    {
+        // TODO: Implement configure() method.
     }
 }
 

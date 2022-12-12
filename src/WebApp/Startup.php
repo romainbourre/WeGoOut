@@ -1,58 +1,63 @@
 <?php
 
 
-namespace WebApp
-{
+namespace WebApp {
 
 
-    use Exception;
+    use Psr\Container\ContainerExceptionInterface;
+    use Psr\Container\NotFoundExceptionInterface;
     use Slim\Exception\HttpNotFoundException;
-    use Slim\Factory\AppFactory;
-    use System\Configuration\Configuration;
     use System\Configuration\IConfiguration;
+    use System\DependencyInjection\ContainerBuilderInterface;
+    use System\DependencyInjection\ContainerInterface;
+    use System\Exceptions\ConfigurationVariableNotFoundException;
+    use System\Exceptions\IncorrectConfigurationVariableException;
     use System\Host\IStartUp;
     use System\Logging\ILogger;
-    use WebApp\Routing\Router;
+    use WebApp\Extensions\BusinessExtension;
+    use WebApp\Extensions\ControllersExtension;
+    use WebApp\Extensions\MiddlewaresExtension;
+    use WebApp\Extensions\MySqlExtension;
+    use WebApp\Extensions\UseCasesExtension;
+    use WebApp\Routing\SlimFrameworkRouter;
 
     class Startup implements IStartUp
     {
-        private ILogger       $logger;
-        private Configuration $configuration;
+        private ILogger $logger;
 
-        /**
-         * Startup constructor.
-         * @param IConfiguration $configuration
-         * @param ILogger $logger
-         */
-        public function __construct(IConfiguration $configuration, ILogger $logger)
+        public function __construct(ILogger $logger)
         {
-            $this->configuration = $configuration;
             $this->logger = $logger;
         }
 
         /**
-         * @throws Exception
+         * @throws IncorrectConfigurationVariableException
+         * @throws ConfigurationVariableNotFoundException
          */
-        public function run(): void
+        public function configure(IConfiguration $configuration, ContainerBuilderInterface $services): void
         {
-            try
-            {
+            MySqlExtension::use($services, $configuration);
+            ControllersExtension::use($services);
+            BusinessExtension::use($services);
+            UseCasesExtension::use($services);
+            MiddlewaresExtension::use($services);
+        }
+
+        /**
+         * @throws ContainerExceptionInterface
+         * @throws NotFoundExceptionInterface
+         */
+        public function run(IConfiguration $configuration, ContainerInterface $servicesProvider): void
+        {
+            try {
                 $this->logger->logTrace("Host running...");
-                $app = AppFactory::create();
-
-                $app->addBodyParsingMiddleware();
-                new Router($this->logger, $app, $this->configuration);
-
-                $app->run();
-            }
-            catch (HttpNotFoundException $e)
-            {
+                $slimFrameworkRouter = new SlimFrameworkRouter($servicesProvider, $configuration);
+                $slimFrameworkRouter->configure()->run();
+            } catch (HttpNotFoundException $e) {
                 $uri = $e->getRequest()->getUri();
                 $this->logger->logWarning("not found route $uri");
                 header('Location: /');
-            }
-            finally
-            {
+            } finally {
                 $this->logger->logTrace("Host stopped");
             }
         }

@@ -1,8 +1,7 @@
 <?php
 
 
-namespace WebApp\Controllers
-{
+namespace WebApp\Controllers {
 
 
     use Business\Entities\Event;
@@ -12,17 +11,25 @@ namespace WebApp\Controllers
     use Business\Exceptions\EventNotExistException;
     use Business\Exceptions\EventSignaledException;
     use Business\Exceptions\ResourceNotFound;
-    use Business\Ports\AuthenticationContextInterface;
+    use Business\Ports\EmailSenderInterface;
     use Business\Services\EventService\IEventService;
     use Exception;
     use PhpLinq\Interfaces\ILinq;
+    use PhpLinq\PhpLinq;
     use System\Logging\ILogger;
     use System\Routing\Responses\NotFoundResponse;
     use System\Routing\Responses\OkResponse;
     use System\Routing\Responses\Response;
     use WebApp\Attributes\Page;
+    use WebApp\Authentication\AuthenticationContext;
     use WebApp\Controllers\EventExtensions\EventExtension;
+    use WebApp\Controllers\EventExtensions\Extensions\TabAbout;
+    use WebApp\Controllers\EventExtensions\Extensions\TabParticipants;
+    use WebApp\Controllers\EventExtensions\Extensions\TabPublications;
+    use WebApp\Controllers\EventExtensions\Extensions\TabReviews;
+    use WebApp\Controllers\EventExtensions\Extensions\TabToDoList;
     use WebApp\Controllers\EventExtensions\IEventExtension;
+    use WebApp\Services\ToasterService\ToasterInterface;
 
     /**
      * Class OneEvent
@@ -32,14 +39,25 @@ namespace WebApp\Controllers
      */
     class OneEventController extends AppController
     {
+        private readonly ILinq $extensions;
 
         public function __construct(
-            private readonly ILogger $logger,
-            private readonly IEventService $eventService,
-            private readonly AuthenticationContextInterface $authenticationGateway,
-            private readonly ILinq $extensions
-        ) {
+            private readonly ILogger               $logger,
+            private readonly IEventService         $eventService,
+            private readonly AuthenticationContext $authenticationGateway,
+            private readonly EmailSenderInterface  $emailSender,
+            private readonly ToasterInterface      $toaster,
+            private readonly Event                 $event
+        )
+        {
             parent::__construct();
+            $this->extensions = PhpLinq::fromArray([
+                new TabPublications($this->authenticationGateway, $this->event),
+                new TabParticipants($this->emailSender, $this->authenticationGateway, $this->event, $this->toaster),
+                new TabToDoList($this->authenticationGateway, $this->event),
+                new TabAbout($this->authenticationGateway, $this->event),
+                new TabReviews($this->authenticationGateway, $this->event)
+            ]);
         }
 
         #[Page('one-events.css', 'event.js')]

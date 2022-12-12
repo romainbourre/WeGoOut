@@ -27,7 +27,7 @@ namespace WebApp\Controllers
             $this->eventService = $eventService;
         }
 
-        #[Page('edit-events.css', 'edit-event.js')]
+        #[Page('edit-event.css', 'edit-event.js')]
         public function getView(string $eventId): Response
         {
             try

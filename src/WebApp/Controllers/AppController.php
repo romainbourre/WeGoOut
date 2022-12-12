@@ -34,7 +34,7 @@ namespace WebApp\Controllers
         private function parsePageAttributes(): void
         {
             $reflection = new ReflectionClass($this);
-            $attributes = $reflection->getAttributes();
+            $attributes = $reflection->getAttributes(Page::class);
             foreach ($reflection->getMethods() as $method) {
                 $attributes = array_merge($attributes, $method->getAttributes(Page::class));
             }

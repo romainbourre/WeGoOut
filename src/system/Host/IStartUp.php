@@ -1,18 +1,16 @@
 <?php
 
 
-namespace System\Host
+namespace System\Host;
+
+
+use System\Configuration\IConfiguration;
+use System\DependencyInjection\ContainerBuilderInterface;
+use System\DependencyInjection\ContainerInterface;
+
+interface IStartUp
 {
+    public function configure(IConfiguration $configuration, ContainerBuilderInterface $services): void;
 
-
-    use Exception;
-
-    interface IStartUp
-    {
-        /**
-         * Run StartUp class
-         * @throws Exception
-         */
-        public function run(): void;
-    }
+    public function run(IConfiguration $configuration, ContainerInterface $servicesProvider): void;
 }
