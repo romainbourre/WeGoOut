@@ -7,7 +7,7 @@ namespace System\Host;
 use Closure;
 use JetBrains\PhpStorm\Pure;
 use System\Configuration\Configuration;
-use System\Configuration\IConfiguration;
+use System\Configuration\ConfigurationInterface;
 use System\Configuration\IConfigurationBuilder;
 use System\Exceptions\FileConfigurationException;
 use System\Exceptions\IncorrectStartUpClass;
@@ -19,7 +19,7 @@ use System\Logging\Loggers;
 class HostBuilder implements IHostBuilder, IConfigurationBuilder, ILoggingBuilder
 {
     private ?string $startUpClass;
-    private IConfiguration $configuration;
+    private ConfigurationInterface $configuration;
     private ILoggers $loggers;
 
     /**

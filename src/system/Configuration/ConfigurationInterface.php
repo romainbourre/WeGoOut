@@ -9,7 +9,7 @@ namespace System\Configuration
     use System\Exceptions\ConfigurationVariableNotFoundException;
     use System\Exceptions\IncorrectConfigurationVariableException;
 
-    interface IConfiguration extends ArrayAccess
+    interface ConfigurationInterface extends ArrayAccess
     {
         /**
          * Merge configuration array in actual configuration

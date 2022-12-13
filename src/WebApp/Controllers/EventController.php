@@ -6,25 +6,29 @@ namespace WebApp\Controllers
 
     use Business\Entities\Event;
     use Business\Exceptions\EventNotExistException;
+    use Business\Ports\EmailSenderInterface;
     use Business\Services\EventService\IEventService;
     use Business\Services\EventService\Requests\SearchEventsRequest;
     use Business\ValueObjects\GeometricCoordinates;
     use Exception;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-    use System\Configuration\IConfiguration;
+    use System\Configuration\ConfigurationInterface;
     use System\Logging\ILogger;
     use WebApp\Attributes\Page;
     use WebApp\Authentication\AuthenticationContext;
+    use WebApp\Services\ToasterService\ToasterInterface;
 
     class EventController extends AppController
     {
 
         public function __construct(
-            private readonly IConfiguration        $configuration,
-            private readonly ILogger               $logger,
-            private readonly IEventService         $eventService,
-            private readonly AuthenticationContext $authenticationGateway
+            private readonly ConfigurationInterface $configuration,
+            private readonly ILogger                $logger,
+            private readonly IEventService          $eventService,
+            private readonly AuthenticationContext  $authenticationGateway,
+            private readonly EmailSenderInterface   $emailSender,
+            private readonly ToasterInterface       $toaster
         )
         {
             parent::__construct();
@@ -137,7 +141,7 @@ namespace WebApp\Controllers
         public function forEvent(int $eventId): OneEventController
         {
             $event = new Event($eventId);
-            return new OneEventController($this->logger, $this->eventService, $this->authenticationGateway, $event);
+            return new OneEventController($this->logger, $this->eventService, $this->authenticationGateway, $this->emailSender, $this->toaster, $event);
         }
     }
 }

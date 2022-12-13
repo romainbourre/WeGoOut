@@ -7,7 +7,7 @@ namespace WebApp {
     use Psr\Container\ContainerExceptionInterface;
     use Psr\Container\NotFoundExceptionInterface;
     use Slim\Exception\HttpNotFoundException;
-    use System\Configuration\IConfiguration;
+    use System\Configuration\ConfigurationInterface;
     use System\DependencyInjection\ContainerBuilderInterface;
     use System\DependencyInjection\ContainerInterface;
     use System\Exceptions\ConfigurationVariableNotFoundException;
@@ -34,7 +34,7 @@ namespace WebApp {
          * @throws IncorrectConfigurationVariableException
          * @throws ConfigurationVariableNotFoundException
          */
-        public function configure(IConfiguration $configuration, ContainerBuilderInterface $services): void
+        public function configure(ConfigurationInterface $configuration, ContainerBuilderInterface $services): void
         {
             MySqlExtension::use($services, $configuration);
             ControllersExtension::use($services);
@@ -47,7 +47,7 @@ namespace WebApp {
          * @throws ContainerExceptionInterface
          * @throws NotFoundExceptionInterface
          */
-        public function run(IConfiguration $configuration, ContainerInterface $servicesProvider): void
+        public function run(ConfigurationInterface $configuration, ContainerInterface $servicesProvider): void
         {
             try {
                 $this->logger->logTrace("Host running...");

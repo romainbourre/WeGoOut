@@ -8,7 +8,7 @@ namespace System\Configuration
     use System\Exceptions\ConfigurationVariableNotFoundException;
     use System\Exceptions\IncorrectConfigurationVariableException;
 
-    class Configuration implements IConfiguration
+    class Configuration implements ConfigurationInterface
     {
         /**
          * @var array

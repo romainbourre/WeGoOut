@@ -9,7 +9,7 @@
     <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0"/>
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <?php if (isset($css)) echo $css ?>
 
 </head>
@@ -102,7 +102,7 @@
     </div>
 </footer>
 
-<script type="module" src="main.js"></script>
+<script type="module" src="/main.js"></script>
 
 <?php if (isset($js)) echo $js ?>
 

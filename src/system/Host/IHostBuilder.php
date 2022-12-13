@@ -6,7 +6,7 @@ namespace System\Host
 
 
     use Closure;
-    use System\Configuration\IConfiguration;
+    use System\Configuration\ConfigurationInterface;
     use System\Configuration\IConfigurationBuilder;
     use System\Exceptions\IncorrectStartUpClass;
     use System\Logging\ILoggingBuilder;
@@ -21,14 +21,14 @@ namespace System\Host
 
         /**
          * Set global configuration
-         * @param Closure<IConfigurationBuilder, IConfiguration> $action
+         * @param Closure<IConfigurationBuilder, ConfigurationInterface> $action
          * @return IHostBuilder
          */
         public function configuration(Closure $action): IHostBuilder;
 
         /**
          * Set configuration about logging
-         * @param Closure<ILoggingBuilder, IConfiguration> $action
+         * @param Closure<ILoggingBuilder, ConfigurationInterface> $action
          * @return IHostBuilder
          */
         public function configureLogging(Closure $action): IHostBuilder;

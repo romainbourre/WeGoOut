@@ -4,13 +4,13 @@
 namespace System\Host;
 
 
-use System\Configuration\IConfiguration;
+use System\Configuration\ConfigurationInterface;
 use System\DependencyInjection\ContainerBuilderInterface;
 use System\DependencyInjection\ContainerInterface;
 
 interface IStartUp
 {
-    public function configure(IConfiguration $configuration, ContainerBuilderInterface $services): void;
+    public function configure(ConfigurationInterface $configuration, ContainerBuilderInterface $services): void;
 
-    public function run(IConfiguration $configuration, ContainerInterface $servicesProvider): void;
+    public function run(ConfigurationInterface $configuration, ContainerInterface $servicesProvider): void;
 }

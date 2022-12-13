@@ -60,7 +60,7 @@ namespace WebApp\Controllers {
             ]);
         }
 
-        #[Page('one-events.css', 'event.js')]
+        #[Page('one-event.css', 'event.js')]
         public function getView(string $eventId): Response
         {
             try {

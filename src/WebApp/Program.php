@@ -6,13 +6,12 @@ namespace WebApp
 
 
     use Exception;
-    use System\Configuration\IConfiguration;
+    use System\Configuration\ConfigurationInterface;
     use System\Configuration\IConfigurationBuilder;
     use System\Host\Host;
     use System\Logging\ILoggingBuilder;
     use System\Logging\Logger\ConsoleLogger\FileLogger;
     use WebApp\Logging\Logger\SentryLogger;
-
     use function Sentry\init;
 
     class Program
@@ -23,7 +22,7 @@ namespace WebApp
         public static function main(): void
         {
             Host::createDefaultHostBuilder(__DIR__)
-                ->configuration(function (IConfigurationBuilder $builder, IConfiguration $configuration) {
+                ->configuration(function (IConfigurationBuilder $builder, ConfigurationInterface $configuration) {
 
                     $environment = $configuration['Environment'];
                     $version = $configuration['Version'];
@@ -42,8 +41,7 @@ namespace WebApp
                     session_name("EVENT_PROJECT");
                     session_start();
                 })
-                ->configureLogging(function(ILoggingBuilder $builder, IConfiguration $configuration)
-                {
+                ->configureLogging(function (ILoggingBuilder $builder, ConfigurationInterface $configuration) {
                     $sentryLogLevel = $configuration['Sentry:Logging:Level'];
                     $builder->addLogger(new SentryLogger($sentryLogLevel ?? SentryLogger::SentryInfo));
                     $builder->addLogger(new FileLogger(ROOT . "/../application.log"));

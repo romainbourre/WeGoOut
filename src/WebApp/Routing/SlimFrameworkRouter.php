@@ -14,7 +14,7 @@ namespace WebApp\Routing {
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use Slim\Routing\RouteCollectorProxy;
-    use System\Configuration\IConfiguration;
+    use System\Configuration\ConfigurationInterface;
     use System\DependencyInjection\ContainerInterface;
     use System\Routing\Responses\BadRequestResponse;
     use System\Routing\Responses\OkResponse;
@@ -44,7 +44,7 @@ namespace WebApp\Routing {
 
         private RouteCollectorProxyInterface $routeCollectorProxy;
 
-        public function __construct(private ContainerInterface $container, private IConfiguration $configuration)
+        public function __construct(private ContainerInterface $container, private ConfigurationInterface $configuration)
         {
             $this->routeCollectorProxy = AppFactory::create();
             $this->routeCollectorProxy->addBodyParsingMiddleware();
@@ -98,6 +98,9 @@ namespace WebApp\Routing {
 
                 $group->get('events[/{id:[0-9]*}]', function ($request, $response, array $args) {
                     $eventId = $args['id'] ?? null;
+                    /**
+                     * @var EventController $eventController
+                     */
                     $eventController = $this->container->get(EventController::class);
                     if (!is_null($eventId)) {
                         return $eventController->forEvent($eventId)->getView($eventId);

@@ -8,28 +8,27 @@ use Adapters\TwigRenderer\TwigRendererAdapter;
 use Business\Entities\Event;
 use Business\Entities\User;
 use Business\Exceptions\DatabaseErrorException;
+use Business\Exceptions\UserDeletedException;
 use Business\Exceptions\UserNotExistException;
-use Business\Ports\AuthenticationContextInterface;
+use Business\Exceptions\UserSignaledException;
 use Business\Services\EventService\EventService;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
-use System\Configuration\IConfiguration;
+use System\Configuration\ConfigurationInterface;
 use System\Configuration\IConfigurationBuilder;
 use System\DependencyInjection\ContainerBuilderInterface;
 use System\DependencyInjection\ContainerInterface;
+use System\Exceptions\ConfigurationVariableNotFoundException;
+use System\Exceptions\IncorrectConfigurationVariableException;
 use System\Host\Host;
 use System\Host\IStartUp;
 use System\Logging\ILogger;
 use System\Logging\ILoggingBuilder;
 use System\Logging\Logger\ConsoleLogger\FileLogger;
+use System\Routing\Responses\OkResponse;
 use WebApp\Authentication\AuthenticationConstants;
 use WebApp\Authentication\AuthenticationContext;
-use WebApp\Controllers\EventExtensions\Extensions\TabAbout;
-use WebApp\Controllers\EventExtensions\Extensions\TabParticipants;
-use WebApp\Controllers\EventExtensions\Extensions\TabPublications;
-use WebApp\Controllers\EventExtensions\Extensions\TabReviews;
-use WebApp\Controllers\EventExtensions\Extensions\TabToDoList;
 use WebApp\Controllers\NotificationsCenterController;
 use WebApp\Controllers\OneEventController;
 use WebApp\Controllers\ProfileController;
@@ -43,16 +42,24 @@ error_reporting(E_ALL ^ E_DEPRECATED);
 
 class SwitchStartup implements IStartUp
 {
-    private IConfiguration $configuration;
-    private ILogger        $logger;
+    private ConfigurationInterface $configuration;
+    private ILogger $logger;
 
-    public function __construct(IConfiguration $configuration, ILogger $logger)
+    public function __construct(ConfigurationInterface $configuration, ILogger $logger)
     {
         $this->configuration = $configuration;
         $this->logger = $logger;
     }
 
-    public function run(IConfiguration $configuration, ContainerInterface $servicesProvider): void
+    /**
+     * @throws IncorrectConfigurationVariableException
+     * @throws UserDeletedException
+     * @throws UserNotExistException
+     * @throws ConfigurationVariableNotFoundException
+     * @throws DatabaseErrorException
+     * @throws UserSignaledException
+     */
+    public function run(ConfigurationInterface $configuration, ContainerInterface $servicesProvider): void
     {
         $connectionString = $this->configuration->getRequired('Database:ConnectionString');
         $databaseContext = new PDO(
@@ -108,25 +115,20 @@ class SwitchStartup implements IStartUp
                     {
                         $eventId = $args['id'] ?? null;
                         $event = new Event((int)$eventId);
-                        $eventExtensions = [
-                            new TabParticipants($emailSender, $authenticationGateway, $event, $toasterService),
-                            new TabPublications($authenticationGateway, $event),
-                            new TabToDoList($authenticationGateway, $event),
-                            new TabReviews($authenticationGateway, $event),
-                            new TabAbout($authenticationGateway, $event)
-                        ];
                         return (new OneEventController(
                             $this->logger,
                             $eventService,
                             $authenticationGateway,
-                            PhpLinq\PhpLinq::fromArray($eventExtensions)
+                            $emailSender,
+                            $toasterService,
+                            $event
                         ))->computeActionResponseForEvent($action, $eventId);
                     }
                 );
             }
         );
 
-        $app->any('/app/ajax/switch.php', fn() => new \System\Routing\Responses\OkResponse());
+        $app->any('/app/ajax/switch.php', fn() => new OkResponse());
 
         try {
             $app->run();
@@ -136,26 +138,6 @@ class SwitchStartup implements IStartUp
 
 
         switch ($request) {
-            case "event":
-                $this->logger->logTrace("$request / $action");
-                $eventId = $_GET['id'] ?? ($_POST['id'] ?? null);
-                if (!is_null($eventId)) {
-                    $event = new Event((int)$eventId);
-                    $eventExtensions = [
-                        new TabParticipants($emailSender, $authenticationGateway, $event, $toasterService),
-                        new TabPublications($authenticationGateway, $event),
-                        new TabToDoList($authenticationGateway, $event),
-                        new TabReviews($authenticationGateway, $event),
-                        new TabAbout($authenticationGateway, $event)
-                    ];
-                    echo (new OneEventController(
-                        $this->logger,
-                        $eventService,
-                        $authenticationGateway,
-                        PhpLinq\PhpLinq::fromArray($eventExtensions)
-                    ))->computeActionResponseForEvent($action, $eventId);
-                }
-                break;
             case "profile":
                 $userId = $_GET['id'] ?? ($_POST['id'] ?? null);
                 $user = !is_null($userId) ? User::load($userId) : $connectedUser;
@@ -176,7 +158,7 @@ class SwitchStartup implements IStartUp
      * @throws DatabaseErrorException
      * @throws UserNotExistException
      */
-    private function loadUserInAuthenticationGateway(): AuthenticationContextInterface
+    private function loadUserInAuthenticationGateway(): AuthenticationContext
     {
         $authenticationGateway = new AuthenticationContext();
         if (isset($_SESSION[AuthenticationConstants::USER_DATA_SESSION_KEY])) {
@@ -187,7 +169,7 @@ class SwitchStartup implements IStartUp
         return $authenticationGateway;
     }
 
-    public function configure(IConfiguration $configuration, ContainerBuilderInterface $services): void
+    public function configure(ConfigurationInterface $configuration, ContainerBuilderInterface $services): void
     {
         // TODO: Implement configure() method.
     }
@@ -195,7 +177,7 @@ class SwitchStartup implements IStartUp
 
 Host::createDefaultHostBuilder(__DIR__ . '/../../../')
     ->useStartUp(SwitchStartup::class)
-    ->configuration(function (IConfigurationBuilder $builder, IConfiguration $configuration) {
+    ->configuration(function (IConfigurationBuilder $builder, ConfigurationInterface $configuration) {
 
         $environment = $configuration['Environment'];
         $version = $configuration['Version'];
@@ -218,8 +200,7 @@ Host::createDefaultHostBuilder(__DIR__ . '/../../../')
         session_start();
 
     })
-    ->configureLogging(function(ILoggingBuilder $builder, IConfiguration $configuration)
-    {
+    ->configureLogging(function (ILoggingBuilder $builder, ConfigurationInterface $configuration) {
         $sentryLogLevel = $configuration['Sentry:Logging:Level'];
         $builder->addLogger(new SentryLogger($sentryLogLevel ?? SentryLogger::SentryInfo));
         $builder->addLogger(new FileLogger(ROOT . "/../application.log"));

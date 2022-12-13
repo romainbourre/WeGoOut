@@ -6,7 +6,7 @@ namespace System\Host;
 use Exception;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use System\Configuration\IConfiguration;
+use System\Configuration\ConfigurationInterface;
 use System\Configuration\IConfigurationBuilder;
 use System\DependencyInjection\Container;
 use System\DependencyInjection\ContainerInterface;
@@ -17,11 +17,11 @@ use System\Logging\Logger\ConsoleLogger\ConsoleLogger;
 class Host implements IHost
 {
 
-    private IConfiguration $configuration;
+    private ConfigurationInterface $configuration;
     private ILogger $logger;
     private ?string $startUpClass;
 
-    public function __construct(IConfiguration $configuration, ILogger $logger, ?string $startUpClass)
+    public function __construct(ConfigurationInterface $configuration, ILogger $logger, ?string $startUpClass)
     {
         $this->configuration = $configuration;
         $this->logger = $logger;
@@ -32,14 +32,14 @@ class Host implements IHost
     {
         $hostBuilder = new HostBuilder();
 
-        $hostBuilder->configuration(function (IConfigurationBuilder $builder, IConfiguration $configuration) use ($rootPath) {
+        $hostBuilder->configuration(function (IConfigurationBuilder $builder, ConfigurationInterface $configuration) use ($rootPath) {
             $builder->addJsonConfiguration("$rootPath/app.settings.json");
             $builder->addJsonConfiguration("$rootPath/app.settings.development.json", false);
             $builder->addJsonConfiguration("$rootPath/app.settings.local.json", false);
             $builder->addEnvironmentVariables();
         });
 
-        $hostBuilder->configureLogging(function (ILoggingBuilder $builder, IConfiguration $configuration) {
+        $hostBuilder->configureLogging(function (ILoggingBuilder $builder, ConfigurationInterface $configuration) {
             $levelLabel = $configuration['Logging:Level'];
 
             $level = match (strtolower($levelLabel)) {
@@ -65,7 +65,7 @@ class Host implements IHost
     {
         try {
             $container = new Container();
-            $container->addService(IConfiguration::class, $this->configuration);
+            $container->addService(ConfigurationInterface::class, $this->configuration);
             $container->addService(ILogger::class, $this->logger);
             $container->addService(ContainerInterface::class, $container);
 

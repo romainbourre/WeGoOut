@@ -11,7 +11,7 @@ use Business\Ports\TemplateRendererInterface;
 use Exception;
 use SendGrid;
 use SendGrid\Mail\Mail;
-use System\Configuration\IConfiguration;
+use System\Configuration\ConfigurationInterface;
 use System\Logging\ILogger;
 
 class SendGridAdapter implements EmailSenderInterface
@@ -19,10 +19,11 @@ class SendGridAdapter implements EmailSenderInterface
     private readonly string $apiKey;
 
     public function __construct(
-        private readonly IConfiguration $configuration,
-        private readonly ILogger $logger,
+        private readonly ConfigurationInterface    $configuration,
+        private readonly ILogger                   $logger,
         private readonly TemplateRendererInterface $templateRenderer
-    ) {
+    )
+    {
         $this->apiKey = $this->configuration['SendGrid:ApiKey'];
     }
 
