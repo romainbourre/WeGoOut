@@ -22,7 +22,7 @@ use System\DependencyInjection\ContainerInterface;
 use System\Exceptions\ConfigurationVariableNotFoundException;
 use System\Exceptions\IncorrectConfigurationVariableException;
 use System\Host\Host;
-use System\Host\IStartUp;
+use System\Host\StartUpInterface;
 use System\Logging\Logger\ConsoleLogger\FileLogger;
 use System\Logging\LoggerInterface;
 use System\Logging\LoggingBuilderInterface;
@@ -40,7 +40,7 @@ use function Sentry\init;
 error_reporting(E_ALL ^ E_DEPRECATED);
 
 
-class SwitchStartup implements IStartUp
+class SwitchStartup implements StartUpInterface
 {
     private ConfigurationInterface $configuration;
     private LoggerInterface $logger;

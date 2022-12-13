@@ -7,7 +7,7 @@ namespace System\Host
 
     use Exception;
 
-    interface IHost
+    interface HostInterface
     {
         /**
          * Run Host
@@ -19,9 +19,9 @@ namespace System\Host
          * Set default configuration file 'app.settings.json' and  non obligatory 'app.settings.local.json'
          * Add default console logger
          * @param string $rootPath path where program started
-         * @return IHostBuilder
+         * @return HostBuilderInterface
          * @throws Exception
          */
-        public static function createDefaultHostBuilder(string $rootPath): IHostBuilder;
+        public static function createDefaultHostBuilder(string $rootPath): HostBuilderInterface;
     }
 }

@@ -11,34 +11,34 @@ namespace System\Host
     use System\Exceptions\IncorrectStartUpClass;
     use System\Logging\LoggingBuilderInterface;
 
-    interface IHostBuilder
+    interface HostBuilderInterface
     {
         /**
          * Create Host from HostBuilder
-         * @return IHost
+         * @return HostInterface
          */
-        public function build(): IHost;
+        public function build(): HostInterface;
 
         /**
          * Set global configuration
          * @param Closure<IConfigurationBuilder, ConfigurationInterface> $action
-         * @return IHostBuilder
+         * @return HostBuilderInterface
          */
-        public function configuration(Closure $action): IHostBuilder;
+        public function configuration(Closure $action): HostBuilderInterface;
 
         /**
          * Set configuration about logging
          * @param Closure<LoggingBuilderInterface, ConfigurationInterface> $action
-         * @return IHostBuilder
+         * @return HostBuilderInterface
          */
-        public function configureLogging(Closure $action): IHostBuilder;
+        public function configureLogging(Closure $action): HostBuilderInterface;
 
         /**
          * Use StartUp class
          * @param string $class IStartUp Class
-         * @return IHostBuilder
+         * @return HostBuilderInterface
          * @throws IncorrectStartUpClass
          */
-        public function useStartUp(string $class): IHostBuilder;
+        public function useStartUp(string $class): HostBuilderInterface;
     }
 }

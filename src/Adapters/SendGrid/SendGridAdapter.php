@@ -14,14 +14,14 @@ use SendGrid\Mail\Mail;
 use System\Configuration\ConfigurationInterface;
 use System\Logging\LoggerInterface;
 
-class SendGridAdapter implements EmailSenderInterface
+readonly class SendGridAdapter implements EmailSenderInterface
 {
-    private readonly string $apiKey;
+    private string $apiKey;
 
     public function __construct(
-        private readonly ConfigurationInterface    $configuration,
-        private readonly LoggerInterface           $logger,
-        private readonly TemplateRendererInterface $templateRenderer
+        private ConfigurationInterface    $configuration,
+        private LoggerInterface           $logger,
+        private TemplateRendererInterface $templateRenderer
     )
     {
         $this->apiKey = $this->configuration['SendGrid:ApiKey'];

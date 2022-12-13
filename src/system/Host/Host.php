@@ -14,7 +14,7 @@ use System\Logging\Logger\ConsoleLogger\ConsoleLogger;
 use System\Logging\LoggerInterface;
 use System\Logging\LoggingBuilderInterface;
 
-class Host implements IHost
+class Host implements HostInterface
 {
 
     private ConfigurationInterface $configuration;
@@ -28,7 +28,7 @@ class Host implements IHost
         $this->startUpClass = $startUpClass;
     }
 
-    public static function createDefaultHostBuilder(string $rootPath): IHostBuilder
+    public static function createDefaultHostBuilder(string $rootPath): HostBuilderInterface
     {
         $hostBuilder = new HostBuilder();
 
@@ -70,7 +70,7 @@ class Host implements IHost
             $container->addService(ContainerInterface::class, $container);
 
             /**
-             * @var IStartUp $startup
+             * @var StartUpInterface $startup
              */
             $startup = $container->get($this->startUpClass);
             $startup->configure($this->configuration, $container);

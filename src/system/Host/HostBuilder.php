@@ -16,7 +16,7 @@ use System\Logging\Loggers;
 use System\Logging\LoggersInterface;
 use System\Logging\LoggingBuilderInterface;
 
-class HostBuilder implements IHostBuilder, IConfigurationBuilder, LoggingBuilderInterface
+class HostBuilder implements HostBuilderInterface, IConfigurationBuilder, LoggingBuilderInterface
 {
     private ?string $startUpClass;
     private ConfigurationInterface $configuration;
@@ -91,7 +91,7 @@ class HostBuilder implements IHostBuilder, IConfigurationBuilder, LoggingBuilder
      * @inheritDoc
      */
     #[Pure]
-    public function build(): IHost
+    public function build(): HostInterface
     {
         return new Host($this->configuration, $this->loggers, $this->startUpClass);
     }
@@ -99,7 +99,7 @@ class HostBuilder implements IHostBuilder, IConfigurationBuilder, LoggingBuilder
     /**
      * @inheritDoc
      */
-    public function configuration(Closure $action): IHostBuilder
+    public function configuration(Closure $action): HostBuilderInterface
     {
         $action($this, $this->configuration);
         return $this;
@@ -108,7 +108,7 @@ class HostBuilder implements IHostBuilder, IConfigurationBuilder, LoggingBuilder
     /**
      * @inheritDoc
      */
-    public function configureLogging(Closure $action): IHostBuilder
+    public function configureLogging(Closure $action): HostBuilderInterface
     {
         $action($this, $this->configuration);
         return $this;
@@ -117,9 +117,9 @@ class HostBuilder implements IHostBuilder, IConfigurationBuilder, LoggingBuilder
     /**
      * @inheritDoc
      */
-    public function useStartUp(string $class): IHostBuilder
+    public function useStartUp(string $class): HostBuilderInterface
     {
-        if (($implements = class_implements($class)) && !isset($implements[IStartUp::class])) {
+        if (($implements = class_implements($class)) && !isset($implements[StartUpInterface::class])) {
             throw new IncorrectStartUpClass();
         }
         $this->startUpClass = $class;

@@ -12,7 +12,7 @@ namespace WebApp {
     use System\DependencyInjection\ContainerInterface;
     use System\Exceptions\ConfigurationVariableNotFoundException;
     use System\Exceptions\IncorrectConfigurationVariableException;
-    use System\Host\IStartUp;
+    use System\Host\StartUpInterface;
     use System\Logging\LoggerInterface;
     use WebApp\Extensions\BusinessExtension;
     use WebApp\Extensions\ControllersExtension;
@@ -21,7 +21,7 @@ namespace WebApp {
     use WebApp\Extensions\UseCasesExtension;
     use WebApp\Routing\SlimFrameworkRouter;
 
-    class Startup implements IStartUp
+    class Startup implements StartUpInterface
     {
         private LoggerInterface $logger;
 
