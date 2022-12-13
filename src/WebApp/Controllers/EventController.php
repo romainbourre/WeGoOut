@@ -14,7 +14,7 @@ namespace WebApp\Controllers
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
     use System\Configuration\ConfigurationInterface;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
     use WebApp\Attributes\Page;
     use WebApp\Authentication\AuthenticationContext;
     use WebApp\Services\ToasterService\ToasterInterface;
@@ -24,7 +24,7 @@ namespace WebApp\Controllers
 
         public function __construct(
             private readonly ConfigurationInterface $configuration,
-            private readonly ILogger                $logger,
+            private readonly LoggerInterface        $logger,
             private readonly IEventService          $eventService,
             private readonly AuthenticationContext  $authenticationGateway,
             private readonly EmailSenderInterface   $emailSender,

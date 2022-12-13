@@ -7,12 +7,11 @@ namespace WebApp\Logging\Logger
 
     use Exception;
     use Sentry\Severity;
-    use System\Logging\ILogger;
-
+    use System\Logging\LoggerInterface;
     use function Sentry\captureException;
     use function Sentry\captureMessage;
 
-    class SentryLogger implements ILogger
+    class SentryLogger implements LoggerInterface
     {
         public const SentryDebug = 'debug';
         public const SentryInfo = 'info';

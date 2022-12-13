@@ -8,9 +8,9 @@ namespace System\Logging\Logger\ConsoleLogger
     use DateTime;
     use Exception;
     use JetBrains\PhpStorm\Pure;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
 
-    class FileLogger implements ILogger
+    class FileLogger implements LoggerInterface
     {
         /**
          * @var false|resource resource to write console

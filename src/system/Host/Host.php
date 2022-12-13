@@ -10,18 +10,18 @@ use System\Configuration\ConfigurationInterface;
 use System\Configuration\IConfigurationBuilder;
 use System\DependencyInjection\Container;
 use System\DependencyInjection\ContainerInterface;
-use System\Logging\ILogger;
-use System\Logging\ILoggingBuilder;
 use System\Logging\Logger\ConsoleLogger\ConsoleLogger;
+use System\Logging\LoggerInterface;
+use System\Logging\LoggingBuilderInterface;
 
 class Host implements IHost
 {
 
     private ConfigurationInterface $configuration;
-    private ILogger $logger;
+    private LoggerInterface $logger;
     private ?string $startUpClass;
 
-    public function __construct(ConfigurationInterface $configuration, ILogger $logger, ?string $startUpClass)
+    public function __construct(ConfigurationInterface $configuration, LoggerInterface $logger, ?string $startUpClass)
     {
         $this->configuration = $configuration;
         $this->logger = $logger;
@@ -39,16 +39,16 @@ class Host implements IHost
             $builder->addEnvironmentVariables();
         });
 
-        $hostBuilder->configureLogging(function (ILoggingBuilder $builder, ConfigurationInterface $configuration) {
+        $hostBuilder->configureLogging(function (LoggingBuilderInterface $builder, ConfigurationInterface $configuration) {
             $levelLabel = $configuration['Logging:Level'];
 
             $level = match (strtolower($levelLabel)) {
-                "trace" => ILogger::LOG_TYPE_TRACE,
-                "debug" => ILogger::LOG_TYPE_DEBUG,
-                "information" => ILogger::LOG_TYPE_INFO,
-                "warning" => ILogger::LOG_TYPE_WARNING,
-                "error" => ILogger::LOG_TYPE_ERROR,
-                "critical" => ILogger::LOG_TYPE_CRITICAL,
+                "trace" => LoggerInterface::LOG_TYPE_TRACE,
+                "debug" => LoggerInterface::LOG_TYPE_DEBUG,
+                "information" => LoggerInterface::LOG_TYPE_INFO,
+                "warning" => LoggerInterface::LOG_TYPE_WARNING,
+                "error" => LoggerInterface::LOG_TYPE_ERROR,
+                "critical" => LoggerInterface::LOG_TYPE_CRITICAL,
                 default => null
             };
 
@@ -66,7 +66,7 @@ class Host implements IHost
         try {
             $container = new Container();
             $container->addService(ConfigurationInterface::class, $this->configuration);
-            $container->addService(ILogger::class, $this->logger);
+            $container->addService(LoggerInterface::class, $this->logger);
             $container->addService(ContainerInterface::class, $container);
 
             /**

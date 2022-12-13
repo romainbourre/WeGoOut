@@ -12,7 +12,7 @@ use Business\UseCases\Login\LoginUseCase;
 use Exception;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
-use System\Logging\ILogger;
+use System\Logging\LoggerInterface;
 use System\Routing\Responses\RedirectedResponse;
 use WebApp\Attributes\Page;
 use WebApp\Authentication\AuthenticationConstants;
@@ -24,11 +24,12 @@ class LoginController extends AppController
 {
 
     public function __construct(
-        private readonly ILogger $logger,
-        private readonly UserRepositoryInterface $userRepository,
+        private readonly LoggerInterface                $logger,
+        private readonly UserRepositoryInterface        $userRepository,
         private readonly AuthenticationContextInterface $authenticationGateway,
-        private readonly ToasterInterface $toaster
-    ) {
+        private readonly ToasterInterface               $toaster
+    )
+    {
         parent::__construct();
     }
 

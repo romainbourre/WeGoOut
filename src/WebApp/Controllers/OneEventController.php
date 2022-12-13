@@ -16,7 +16,7 @@ namespace WebApp\Controllers {
     use Exception;
     use PhpLinq\Interfaces\ILinq;
     use PhpLinq\PhpLinq;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
     use System\Routing\Responses\NotFoundResponse;
     use System\Routing\Responses\OkResponse;
     use System\Routing\Responses\Response;
@@ -42,7 +42,7 @@ namespace WebApp\Controllers {
         private readonly ILinq $extensions;
 
         public function __construct(
-            private readonly ILogger               $logger,
+            private readonly LoggerInterface       $logger,
             private readonly IEventService         $eventService,
             private readonly AuthenticationContext $authenticationGateway,
             private readonly EmailSenderInterface  $emailSender,

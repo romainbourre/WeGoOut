@@ -7,7 +7,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use System\Logging\ILogger;
+use System\Logging\LoggerInterface;
 use WebApp\Authentication\AuthenticationContext;
 use WebApp\Controllers\CreateEventController;
 use WebApp\Services\ToasterService\ToasterInterface;
@@ -15,11 +15,12 @@ use WebApp\Services\ToasterService\ToasterInterface;
 class CreateEventMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly ILogger $logger,
-        private readonly IEventService $eventService,
+        private readonly LoggerInterface       $logger,
+        private readonly IEventService         $eventService,
         private readonly AuthenticationContext $authenticationGateway,
-        private readonly ToasterInterface $toaster
-    ) {
+        private readonly ToasterInterface      $toaster
+    )
+    {
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

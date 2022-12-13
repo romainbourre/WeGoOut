@@ -7,14 +7,14 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use System\Logging\ILogger;
+use System\Logging\LoggerInterface;
 use System\Routing\Responses\InternalServerErrorResponse;
 
 class ErrorManagerMiddleware implements MiddlewareInterface
 {
 
 
-    public function __construct(private readonly ILogger $logger)
+    public function __construct(private readonly LoggerInterface $logger)
     {
     }
 

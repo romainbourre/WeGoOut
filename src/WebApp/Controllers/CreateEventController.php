@@ -14,7 +14,7 @@ namespace WebApp\Controllers
     use Exception;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
     use WebApp\Librairies\AppSettings;
     use WebApp\Services\ToasterService\ToasterInterface;
 
@@ -22,11 +22,12 @@ namespace WebApp\Controllers
     {
 
         public function __construct(
-            private readonly ILogger $logger,
-            private readonly IEventService $eventService,
+            private readonly LoggerInterface                $logger,
+            private readonly IEventService                  $eventService,
             private readonly AuthenticationContextInterface $authenticationGateway,
-            private readonly ToasterInterface $toaster
-        ) {
+            private readonly ToasterInterface               $toaster
+        )
+        {
             parent::__construct();
         }
 

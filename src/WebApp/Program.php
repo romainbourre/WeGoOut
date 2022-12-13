@@ -9,8 +9,8 @@ namespace WebApp
     use System\Configuration\ConfigurationInterface;
     use System\Configuration\IConfigurationBuilder;
     use System\Host\Host;
-    use System\Logging\ILoggingBuilder;
     use System\Logging\Logger\ConsoleLogger\FileLogger;
+    use System\Logging\LoggingBuilderInterface;
     use WebApp\Logging\Logger\SentryLogger;
     use function Sentry\init;
 
@@ -41,7 +41,7 @@ namespace WebApp
                     session_name("EVENT_PROJECT");
                     session_start();
                 })
-                ->configureLogging(function (ILoggingBuilder $builder, ConfigurationInterface $configuration) {
+                ->configureLogging(function (LoggingBuilderInterface $builder, ConfigurationInterface $configuration) {
                     $sentryLogLevel = $configuration['Sentry:Logging:Level'];
                     $builder->addLogger(new SentryLogger($sentryLogLevel ?? SentryLogger::SentryInfo));
                     $builder->addLogger(new FileLogger(ROOT . "/../application.log"));

@@ -9,7 +9,7 @@ namespace System\Host
     use System\Configuration\ConfigurationInterface;
     use System\Configuration\IConfigurationBuilder;
     use System\Exceptions\IncorrectStartUpClass;
-    use System\Logging\ILoggingBuilder;
+    use System\Logging\LoggingBuilderInterface;
 
     interface IHostBuilder
     {
@@ -28,7 +28,7 @@ namespace System\Host
 
         /**
          * Set configuration about logging
-         * @param Closure<ILoggingBuilder, ConfigurationInterface> $action
+         * @param Closure<LoggingBuilderInterface, ConfigurationInterface> $action
          * @return IHostBuilder
          */
         public function configureLogging(Closure $action): IHostBuilder;

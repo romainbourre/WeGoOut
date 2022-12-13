@@ -7,18 +7,18 @@ namespace WebApp\Controllers
     use Business\Services\EventService\IEventService;
     use Exception;
     use Slim\Psr7\Response;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
     use WebApp\Attributes\Page;
     use WebApp\Authentication\AuthenticationContext;
 
     class EditEventController extends AppController
     {
 
-        private ILogger $logger;
+        private LoggerInterface $logger;
         private IEventService $eventService;
 
         public function __construct(
-            ILogger                                $logger,
+            LoggerInterface                        $logger,
             IEventService                          $eventService,
             private readonly AuthenticationContext $authenticationGateway
         ) {

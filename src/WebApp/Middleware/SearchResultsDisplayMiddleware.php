@@ -9,7 +9,7 @@ namespace WebApp\Middleware
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\MiddlewareInterface;
     use Psr\Http\Server\RequestHandlerInterface;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
     use WebApp\Authentication\AuthenticationContext;
     use WebApp\Controllers\ResearchController;
 
@@ -19,7 +19,7 @@ namespace WebApp\Middleware
 
         public function __construct(
             private readonly AuthenticationContext $authenticationContext,
-            private readonly ILogger $logger
+            private readonly LoggerInterface       $logger
         ) {
         }
 

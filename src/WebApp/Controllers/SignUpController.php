@@ -10,7 +10,7 @@ use Business\UseCases\SignUp\SignUpUseCase;
 use Exception;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
-use System\Logging\ILogger;
+use System\Logging\LoggerInterface;
 use System\Routing\Responses\RedirectedResponse;
 use WebApp\Attributes\Page;
 use WebApp\Authentication\AuthenticationConstants;
@@ -23,7 +23,7 @@ class SignUpController extends AppController
 
     public function __construct(
         private readonly AuthenticationContextInterface $authenticationGateway,
-        private readonly ILogger                        $logger,
+        private readonly LoggerInterface                $logger,
         private readonly ToasterInterface               $toaster
     )
     {

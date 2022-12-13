@@ -23,9 +23,9 @@ use System\Exceptions\ConfigurationVariableNotFoundException;
 use System\Exceptions\IncorrectConfigurationVariableException;
 use System\Host\Host;
 use System\Host\IStartUp;
-use System\Logging\ILogger;
-use System\Logging\ILoggingBuilder;
 use System\Logging\Logger\ConsoleLogger\FileLogger;
+use System\Logging\LoggerInterface;
+use System\Logging\LoggingBuilderInterface;
 use System\Routing\Responses\OkResponse;
 use WebApp\Authentication\AuthenticationConstants;
 use WebApp\Authentication\AuthenticationContext;
@@ -43,9 +43,9 @@ error_reporting(E_ALL ^ E_DEPRECATED);
 class SwitchStartup implements IStartUp
 {
     private ConfigurationInterface $configuration;
-    private ILogger $logger;
+    private LoggerInterface $logger;
 
-    public function __construct(ConfigurationInterface $configuration, ILogger $logger)
+    public function __construct(ConfigurationInterface $configuration, LoggerInterface $logger)
     {
         $this->configuration = $configuration;
         $this->logger = $logger;
@@ -200,7 +200,7 @@ Host::createDefaultHostBuilder(__DIR__ . '/../../../')
         session_start();
 
     })
-    ->configureLogging(function (ILoggingBuilder $builder, ConfigurationInterface $configuration) {
+    ->configureLogging(function (LoggingBuilderInterface $builder, ConfigurationInterface $configuration) {
         $sentryLogLevel = $configuration['Sentry:Logging:Level'];
         $builder->addLogger(new SentryLogger($sentryLogLevel ?? SentryLogger::SentryInfo));
         $builder->addLogger(new FileLogger(ROOT . "/../application.log"));

@@ -8,10 +8,10 @@ namespace System\Logging
     use Closure;
     use Exception;
 
-    class Loggers implements ILoggers, ILogger
+    class Loggers implements LoggersInterface, LoggerInterface
     {
         /**
-         * @var array<ILogger>
+         * @var array<LoggerInterface>
          */
         private array $loggers = [];
 
@@ -20,7 +20,7 @@ namespace System\Logging
          */
         public function logTrace(string $message)
         {
-           $this->forEachLoggerDo(fn(ILogger $logger) => $logger->logTrace($message));
+            $this->forEachLoggerDo(fn(LoggerInterface $logger) => $logger->logTrace($message));
         }
 
         /**
@@ -28,7 +28,7 @@ namespace System\Logging
          */
         public function logDebug(string $message)
         {
-            $this->forEachLoggerDo(fn(ILogger $logger) => $logger->logDebug($message));
+            $this->forEachLoggerDo(fn(LoggerInterface $logger) => $logger->logDebug($message));
         }
 
         /**
@@ -36,7 +36,7 @@ namespace System\Logging
          */
         public function logInfo(string $message)
         {
-            $this->forEachLoggerDo(fn(ILogger $logger) => $logger->logInfo($message));
+            $this->forEachLoggerDo(fn(LoggerInterface $logger) => $logger->logInfo($message));
         }
 
         /**
@@ -44,7 +44,7 @@ namespace System\Logging
          */
         public function logWarning(string $message)
         {
-            $this->forEachLoggerDo(fn(ILogger $logger) => $logger->logWarning($message));
+            $this->forEachLoggerDo(fn(LoggerInterface $logger) => $logger->logWarning($message));
         }
 
         /**
@@ -52,7 +52,7 @@ namespace System\Logging
          */
         public function logError(string $message, ?Exception $exception = null)
         {
-            $this->forEachLoggerDo(fn(ILogger $logger) => $logger->logError($message, $exception));
+            $this->forEachLoggerDo(fn(LoggerInterface $logger) => $logger->logError($message, $exception));
         }
 
         /**
@@ -60,13 +60,13 @@ namespace System\Logging
          */
         public function logCritical(string $message, ?Exception $exception = null)
         {
-            $this->forEachLoggerDo(fn(ILogger $logger) => $logger->logCritical($message, $exception));
+            $this->forEachLoggerDo(fn(LoggerInterface $logger) => $logger->logCritical($message, $exception));
         }
 
         /**
          * @inheritDoc
          */
-        public function addLogger(ILogger $logger): void
+        public function addLogger(LoggerInterface $logger): void
         {
             $this->loggers[] = $logger;
         }

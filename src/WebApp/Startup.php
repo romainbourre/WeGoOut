@@ -13,7 +13,7 @@ namespace WebApp {
     use System\Exceptions\ConfigurationVariableNotFoundException;
     use System\Exceptions\IncorrectConfigurationVariableException;
     use System\Host\IStartUp;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
     use WebApp\Extensions\BusinessExtension;
     use WebApp\Extensions\ControllersExtension;
     use WebApp\Extensions\MiddlewaresExtension;
@@ -23,9 +23,9 @@ namespace WebApp {
 
     class Startup implements IStartUp
     {
-        private ILogger $logger;
+        private LoggerInterface $logger;
 
-        public function __construct(ILogger $logger)
+        public function __construct(LoggerInterface $logger)
         {
             $this->logger = $logger;
         }

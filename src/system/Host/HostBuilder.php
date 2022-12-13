@@ -11,16 +11,16 @@ use System\Configuration\ConfigurationInterface;
 use System\Configuration\IConfigurationBuilder;
 use System\Exceptions\FileConfigurationException;
 use System\Exceptions\IncorrectStartUpClass;
-use System\Logging\ILogger;
-use System\Logging\ILoggers;
-use System\Logging\ILoggingBuilder;
+use System\Logging\LoggerInterface;
 use System\Logging\Loggers;
+use System\Logging\LoggersInterface;
+use System\Logging\LoggingBuilderInterface;
 
-class HostBuilder implements IHostBuilder, IConfigurationBuilder, ILoggingBuilder
+class HostBuilder implements IHostBuilder, IConfigurationBuilder, LoggingBuilderInterface
 {
     private ?string $startUpClass;
     private ConfigurationInterface $configuration;
-    private ILoggers $loggers;
+    private LoggersInterface $loggers;
 
     /**
      * HostBuilder constructor.
@@ -79,7 +79,7 @@ class HostBuilder implements IHostBuilder, IConfigurationBuilder, ILoggingBuilde
     /**
      * @inheritDoc
      */
-    public function addLogger(ILogger $logger): ILoggingBuilder
+    public function addLogger(LoggerInterface $logger): LoggingBuilderInterface
     {
         $this->loggers->addLogger($logger);
         return $this;

@@ -5,7 +5,7 @@ namespace WebApp\Controllers
 
     use Business\Ports\AuthenticationContextInterface;
     use Exception;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
     use WebApp\Attributes\Page;
     use WebApp\Librairies\Search;
 
@@ -18,7 +18,7 @@ namespace WebApp\Controllers
     {
         public function __construct(
             private readonly AuthenticationContextInterface $authenticationContext,
-            private readonly ILogger $logger
+            private readonly LoggerInterface $logger
         ) {
             parent::__construct();
         }

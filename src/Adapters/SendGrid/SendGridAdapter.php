@@ -12,7 +12,7 @@ use Exception;
 use SendGrid;
 use SendGrid\Mail\Mail;
 use System\Configuration\ConfigurationInterface;
-use System\Logging\ILogger;
+use System\Logging\LoggerInterface;
 
 class SendGridAdapter implements EmailSenderInterface
 {
@@ -20,7 +20,7 @@ class SendGridAdapter implements EmailSenderInterface
 
     public function __construct(
         private readonly ConfigurationInterface    $configuration,
-        private readonly ILogger                   $logger,
+        private readonly LoggerInterface           $logger,
         private readonly TemplateRendererInterface $templateRenderer
     )
     {

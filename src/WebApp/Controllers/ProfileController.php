@@ -10,7 +10,7 @@ namespace WebApp\Controllers
     use Business\Exceptions\UserSignaledException;
     use Exception;
     use Slim\Psr7\Response;
-    use System\Logging\ILogger;
+    use System\Logging\LoggerInterface;
     use WebApp\Attributes\Page;
     use WebApp\Authentication\AuthenticationContext;
     use WebApp\Exceptions\NotConnectedUserException;
@@ -24,7 +24,7 @@ namespace WebApp\Controllers
     class ProfileController extends AppController
     {
         public function __construct(
-            private readonly ILogger               $logger,
+            private readonly LoggerInterface       $logger,
             private readonly AuthenticationContext $authenticationGateway
         ) {
             parent::__construct();

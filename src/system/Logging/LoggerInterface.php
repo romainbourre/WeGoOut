@@ -7,7 +7,7 @@ namespace System\Logging
 
     use Exception;
 
-    interface ILogger
+    interface LoggerInterface
     {
         public const LOG_TYPE_TRACE = 0;
         public const LOG_TYPE_DEBUG = 1;
