@@ -6,8 +6,8 @@ namespace WebApp
 
 
     use Exception;
+    use System\Configuration\ConfigurationBuilderInterface;
     use System\Configuration\ConfigurationInterface;
-    use System\Configuration\IConfigurationBuilder;
     use System\Host\Host;
     use System\Logging\Logger\ConsoleLogger\FileLogger;
     use System\Logging\LoggingBuilderInterface;
@@ -22,7 +22,7 @@ namespace WebApp
         public static function main(): void
         {
             Host::createDefaultHostBuilder(__DIR__)
-                ->configuration(function (IConfigurationBuilder $builder, ConfigurationInterface $configuration) {
+                ->configuration(function (ConfigurationBuilderInterface $builder, ConfigurationInterface $configuration) {
 
                     $environment = $configuration['Environment'];
                     $version = $configuration['Version'];

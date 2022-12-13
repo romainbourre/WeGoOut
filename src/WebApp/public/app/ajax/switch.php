@@ -15,8 +15,8 @@ use Business\Services\EventService\EventService;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
+use System\Configuration\ConfigurationBuilderInterface;
 use System\Configuration\ConfigurationInterface;
-use System\Configuration\IConfigurationBuilder;
 use System\DependencyInjection\ContainerBuilderInterface;
 use System\DependencyInjection\ContainerInterface;
 use System\Exceptions\ConfigurationVariableNotFoundException;
@@ -177,7 +177,7 @@ class SwitchStartup implements StartUpInterface
 
 Host::createDefaultHostBuilder(__DIR__ . '/../../../')
     ->useStartUp(SwitchStartup::class)
-    ->configuration(function (IConfigurationBuilder $builder, ConfigurationInterface $configuration) {
+    ->configuration(function (ConfigurationBuilderInterface $builder, ConfigurationInterface $configuration) {
 
         $environment = $configuration['Environment'];
         $version = $configuration['Version'];

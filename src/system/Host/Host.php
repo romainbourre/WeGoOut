@@ -6,8 +6,8 @@ namespace System\Host;
 use Exception;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use System\Configuration\ConfigurationBuilderInterface;
 use System\Configuration\ConfigurationInterface;
-use System\Configuration\IConfigurationBuilder;
 use System\DependencyInjection\Container;
 use System\DependencyInjection\ContainerInterface;
 use System\Logging\Logger\ConsoleLogger\ConsoleLogger;
@@ -32,7 +32,7 @@ class Host implements HostInterface
     {
         $hostBuilder = new HostBuilder();
 
-        $hostBuilder->configuration(function (IConfigurationBuilder $builder, ConfigurationInterface $configuration) use ($rootPath) {
+        $hostBuilder->configuration(function (ConfigurationBuilderInterface $builder, ConfigurationInterface $configuration) use ($rootPath) {
             $builder->addJsonConfiguration("$rootPath/app.settings.json");
             $builder->addJsonConfiguration("$rootPath/app.settings.development.json", false);
             $builder->addJsonConfiguration("$rootPath/app.settings.local.json", false);

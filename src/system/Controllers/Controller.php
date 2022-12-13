@@ -12,10 +12,10 @@ namespace System\Controllers
     use System\Routing\Responses\OkResponse;
     use System\Routing\Responses\UnauthorizedResponse;
 
-    abstract class Controller implements IResponseController
+    abstract class Controller implements ResponseControllerInterface
     {
         private static array $cssFiles = array();
-        private static array $jsFiles  = array();
+        private static array $jsFiles = array();
 
         /**
          * @inheritDoc

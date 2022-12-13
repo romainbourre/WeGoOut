@@ -6,8 +6,8 @@ namespace System\Host
 
 
     use Closure;
+    use System\Configuration\ConfigurationBuilderInterface;
     use System\Configuration\ConfigurationInterface;
-    use System\Configuration\IConfigurationBuilder;
     use System\Exceptions\IncorrectStartUpClass;
     use System\Logging\LoggingBuilderInterface;
 
@@ -21,7 +21,7 @@ namespace System\Host
 
         /**
          * Set global configuration
-         * @param Closure<IConfigurationBuilder, ConfigurationInterface> $action
+         * @param Closure<ConfigurationBuilderInterface, ConfigurationInterface> $action
          * @return HostBuilderInterface
          */
         public function configuration(Closure $action): HostBuilderInterface;

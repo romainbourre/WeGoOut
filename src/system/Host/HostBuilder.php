@@ -7,8 +7,8 @@ namespace System\Host;
 use Closure;
 use JetBrains\PhpStorm\Pure;
 use System\Configuration\Configuration;
+use System\Configuration\ConfigurationBuilderInterface;
 use System\Configuration\ConfigurationInterface;
-use System\Configuration\IConfigurationBuilder;
 use System\Exceptions\FileConfigurationException;
 use System\Exceptions\IncorrectStartUpClass;
 use System\Logging\LoggerInterface;
@@ -16,7 +16,7 @@ use System\Logging\Loggers;
 use System\Logging\LoggersInterface;
 use System\Logging\LoggingBuilderInterface;
 
-class HostBuilder implements HostBuilderInterface, IConfigurationBuilder, LoggingBuilderInterface
+class HostBuilder implements HostBuilderInterface, ConfigurationBuilderInterface, LoggingBuilderInterface
 {
     private ?string $startUpClass;
     private ConfigurationInterface $configuration;
@@ -38,7 +38,7 @@ class HostBuilder implements HostBuilderInterface, IConfigurationBuilder, Loggin
     /**
      * @inheritDoc
      */
-    public function addEnvironmentVariables(): IConfigurationBuilder
+    public function addEnvironmentVariables(): ConfigurationBuilderInterface
     {
         $environmentConfigurations = getenv();
         foreach ($environmentConfigurations as $key => $config) {
@@ -59,7 +59,7 @@ class HostBuilder implements HostBuilderInterface, IConfigurationBuilder, Loggin
     /**
      * @inheritDoc
      */
-    public function addJsonConfiguration(string $pathToJsonFile, bool $isMandatory = true): IConfigurationBuilder
+    public function addJsonConfiguration(string $pathToJsonFile, bool $isMandatory = true): ConfigurationBuilderInterface
     {
         $fileContent = @file_get_contents($pathToJsonFile);
         if ($fileContent) {
