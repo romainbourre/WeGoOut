@@ -34,7 +34,7 @@ namespace WebApp
                     date_default_timezone_set('Europe/Paris');
 
                     define('ROOT', substr(__DIR__, 0, strpos(__DIR__, "/WebApp")));
-                    define('SYS', ROOT . "/system");
+                    define('SYS', ROOT . "/Framework");
                     define('APP', ROOT . "/WebApp");
                     define('CONF', $configuration->toArray());
 

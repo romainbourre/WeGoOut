@@ -191,7 +191,7 @@ Host::createDefaultHostBuilder(__DIR__ . '/../../../')
 
         // SET PATH
         define('ROOT', substr(__DIR__, 0, strpos(__DIR__, "/WebApp")));
-        define('SYS', ROOT . "/system");
+        define('SYS', ROOT . "/Framework");
         define('APP', ROOT . "/WebApp");
         define('CONF', $configuration->toArray());
 

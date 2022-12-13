@@ -10,7 +10,7 @@
       "WebApp\\": "src/WebApp/",
       "Adapters\\": "src/Adapters/",
       "Business\\": "src/Business/",
-      "System\\": "src/system/",
+      "System\\": "src/Framework/",
       "Tests\\": "tests"
     }
   },
