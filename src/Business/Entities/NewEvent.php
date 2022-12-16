@@ -33,9 +33,11 @@ readonly class NewEvent
     {
         StringGuard::from($title)->isNotEmpty(ValidationErrorMessages::INCORRECT_EVENT_TITLE);
         StringGuard::from($title)->isNotLongerThan(self::MAX_TITLE_LENGTH, ValidationErrorMessages::INCORRECT_EVENT_TOO_LONG_TITLE);
-        NumberGuard::from($participantsLimit)->isNotUpperThan(self::MAX_PARTICIPANTS_LIMIT, ValidationErrorMessages::TOO_MUCH_PARTICIPANTS);
-        NumberGuard::from($participantsLimit)->isNotLowerThan(self::MIN_PARTICIPANTS_LIMIT, ValidationErrorMessages::INSUFFICIENT_PARTICIPANTS);
         BooleanGuard::from($visibility == EventVisibilities::PUBLIC && $this->isGuestsOnly)->isFalse(ValidationErrorMessages::PUBLIC_EVENT_WITH_GUESTS_ONLY);
         BooleanGuard::from($visibility == EventVisibilities::PRIVATE && $this->isGuestsOnly && $this->participantsLimit != null)->isFalse(ValidationErrorMessages::PARTICIPANTS_FOR_GUESTS_ONLY_PRIVATE_EVENT);
+        if (!$this->isGuestsOnly) {
+            NumberGuard::from($participantsLimit)->isNotUpperThan(self::MAX_PARTICIPANTS_LIMIT, ValidationErrorMessages::TOO_MUCH_PARTICIPANTS);
+            NumberGuard::from($participantsLimit)->isNotLowerThan(self::MIN_PARTICIPANTS_LIMIT, ValidationErrorMessages::INSUFFICIENT_PARTICIPANTS);
+        }
     }
 }

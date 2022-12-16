@@ -257,6 +257,7 @@ class CreateEventUseCaseTest extends TestCase
         $request = CreateEventRequestBuilder::given()
             ->withCategoryId($category->id)
             ->withGuestsOnly()
+            ->withParticipants(null)
             ->create();
 
         $this->expectException(ValidationException::class);

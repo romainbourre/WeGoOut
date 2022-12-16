@@ -94,7 +94,8 @@
                                 <div class="col s12">
                                     <div class="switch">
                                         <label>
-                                            <input type="checkbox" name="create-event-guest-check" id="create-event-guest-check" value="1" disabled>
+                                            <input type="checkbox" name="create-event-guest-check"
+                                                   id="create-event-guest-check" value="true" disabled>
                                             <span class="lever" style="margin-left:0"></span>
                                             Sur invitation seulement
                                         </label>

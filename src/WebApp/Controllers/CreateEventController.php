@@ -94,7 +94,7 @@ class  CreateEventController extends AppController
             categoryId: $params->getOrThrow('create-event-category-select')->asInt(),
             description: $params->get('create-event-desc-text')->asString(''),
             isGuestsOnly: $params->get('create-event-guest-check')->asBool(),
-            participantsLimit: $params->getOrThrow('create-event-participants-number')->asInt(),
+            participantsLimit: $params->get('create-event-participants-number')->asInt(),
             startAt: $startAt,
             endAt: $endAt,
             address: $params->getOrThrow('create-event-location-field')->asString(),

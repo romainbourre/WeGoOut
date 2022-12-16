@@ -11,7 +11,7 @@ class CreateEventRequestBuilder
     private string $visibility = CreateEventRequest::VISIBILITY_PUBLIC;
     private string $title = 'my super event';
     private int $categoryId = 1;
-    private int $participantsNumber = 10;
+    private ?int $participantsNumber = 10;
     private bool $isGuestsOnly = false;
     private ?DateTime $startAt = null;
     private ?DateTime $endAt = null;
@@ -67,7 +67,7 @@ class CreateEventRequestBuilder
         return $this;
     }
 
-    public function withParticipants(int $participants): self
+    public function withParticipants(?int $participants): self
     {
         $this->participantsNumber = $participants;
         return $this;
@@ -76,6 +76,7 @@ class CreateEventRequestBuilder
     public function withGuestsOnly(): self
     {
         $this->isGuestsOnly = true;
+        $this->withParticipants(null);
         return $this;
     }
 
