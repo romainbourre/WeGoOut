@@ -2,12 +2,14 @@
 
 namespace Tests\Unit\Business\UseCases;
 
-use Adapters\InMemory\Repositories\InMemoryUserRepositoryInterface;
+use Adapters\InMemory\Repositories\InMemoryUserRepository;
 use Business\Exceptions\IncorrectValidationTokenException;
 use Business\Exceptions\NonConnectedUserException;
 use Business\Exceptions\UserAlreadyValidatedException;
+use Business\Exceptions\ValidationException;
 use Business\UseCases\ValidateUserAccount\ValidateUserAccountRequest;
 use Business\UseCases\ValidateUserAccount\ValidateUserAccountUseCase;
+use PhpLinq\Exceptions\InvalidQueryResultException;
 use PHPUnit\Framework\TestCase;
 use Tests\Utils\Builders\UserBuilder;
 use Tests\Utils\Contexts\DeterministAuthenticationContext;
@@ -15,9 +17,16 @@ use Tests\Utils\Contexts\DeterministAuthenticationContext;
 class ValidateUserWithTokenUseCaseTest extends TestCase
 {
     private readonly DeterministAuthenticationContext $authenticationContext;
-    private readonly InMemoryUserRepositoryInterface  $userRepository;
-    private readonly ValidateUserAccountUseCase       $useCase;
+    private readonly InMemoryUserRepository $userRepository;
+    private readonly ValidateUserAccountUseCase $useCase;
 
+    /**
+     * @throws IncorrectValidationTokenException
+     * @throws ValidationException
+     * @throws InvalidQueryResultException
+     * @throws NonConnectedUserException
+     * @throws UserAlreadyValidatedException
+     */
     public function testThat_Given_NonValidatedSavedUser_When_ValidateUser_Then_SetUserAsValidated()
     {
         $userToken = 'avalidationtoken';
@@ -29,6 +38,11 @@ class ValidateUserWithTokenUseCaseTest extends TestCase
         $this->assertNull($this->userRepository->users->first()->validationToken);
     }
 
+    /**
+     * @throws UserAlreadyValidatedException
+     * @throws ValidationException
+     * @throws NonConnectedUserException
+     */
     public function testThat_Given_NonValidatedSavedUser_When_ValidateUserWithBadToken_Then_PreventError()
     {
         $user = UserBuilder::given()->withValidationToken('avalidationtoken')->create();
@@ -39,6 +53,11 @@ class ValidateUserWithTokenUseCaseTest extends TestCase
         $this->useCase->handle($request);
     }
 
+    /**
+     * @throws IncorrectValidationTokenException
+     * @throws ValidationException
+     * @throws NonConnectedUserException
+     */
     public function testThat_Given_AlreadyValidatedSavedUser_When_ValidateUser_Then_PreventError()
     {
         $user = UserBuilder::given()->withValidationToken(null)->create();
@@ -49,6 +68,10 @@ class ValidateUserWithTokenUseCaseTest extends TestCase
         $this->useCase->handle($request);
     }
 
+    /**
+     * @throws IncorrectValidationTokenException
+     * @throws UserAlreadyValidatedException
+     */
     public function testThat_Given_NonSavedUser_When_ValidateUser_Then_PreventError()
     {
         $request = new ValidateUserAccountRequest('validationToken');
@@ -60,7 +83,7 @@ class ValidateUserWithTokenUseCaseTest extends TestCase
     {
         parent::setUp();
         $this->authenticationContext = new DeterministAuthenticationContext();
-        $this->userRepository = new InMemoryUserRepositoryInterface();
+        $this->userRepository = new InMemoryUserRepository();
         $this->useCase = new ValidateUserAccountUseCase($this->authenticationContext, $this->userRepository);
     }
 }

@@ -93,7 +93,11 @@ namespace WebApp\Routing {
                 $group->get('', fn() => RedirectedResponse::to('/events'));
 
                 $group->post('events', function (Request $request) {
-                    return $this->container->get(CreateEventController::class)->createEvent($request);
+                    /**
+                     * @var CreateEventController $createEventController
+                     */
+                    $createEventController = $this->container->get(CreateEventController::class);
+                    return $createEventController->createEvent($request);
                 })->add($this->container->get(AccountValidatedGuardMiddleware::class));
 
                 $group->get('events[/{id:[0-9]*}]', function ($request, $response, array $args) {
@@ -128,7 +132,11 @@ namespace WebApp\Routing {
                 })->add($this->container->get(AccountValidatedGuardMiddleware::class));
 
                 $group->get('events/create-form', function () {
-                    return $this->container->get(CreateEventController::class)->getCreateEventForm();
+                    /**
+                     * @var CreateEventController $createEventController
+                     */
+                    $createEventController = $this->container->get(CreateEventController::class);
+                    return $createEventController->getCreateEventForm();
                 })->add($this->container->get(AccountValidatedGuardMiddlewareAsUnauthorized::class));
 
                 $group->post('events/view', function (Request $request) {

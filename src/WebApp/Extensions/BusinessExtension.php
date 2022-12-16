@@ -44,11 +44,14 @@ class BusinessExtension
         $services->addService(DateTimeProviderInterface::class, DateTimeProvider::class);
         $services->addService(TokenProviderInterface::class, TokenProvider::class);
         $services->addService(PasswordGeneratorInterface::class, PasswordGenerator::class);
-        $services->addService(AuthenticationContextInterface::class, AuthenticationContext::class);
         $services->addService(Emitter::class, Emitter::getInstance());
         $services->addService(IEventService::class, EventService::class);
         $services->addService(IAccountService::class, AccountService::class);
         $services->addService(ToasterInterface::class, ToasterService::class);
         $services->addService(ToasterRepositoryInterface::class, ToasterService::class);
+
+        $authenticationContext = new AuthenticationContext();
+        $services->addService(AuthenticationContextInterface::class, $authenticationContext);
+        $services->addService(AuthenticationContext::class, $authenticationContext);
     }
 }

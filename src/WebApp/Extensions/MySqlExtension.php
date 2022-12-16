@@ -2,6 +2,8 @@
 
 namespace WebApp\Extensions;
 
+use Adapters\MySqlDatabase\Repositories\EventCategoryRepository;
+use Business\Ports\EventCategoryRepositoryInterface;
 use PDO;
 use System\Configuration\ConfigurationInterface;
 use System\DependencyInjection\ContainerBuilderInterface;
@@ -22,5 +24,6 @@ class MySqlExtension
             $configuration->getRequired('Database:Password')
         );
         $services->addService(PDO::class, $databaseContext);
+        $services->addService(EventCategoryRepositoryInterface::class, EventCategoryRepository::class);
     }
 }

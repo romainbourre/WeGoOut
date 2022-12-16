@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Business\UseCases;
 
-use Adapters\InMemory\Repositories\InMemoryUserRepositoryInterface;
+use Adapters\InMemory\Repositories\InMemoryUserRepository;
 use Business\Exceptions\ValidationErrorMessages;
 use Business\Exceptions\ValidationException;
 use Business\UseCases\AskNewPassword\AskNewPasswordRequest;
@@ -15,7 +15,7 @@ use Tests\Utils\Providers\DeterministPasswordGeneratorInterface;
 
 class AskNewPasswordUseCaseTest extends TestCase
 {
-    private readonly InMemoryUserRepositoryInterface $userRepository;
+    private readonly InMemoryUserRepository $userRepository;
     private readonly DeterministPasswordGeneratorInterface $deterministPasswordGenerator;
     private readonly EmailSenderMockInterface $emailSender;
     private readonly SimplePasswordEncoder $passwordEncoder;
@@ -24,7 +24,7 @@ class AskNewPasswordUseCaseTest extends TestCase
     public function __construct()
     {
         parent::__construct();
-        $this->userRepository = new InMemoryUserRepositoryInterface();
+        $this->userRepository = new InMemoryUserRepository();
         $this->emailSender = new EmailSenderMockInterface();
         $this->deterministPasswordGenerator = new DeterministPasswordGeneratorInterface();
         $this->passwordEncoder = new SimplePasswordEncoder();

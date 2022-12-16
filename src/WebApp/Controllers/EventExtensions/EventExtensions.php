@@ -15,6 +15,6 @@ class EventExtensions extends PhpLinq
 
     public function __construct(TabPublications $tabPublications, TabParticipants $tabParticipants, TabToDoList $tabToDoList, TabAbout $tabAbout, TabReviews $tabReviews)
     {
-        parent::__construct($tabPublications, $tabParticipants, $tabToDoList, $tabAbout, $tabReviews);
+        parent::__construct([$tabPublications, $tabParticipants, $tabToDoList, $tabAbout, $tabReviews]);
     }
 }

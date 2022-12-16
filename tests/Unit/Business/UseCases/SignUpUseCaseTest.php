@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Business\UseCases;
 
-use Adapters\InMemory\Repositories\InMemoryUserRepositoryInterface;
+use Adapters\InMemory\Repositories\InMemoryUserRepository;
 use Business\Entities\User;
 use Business\Exceptions\UserAlreadyExistException;
 use Business\Exceptions\ValidationErrorMessages;
@@ -23,16 +23,16 @@ use Tests\Utils\Providers\DeterministTokenProvider;
 
 class SignUpUseCaseTest extends TestCase
 {
-    private readonly InMemoryUserRepositoryInterface $userRepository;
-    private readonly DeterministDateTimeProvider     $dateTimeProvider;
-    private readonly SimplePasswordEncoder           $passwordEncoder;
-    private readonly DeterministTokenProvider        $tokenProvider;
-    private readonly EmailSenderMockInterface        $emailSenderMock;
-    private readonly SignUpUseCase                   $useCase;
+    private readonly InMemoryUserRepository $userRepository;
+    private readonly DeterministDateTimeProvider $dateTimeProvider;
+    private readonly SimplePasswordEncoder $passwordEncoder;
+    private readonly DeterministTokenProvider $tokenProvider;
+    private readonly EmailSenderMockInterface $emailSenderMock;
+    private readonly SignUpUseCase $useCase;
 
     public function setUp(): void
     {
-        $this->userRepository = new InMemoryUserRepositoryInterface();
+        $this->userRepository = new InMemoryUserRepository();
         $this->passwordEncoder = new SimplePasswordEncoder();
         $this->dateTimeProvider = new DeterministDateTimeProvider();
         $this->tokenProvider = new DeterministTokenProvider();
@@ -52,14 +52,14 @@ class SignUpUseCaseTest extends TestCase
     public function testThat_Given_GoodData_When_SignUp_Then_SaveUser()
     {
         $request = SignUpRequestBuilder::givenRequest()
-                                       ->withFirstname('Romain')
-                                       ->withLastname('Bourré')
-                                       ->withEmail('romain.bourre@me.com')
-                                       ->withBirthdate('12/06/1990')
-                                       ->withCity('92140', 'Clamart')
-                                       ->withCoordinates(0, 0)
-                                       ->withPassword('azerty')
-                                       ->create();
+            ->withFirstname('Romain')
+            ->withLastname('Bourré')
+            ->withEmail('romain.bourre@me.com')
+            ->withBirthdate('12/06/1990')
+            ->withCity('92140', 'Clamart')
+            ->withCoordinates(0, 0)
+            ->withPassword('azerty')
+            ->create();
         $this->test_Given_Request_When_SignUp_Then_SaveUser(0, $request);
 
         $request = SignUpRequestBuilder::givenRequest()->create();

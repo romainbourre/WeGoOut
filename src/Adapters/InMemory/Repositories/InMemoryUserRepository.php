@@ -11,7 +11,7 @@ use PhpLinq\Exceptions\InvalidQueryResultException;
 use PhpLinq\Interfaces\ILinq;
 use PhpLinq\PhpLinq;
 
-class InMemoryUserRepositoryInterface implements UserRepositoryInterface
+class InMemoryUserRepository implements UserRepositoryInterface
 {
     private int $currentId = 0;
 

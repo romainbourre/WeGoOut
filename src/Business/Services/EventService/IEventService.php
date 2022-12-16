@@ -11,8 +11,8 @@ namespace Business\Services\EventService
     use Business\Exceptions\ResourceNotFound;
     use Business\Exceptions\UserHadAlreadyEventsException;
     use Business\Exceptions\UserNotExistException;
-    use Business\Services\EventService\Requests\CreateEventRequest;
     use Business\Services\EventService\Requests\SearchEventsRequest;
+    use Business\UseCases\CreateEvent\CreateEventRequest;
     use PhpLinq\Interfaces\ILinq;
 
     interface IEventService

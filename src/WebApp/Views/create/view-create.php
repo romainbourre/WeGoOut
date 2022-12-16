@@ -10,7 +10,8 @@
 
                 <!-- INDICATION MESSAGE FOR USER -->
                 <p class="helper">
-                    Pour créer un nouvel évènement il vous suffit de remplir les rubriques ci-dessous, à la fois simple et rapide !
+                    Pour créer un nouvel évènement il vous suffit de remplir les rubriques ci-dessous, à la fois simple
+                    et rapide !
                 </p>
             </div>
 
@@ -19,12 +20,15 @@
                 <!-- CIRCLE CHOICE OF EVENT -->
                 <div id="create-event-circle-group" class="">
                     <p>
-                        <input type="radio" name="create-event-circle-switch" id="create-event-public-switch" value="1">
+                        <input type="radio" name="create-event-circle-switch" id="create-event-public-switch"
+                               value="public">
                         <label for="create-event-public-switch">Évènement public</label>
-                        <br/><span class="helper grey-text">Tout le monde pourra voir votre évènement et s'y inscrire</span>
+                        <br/><span
+                                class="helper grey-text">Tout le monde pourra voir votre évènement et s'y inscrire</span>
                     </p>
                     <p>
-                        <input type="radio" name="create-event-circle-switch" id="create-event-private-switch" value="2">
+                        <input type="radio" name="create-event-circle-switch" id="create-event-private-switch"
+                               value="private">
                         <label for="create-event-private-switch">Évènement privé</label>
                         <br/><span class="helper grey-text">Seul vos amis pourront voir et s'inscrire à votre évènement, ou seulement les invités si vous le souhaitez</span>
 

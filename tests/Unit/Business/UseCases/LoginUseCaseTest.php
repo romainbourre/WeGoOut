@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Business\UseCases;
 
-use Adapters\InMemory\Repositories\InMemoryUserRepositoryInterface;
+use Adapters\InMemory\Repositories\InMemoryUserRepository;
 use Business\Exceptions\NotAuthorizedException;
 use Business\Exceptions\UserNotExistException;
 use Business\Exceptions\ValidationErrorMessages;
@@ -15,18 +15,23 @@ use Tests\Utils\Contexts\DeterministAuthenticationContext;
 
 class LoginUseCaseTest extends TestCase
 {
-    private readonly InMemoryUserRepositoryInterface  $userRepository;
+    private readonly InMemoryUserRepository $userRepository;
     private readonly DeterministAuthenticationContext $authenticationContext;
-    private readonly LoginUseCase                     $useCase;
+    private readonly LoginUseCase $useCase;
 
     public function __construct()
     {
         parent::__construct();
-        $this->userRepository = new InMemoryUserRepositoryInterface();
+        $this->userRepository = new InMemoryUserRepository();
         $this->authenticationContext = new DeterministAuthenticationContext();
         $this->useCase = new LoginUseCase($this->userRepository, $this->authenticationContext);
     }
 
+    /**
+     * @throws NotAuthorizedException
+     * @throws UserNotExistException
+     * @throws ValidationException
+     */
     public function testThat_Given_SavedUser_Then_AskToLoginWithEmailAndPassword_Then_ReturnUser()
     {
         $user = UserBuilder::given()->create();
@@ -39,6 +44,10 @@ class LoginUseCaseTest extends TestCase
         $this->assertEquals($user, $loggedUser);
     }
 
+    /**
+     * @throws NotAuthorizedException
+     * @throws ValidationException
+     */
     public function testThat_Given_SavedUser_Then_AskToLoginWithEmailAndBadPassword_Then_PreventError()
     {
         $user = UserBuilder::given()->create();
@@ -50,6 +59,10 @@ class LoginUseCaseTest extends TestCase
         $this->useCase->handle($loginRequest);
     }
 
+    /**
+     * @throws NotAuthorizedException
+     * @throws ValidationException
+     */
     public function testThat_Given_SavedUser_Then_AskToLoginWithBadEmailAndPassword_Then_PreventError()
     {
         $user = UserBuilder::given()->create();
@@ -61,6 +74,10 @@ class LoginUseCaseTest extends TestCase
         $this->useCase->handle($loginRequest);
     }
 
+    /**
+     * @throws NotAuthorizedException
+     * @throws ValidationException
+     */
     public function testThat_Given_NonSavedUser_Then_AskToLoginWithEmailAndPassword_Then_PreventError()
     {
         $loginRequest = new LoginRequestInterface("non-existant-user@provider.fr", "password");
@@ -68,6 +85,10 @@ class LoginUseCaseTest extends TestCase
         $this->useCase->handle($loginRequest);
     }
 
+    /**
+     * @throws NotAuthorizedException
+     * @throws UserNotExistException
+     */
     public function testThat_Given_NonSavedUser_Then_AskToLoginWithBadFormatedEmailAndPassword_Then_PreventError()
     {
         $loginRequest = new LoginRequestInterface("non-email", "password");
@@ -76,6 +97,10 @@ class LoginUseCaseTest extends TestCase
         $this->useCase->handle($loginRequest);
     }
 
+    /**
+     * @throws UserNotExistException
+     * @throws ValidationException
+     */
     public function testThat_Given_AlreadyConnectedUser_Then_AskToLogin_Then_PreventError()
     {
         $this->authenticationContext->setConnectedUser(UserBuilder::given()->create());

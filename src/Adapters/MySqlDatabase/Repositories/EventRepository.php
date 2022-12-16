@@ -5,6 +5,9 @@ namespace Adapters\MySqlDatabase\Repositories
 {
 
     use Business\Entities\Event;
+    use Business\Entities\EventVisibilities;
+    use Business\Entities\NewEvent;
+    use Business\Entities\SavedEvent;
     use Business\Exceptions\DatabaseErrorException;
     use Business\Exceptions\EventCanceledException;
     use Business\Exceptions\EventDeletedException;
@@ -13,6 +16,7 @@ namespace Adapters\MySqlDatabase\Repositories
     use Business\Exceptions\UserDeletedException;
     use Business\Exceptions\UserNotExistException;
     use Business\Exceptions\UserSignaledException;
+    use Business\Exceptions\ValidationException;
     use Business\Ports\EventRepositoryInterface;
     use DateTime;
     use PDO;
@@ -227,14 +231,94 @@ namespace Adapters\MySqlDatabase\Repositories
          */
         public function getEvent(string $eventId): ?Event
         {
-            try
-            {
+            try {
                 return new Event((int)$eventId);
-            }
-            catch (EventNotExistException)
-            {
+            } catch (EventNotExistException) {
                 return null;
             }
+        }
+
+        /**
+         * @throws DatabaseErrorException
+         * @throws ValidationException
+         */
+        public function add(NewEvent $event): SavedEvent
+        {
+            $bdd = $this->databaseContext;
+            $statement = <<<EOF
+INSERT INTO EVENT(
+                                      USER_ID,
+                                      CAT_ID,
+                                      EVENT_TITLE, 
+                                      EVENT_DESCRIPTION, 
+                                      EVENT_LOCATION_LABEL, 
+                                      EVENT_LOCATION_COMPLEMENTS,
+                                      EVENT_LOCATION_ADDRESS, 
+                                      EVENT_LOCATION_CP,
+                                      EVENT_LOCATION_CITY,
+                                      EVENT_LOCATION_COUNTRY,
+                                      EVENT_LOCATION_PLACE_ID, 
+                                      EVENT_LOCATION_LNG, 
+                                      EVENT_LOCATION_LAT, 
+                                      EVENT_DATETIME_BEGIN, 
+                                      EVENT_DATETIME_END, 
+                                      EVENT_CIRCLE,
+                                      EVENT_PARTICIPANTS_NUMBER,  
+                                      EVENT_GUEST_ONLY,
+                                      EVENT_DATETIME_CREATE) 
+                            VALUES (
+                                :userId,
+                                :cat,
+                                :title,
+                                :eventDesc,
+                                :location,
+                                :locationComp,
+                                :address,
+                                :cp,
+                                :city,
+                                :country,
+                                :placeId,
+                                :placeLng,
+                                :placeLat,
+                                :dateTimeBegin,
+                                :dateTimeEnd,
+                                :circle,
+                                :nbrPart,
+                                :guestOnly,
+                                sysdate()
+                            )
+EOF;
+
+            $visibility = match ($event->visibility) {
+                EventVisibilities::PRIVATE => 2,
+                default => 1,
+            };
+            $request = $bdd->prepare($statement);
+            $request->bindValue(':userId', $event->owner->id);
+            $request->bindValue(':cat', $event->category->id);
+            $request->bindValue(':title', $event->title);
+            $request->bindValue(':eventDesc', $event->description);
+            $request->bindValue(':location', $event->location->address);
+            $request->bindValue(':locationComp', $event->location->addressDetails);
+            $request->bindValue(':address', '');
+            $request->bindValue(':cp', $event->location->postalCode);
+            $request->bindValue(':city', $event->location->city);
+            $request->bindValue(':country', $event->location->country);
+            $request->bindValue(':placeId', '');
+            $request->bindValue(':placeLng', $event->location->longitude);
+            $request->bindValue(':placeLat', $event->location->latitude);
+            $request->bindValue(':dateTimeBegin', $event->dateRange->startAt->format('Y-m-d H:i:s'));
+            $request->bindValue(':dateTimeEnd', $event->dateRange->endAt?->format('Y-m-d H:i:s'));
+            $request->bindValue(':circle', $visibility);
+            $request->bindValue(':nbrPart', $event->participantsLimit);
+            $request->bindValue(':guestOnly', $event->isGuestsOnly ? 1 : 0);
+
+            if (!$request->execute() || ($generatedId = $bdd->query('SELECT LAST_INSERT_ID()')->fetchColumn()) === false) {
+                $errorMessage = self::mapPDOErrorToString($request->errorInfo());
+                throw new DatabaseErrorException($errorMessage);
+            }
+
+            return new SavedEvent((int)$generatedId, $event);
         }
     }
 }
