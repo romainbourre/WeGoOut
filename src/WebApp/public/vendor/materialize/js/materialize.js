@@ -6538,7 +6538,7 @@ if (Vel) {
           P.$root.eq(0).focus();
 
           // Bind the document events.
-          $document.on('click.' + STATE.id + ' focusin.' + STATE.id, function (event) {
+          $document.on('mousedown.' + STATE.id + ' focusin.' + STATE.id, function (event) {
 
             var target = event.target;
 
@@ -8982,7 +8982,7 @@ if (Vel) {
     this.locate();
     this.isShown = true;
     // Hide when clicking or tabbing on any element except the clock and input
-    $doc.on('click.clockpicker.' + this.id + ' focusin.clockpicker.' + this.id, function (e) {
+    $doc.on('mousedown.clockpicker.' + this.id + ' focusin.clockpicker.' + this.id, function (e) {
       var target = $(e.target);
       if (target.closest(self.popover.find('.picker__wrap')).length === 0 && target.closest(self.input).length === 0) {
         self.hide();
