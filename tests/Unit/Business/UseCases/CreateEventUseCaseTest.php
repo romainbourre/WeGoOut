@@ -82,11 +82,11 @@ class CreateEventUseCaseTest extends TestCase
             participantsLimit: $request->participantsLimit,
             isGuestsOnly: $request->isGuestsOnly,
             location: new EventLocation(
-                address: $request->location,
+                address: $request->address,
                 postalCode: $request->postalCode,
                 city: $request->city,
                 country: $request->country,
-                addressDetails: $request->locationDetails,
+                addressDetails: $request->addressDetails,
                 latitude: $request->latitude,
                 longitude: $request->longitude,
             )

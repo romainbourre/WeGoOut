@@ -35,8 +35,6 @@ class CreateEventRequestBuilder
             $this->endAt,
             'location',
             $this->locationDetails,
-            'placeId',
-            'address',
             '92140',
             'Clamart',
             'France',

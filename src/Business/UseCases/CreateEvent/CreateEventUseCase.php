@@ -71,11 +71,11 @@ readonly class CreateEventUseCase
             $request->participantsLimit,
             $request->isGuestsOnly,
             new EventLocation(
-                $request->location,
+                $request->address,
                 $request->postalCode,
                 $request->city,
                 $request->country,
-                $request->locationDetails,
+                $request->addressDetails,
                 $request->latitude,
                 $request->longitude
             )

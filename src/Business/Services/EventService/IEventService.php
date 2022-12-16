@@ -6,27 +6,14 @@ namespace Business\Services\EventService
 
 
     use Business\Entities\Event;
-    use Business\Exceptions\BadArgumentException;
     use Business\Exceptions\DatabaseErrorException;
     use Business\Exceptions\ResourceNotFound;
-    use Business\Exceptions\UserHadAlreadyEventsException;
     use Business\Exceptions\UserNotExistException;
     use Business\Services\EventService\Requests\SearchEventsRequest;
-    use Business\UseCases\CreateEvent\CreateEventRequest;
     use PhpLinq\Interfaces\ILinq;
 
     interface IEventService
     {
-        /**
-         * Create an event for user
-         * @param int $userId
-         * @param CreateEventRequest $createEventRequest
-         * @throws BadArgumentException
-         * @throws DatabaseErrorException
-         * @throws UserHadAlreadyEventsException
-         */
-        public function createEvent(int $userId, CreateEventRequest $createEventRequest): void;
-
         /**
          * Get categories available for event
          * @return ILinq<string> list of categories

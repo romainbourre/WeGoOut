@@ -7,7 +7,6 @@ use Business\Entities\NewEvent;
 use Business\Entities\SavedEvent;
 use Business\Exceptions\ValidationException;
 use Business\Ports\EventRepositoryInterface;
-use DateTime;
 use PhpLinq\Interfaces\ILinq;
 use PhpLinq\PhpLinq;
 
@@ -21,19 +20,9 @@ class InMemoryEventRepository implements EventRepositoryInterface
         $this->events = new PhpLinq();
     }
 
-    public function saveEvent(array $cleaned_data): void
-    {
-        // TODO: Implement saveEvent() method.
-    }
-
     public function getEvent(string $eventId): ?Event
     {
         // TODO: Implement getEvent() method.
-    }
-
-    public function findUserEventsNumberForDates(int $userId, DateTime $datetimeBegin, ?DateTime $datetimeEnd): int
-    {
-        // TODO: Implement findUserEventsNumberForDates() method.
     }
 
     public function searchEventsForUser(int $userId, ?int $cat = null, ?int $date = null): ILinq

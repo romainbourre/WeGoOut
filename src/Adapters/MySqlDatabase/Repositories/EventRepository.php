@@ -18,7 +18,6 @@ namespace Adapters\MySqlDatabase\Repositories
     use Business\Exceptions\UserSignaledException;
     use Business\Exceptions\ValidationException;
     use Business\Ports\EventRepositoryInterface;
-    use DateTime;
     use PDO;
     use PhpLinq\Interfaces\ILinq;
     use PhpLinq\PhpLinq;
@@ -34,103 +33,6 @@ namespace Adapters\MySqlDatabase\Repositories
         public function __construct(PDO $databaseContext)
         {
             $this->databaseContext = $databaseContext;
-        }
-
-        /**
-         * Save a new event
-         * @param array $cleaned_data
-         * @throws DatabaseErrorException
-         */
-        public function saveEvent(array $cleaned_data): void
-        {
-
-            $bdd = $this->databaseContext;
-            list($user_id,
-                $event_circle,
-                $event_title,
-                $event_category,
-                $event_description,
-                $event_guest_only,
-                $event_number_participants,
-                $event_datetime_begin,
-                $event_datetime_end,
-                $event_location,
-                $event_location_complements,
-                $event_place_id,
-                $event_address,
-                $event_cp,
-                $event_city,
-                $event_country,
-                $event_lat,
-                $event_lng) = $cleaned_data;
-
-            $statement = "INSERT INTO EVENT(
-                                      USER_ID,
-                                      CAT_ID,
-                                      EVENT_TITLE, 
-                                      EVENT_DESCRIPTION, 
-                                      EVENT_LOCATION_LABEL, 
-                                      EVENT_LOCATION_COMPLEMENTS,
-                                      EVENT_LOCATION_ADDRESS, 
-                                      EVENT_LOCATION_CP,
-                                      EVENT_LOCATION_CITY,
-                                      EVENT_LOCATION_COUNTRY,
-                                      EVENT_LOCATION_PLACE_ID, 
-                                      EVENT_LOCATION_LNG, 
-                                      EVENT_LOCATION_LAT, 
-                                      EVENT_DATETIME_BEGIN, 
-                                      EVENT_DATETIME_END, 
-                                      EVENT_CIRCLE,
-                                      EVENT_PARTICIPANTS_NUMBER,  
-                                      EVENT_GUEST_ONLY,
-                                      EVENT_DATETIME_CREATE) 
-                            VALUES (
-                                :userId,
-                                :cat,
-                                :title,
-                                :eventDesc,
-                                :location,
-                                :locationComp,
-                                :address,
-                                :cp,
-                                :city,
-                                :country,
-                                :placeId,
-                                :placeLng,
-                                :placeLat,
-                                :dateTimeBegin,
-                                :dateTimeEnd,
-                                :circle,
-                                :nbrPart,
-                                :guestOnly,
-                                sysdate()
-                            )";
-
-            $request = $bdd->prepare($statement);
-            $request->bindValue(':userId', $user_id);
-            $request->bindValue(':cat', $event_category);
-            $request->bindValue(':title', $event_title);
-            $request->bindValue(':eventDesc', $event_description);
-            $request->bindValue(':location', $event_location);
-            $request->bindValue(':locationComp', $event_location_complements);
-            $request->bindValue(':address', $event_address);
-            $request->bindValue(':cp', $event_cp);
-            $request->bindValue(':city', $event_city);
-            $request->bindValue(':country', $event_country);
-            $request->bindValue(':placeId', $event_place_id);
-            $request->bindValue(':placeLng', $event_lng);
-            $request->bindValue(':placeLat', $event_lat);
-            $request->bindValue(':dateTimeBegin', $event_datetime_begin->format('Y-m-d H:i:s'));
-            $request->bindValue(':dateTimeEnd', $event_datetime_end != null ? $event_datetime_begin->format('Y-m-d H:i:s') : null);
-            $request->bindValue(':circle', $event_circle);
-            $request->bindValue(':nbrPart', $event_number_participants);
-            $request->bindValue(':guestOnly', $event_guest_only ? 1 : 0);
-
-            if (!$request->execute())
-            {
-                $errorMessage = self::mapPDOErrorToString($request->errorInfo());
-                throw new DatabaseErrorException($errorMessage);
-            }
         }
 
         /**
@@ -171,43 +73,6 @@ namespace Adapters\MySqlDatabase\Repositories
             }
 
             return $events;
-        }
-
-        /**
-         * Find events where user is participant or organizer for dates
-         * @param int $userId id of user
-         * @param DateTime $datetimeBegin start of the event
-         * @param DateTime|null $datetimeEnd end of the event (if exist)
-         * @return int number of events found
-         */
-        public function findUserEventsNumberForDates(int $userId, DateTime $datetimeBegin, ?DateTime $datetimeEnd): int
-        {
-
-            $bdd = $this->databaseContext;
-
-            $statement = 'SELECT sum(nbrLapEvent) as nbrLapEvent
-                      FROM (
-                        SELECT count(*) as nbrLapEvent FROM EVENT WHERE EVENT_DATETIME_BEGIN >= :dateTimeBegin AND EVENT_DATETIME_BEGIN <= :dateTimeEnd AND USER_ID = :userId 
-                        UNION  
-                        SELECT count(*) as nbrLapEvent FROM EVENT WHERE EVENT_DATETIME_END >= :dateTimeBegin AND EVENT_DATETIME_END <= :dateTimeEnd AND USER_ID = :userId
-                      ) as tab';
-
-            $request = $bdd->prepare($statement);
-
-            $request->bindValue(':dateTimeBegin', $datetimeBegin->format('Y-m-d H:i:s'));
-            $request->bindValue(':dateTimeEnd', $datetimeEnd != null ? $datetimeEnd->format('Y-m-d H:i:s') : null);
-            $request->bindValue(':userId', $userId);
-
-            if ($request->execute())
-            {
-
-                $result = $request->fetch();
-
-                return $result['nbrLapEvent'];
-
-            }
-
-            return 0;
         }
 
         /**
