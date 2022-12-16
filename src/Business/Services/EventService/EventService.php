@@ -14,6 +14,7 @@ use Business\Exceptions\ValidationException;
 use Business\Ports\EventRepositoryInterface;
 use Business\Services\EventService\Requests\SearchEventsRequest;
 use Business\ValueObjects\Location;
+use DateTime;
 use Exception;
 use WebApp\Authentication\AuthenticationContext;
 use WebApp\Librairies\AppSettings;
@@ -75,7 +76,10 @@ readonly class EventService implements IEventService
 
         $eventsByDate = [];
         $events->forEach(function (Event $event) use (&$eventsByDate) {
-            $eventsByDate[$event->getDatetimeBegin()][] = $event;
+            $startDay = new DateTime();
+            $startDay->setTimestamp($event->getDatetimeBegin());
+            $startDay->setTime(0, 0, 0);
+            $eventsByDate[$startDay->getTimestamp()][] = $event;
         });
 
         return $eventsByDate;
