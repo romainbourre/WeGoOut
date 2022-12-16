@@ -7,6 +7,7 @@ namespace WebApp\Controllers
     use Business\Entities\Event;
     use Business\Exceptions\EventNotExistException;
     use Business\Ports\EmailSenderInterface;
+    use Business\Ports\EventCategoryRepositoryInterface;
     use Business\Services\EventService\IEventService;
     use Business\Services\EventService\Requests\SearchEventsRequest;
     use Business\ValueObjects\GeometricCoordinates;
@@ -23,12 +24,13 @@ namespace WebApp\Controllers
     {
 
         public function __construct(
-            private readonly ConfigurationInterface $configuration,
-            private readonly LoggerInterface        $logger,
-            private readonly IEventService          $eventService,
-            private readonly AuthenticationContext  $authenticationGateway,
-            private readonly EmailSenderInterface   $emailSender,
-            private readonly ToasterInterface       $toaster
+            private readonly ConfigurationInterface           $configuration,
+            private readonly LoggerInterface                  $logger,
+            private readonly IEventService                    $eventService,
+            private readonly AuthenticationContext            $authenticationGateway,
+            private readonly EmailSenderInterface             $emailSender,
+            private readonly ToasterInterface                 $toaster,
+            private readonly EventCategoryRepositoryInterface $categoryRepository
         )
         {
             parent::__construct();
@@ -56,7 +58,7 @@ namespace WebApp\Controllers
 
                 $location = $connectedUser->getLocation();
                 $contentEvents = $this->render('listevent.view-events', compact('list', 'location', 'connectedUser'));
-                $categories = Event::getAllCategory();
+                $categories = $this->categoryRepository->all();
 
                 $content = $this->render('listevent.view-listevent', compact('categories', 'contentEvents'));
 

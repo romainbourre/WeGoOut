@@ -1,8 +1,3 @@
-<?php
-
-use Business\Entities\Event;
-
-?>
 <div class="row">
     <div class="col s12">
 
@@ -24,25 +19,23 @@ use Business\Entities\Event;
             </div>
 
 
-
             <div class="row">
                 <div class="edit-frame input-field col s6">
 
                     <h5><i class="left material-icons">local_offer</i>Détails</h5>
 
                     <div class="input-field col s12">
-                        <select>
-                            <?php foreach (Event::getAllCategory() as list($id, $category)): ?>
-                                <option value="<?= $id ?>" <?php if($id == $event->getCategory()[0]) echo "selected" ?>><?= $category ?></option>
+                        <label class="active" for="edit-event-category-select">Catégorie</label>
+                        <select class="validate" id="edit-event-category-select">
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?= $category->id ?>" <?php if ($category->id == $event->getCategory()[0]) echo "selected" ?>><?= $category->name ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <label>Catégorie</label>
                     </div>
 
-
-
-                    <div class="input-field col s12">
-                        <textarea id="edit_event_desc" class="materialize-textarea"><?= $event->description ?></textarea>
+                    <div class="input-field col s6">
+                        <textarea id="edit_event_desc"
+                                  class="materialize-textarea"><?= $event->description ?></textarea>
                         <label for="edit_event_desc">Description</label>
                     </div>
 
@@ -54,16 +47,22 @@ use Business\Entities\Event;
                     <h5><i class="left material-icons">group_work</i>Cercle</h5>
 
                     <div class="input-field col s12">
-                        <input name="group1" type="radio" id="test1" <?php if($event->isPublic()) echo "checked" ?>/>
-                        <label for="test1">Public</label>
-                        <input name="group1" type="radio" id="test2" <?php if($event->isPrivate()) echo "checked" ?>/>
-                        <label for="test2">Privé</label>
+                        <p>
+                            <input name="group1" type="radio"
+                                   id="test1" <?php if ($event->isPublic()) echo "checked" ?>/>
+                            <label for="test1">Public</label>
+                        </p>
+                        <p>
+                            <input name="group1" type="radio"
+                                   id="test2" <?php if ($event->isPrivate()) echo "checked" ?>/>
+                            <label for="test2">Privé</label>
+                        </p>
                     </div>
 
                     <div class="input-field">
-                        <div class="switch col s12">
+                        <div class="switch">
                             <label>
-                                <input type="checkbox" <?php if($event->isGuestOnly()) echo "checked" ?> >
+                                <input type="checkbox" <?php if ($event->isGuestOnly()) echo "checked" ?> >
                                 <span class="lever"></span>
                                 Sur invitation seulement
                             </label>
@@ -101,7 +100,9 @@ use Business\Entities\Event;
                     <h5><i class="left material-icons">schedule</i>Où ?</h5>
 
                     <label class="" for="edit_input_completeAddress">Lieu</label>
-                    <input type="text" class="activate autocomplete" name="edit_input_completeAddress" id="edit_input_completeAddress" placeholder="Ajouter une ville ou une adresse" value="<?= $event->getLocation()->getSmartAddress() ?>" autocomplete="off">
+                    <input type="text" class="activate autocomplete" name="edit_input_completeAddress" id="edit_input_completeAddress" placeholder="Ajouter une ville ou une adresse" value="<?= $event->getLocation()->getSmartAddress() ?>"
+                           autocomplete="off">
+                    <ul id="create-location-result" class="autocomplete-result autocomplete-content collection"></ul>
                     <small id="feedback_location" style="float:left;margin-top:-18px;font-weight:bold"></small>
                     <input type="hidden" name="edit_input_address" id="edit_input_address" value="<?= $event->getLocation()->getAddress() ?>">
                     <input type="hidden" name="edit_input_postalCode" id="edit_input_postalCode" value="<?= $event->getLocation()->getPostalCode() ?>">

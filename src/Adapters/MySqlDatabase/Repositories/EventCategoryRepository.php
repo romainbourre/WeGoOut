@@ -6,6 +6,8 @@ use Business\Entities\EventCategory;
 use Business\Exceptions\DatabaseErrorException;
 use Business\Ports\EventCategoryRepositoryInterface;
 use PDO;
+use PhpLinq\Interfaces\ILinq;
+use PhpLinq\PhpLinq;
 
 readonly class EventCategoryRepository implements EventCategoryRepositoryInterface
 {
@@ -31,6 +33,26 @@ readonly class EventCategoryRepository implements EventCategoryRepositoryInterfa
         return new EventCategory($result['id'], $result['name']);
     }
 
+    /**
+     * @return ILinq<EventCategory>
+     * @throws DatabaseErrorException
+     */
+    public function all(): ILinq
+    {
+        $request = $this->context->prepare('SELECT CAT_ID as id, CAT_NAME as name FROM CATEGORY');
+        if (!$request->execute()) {
+            $errorMessage = self::mapPDOErrorToString($request->errorInfo());
+            throw new DatabaseErrorException($errorMessage);
+        }
+
+        $categories = new PhpLinq();
+        while ($result = $request->fetch(PDO::FETCH_ASSOC)) {
+            $category = new EventCategory($result['id'], $result['name']);
+            $categories->add($category);
+        }
+        return $categories;
+    }
+
     private static function mapPDOErrorToString(array $pdoError): string
     {
         $errorString = '';
@@ -39,4 +61,5 @@ readonly class EventCategoryRepository implements EventCategoryRepositoryInterfa
         }
         return $errorString;
     }
+
 }

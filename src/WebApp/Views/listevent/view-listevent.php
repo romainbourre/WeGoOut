@@ -22,8 +22,8 @@
 
                         use WebApp\Librairies\AppSettings;
 
-                        foreach ($categories as list($id, $category)): ?>
-                            <option value="<?= $id ?>"><?= $category ?></option>
+                        foreach ($categories as $category): ?>
+                            <option value="<?= $category->id ?>"><?= $category->name ?></option>
                         <?php
                         endforeach; ?>
                     </select>

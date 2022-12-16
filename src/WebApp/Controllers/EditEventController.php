@@ -4,6 +4,7 @@ namespace WebApp\Controllers
 {
 
 
+    use Business\Ports\EventCategoryRepositoryInterface;
     use Business\Services\EventService\IEventService;
     use Exception;
     use Slim\Psr7\Response;
@@ -18,9 +19,10 @@ namespace WebApp\Controllers
         private IEventService $eventService;
 
         public function __construct(
-            LoggerInterface                        $logger,
-            IEventService                          $eventService,
-            private readonly AuthenticationContext $authenticationGateway
+            LoggerInterface                                   $logger,
+            IEventService                                     $eventService,
+            private readonly AuthenticationContext            $authenticationGateway,
+            private readonly EventCategoryRepositoryInterface $categoryRepository
         ) {
             parent::__construct();
             $this->logger = $logger;
@@ -44,8 +46,8 @@ namespace WebApp\Controllers
                 $navUserDropDown = $this->render('templates.nav-userdropdown', compact('userMenu', 'connectedUser'));
                 $navAddEvent = $this->render('templates.nav-addevent');
                 $navItems = $this->render('templates.nav-connectmenu', compact('navAddEvent'));
-
-                $content = $this->render('listevent.edit-event.view-edit-event', compact('event'));
+                $categories = $this->categoryRepository->all();
+                $content = $this->render('listevent.edit-event.view-edit-event', compact('event', 'categories'));
 
                 $view = $this->render('templates.template', compact('titleWebPage', 'userMenu', 'navUserDropDown', 'navAddEvent', 'navItems', 'content', 'connectedUser'));
 

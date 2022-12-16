@@ -32,4 +32,9 @@ class InMemoryEventCategoryRepository implements EventCategoryRepositoryInterfac
     {
         return $this->categories->firstOrNull(fn(EventCategory $category) => $category->id === $id);
     }
+
+    public function all(): ILinq
+    {
+        return $this->categories;
+    }
 }

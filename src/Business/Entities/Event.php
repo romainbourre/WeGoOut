@@ -433,24 +433,6 @@ namespace Business\Entities
         }
 
         /**
-         * Get id and name of category
-         * @return array array of category
-         */
-        public static function getAllCategory(): array
-        {
-
-            $bdd = Database::getDB();
-
-            $request = $bdd->prepare('SELECT * FROM CATEGORY');
-            if ($request->execute())
-            {
-                return $request->fetchAll();
-            }
-
-            return [];
-        }
-
-        /**
          * Check if the event started
          * @return bool
          */

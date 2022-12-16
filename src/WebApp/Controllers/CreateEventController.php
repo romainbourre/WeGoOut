@@ -4,7 +4,7 @@ namespace WebApp\Controllers;
 
 
 use Business\Exceptions\ValidationException;
-use Business\Services\EventService\IEventService;
+use Business\Ports\EventCategoryRepositoryInterface;
 use Business\UseCases\CreateEvent\CreateEventRequest;
 use Business\UseCases\CreateEvent\CreateEventUseCase;
 use DateTime;
@@ -19,9 +19,9 @@ class  CreateEventController extends AppController
 {
 
     public function __construct(
-        private readonly LoggerInterface    $logger,
-        private readonly IEventService      $eventService,
-        private readonly CreateEventUseCase $createEventUseCase
+        private readonly LoggerInterface                  $logger,
+        private readonly CreateEventUseCase               $createEventUseCase,
+        private readonly EventCategoryRepositoryInterface $categoryRepository
     )
     {
         parent::__construct();
@@ -41,7 +41,7 @@ class  CreateEventController extends AppController
     public function getCreateEventForm(): Response
     {
         try {
-            $eventCategories = $this->eventService->getCategories()->toArray();
+            $eventCategories = $this->categoryRepository->all()->toArray();
             $content = $this->render('create.view-create', compact('eventCategories'));
             return $this->ok($content);
         } catch (Exception $exception) {

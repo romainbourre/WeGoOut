@@ -61,7 +61,7 @@
                                         use WebApp\Librairies\AppSettings;
 
                                         foreach ($eventCategories as $category): ?>
-                                            <option value="<?= $category[0] ?>"><?= $category[1] ?></option>
+                                            <option value="<?= $category->id ?>"><?= $category->name ?></option>
                                         <?php
                                         endforeach; ?>
                                     </select>

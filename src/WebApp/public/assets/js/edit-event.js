@@ -1,21 +1,23 @@
-$(document).ready(function() {
+import {initAutocompletePlace} from './location.service.js';
+
+$(document).ready(function () {
     $('#edit_event_title').characterCounter();
 });
 
-$('#edit_event_title').keyup(function() {
+$('#edit-event-category-select').material_select();
+
+$('#edit_event_title').keyup(function () {
     var length = $('#edit_event_title').val().length;
     var max = $('#edit_event_title').attr('data-length');
-    if(length > max) {
+    if (length > max) {
         $('#feedback_title').html('Le titre doit faire maximum 100 caractères');
         $(this).addClass('red-text');
         $('.character-counter').addClass('red-text');
-    }
-    else if (length < max && length !== 0) {
+    } else if (length < max && length !== 0) {
         $('#feedback_title').html('');
         $(this).removeClass('red-text');
         $('.character-counter').removeClass('red-text');
-    }
-    else if(length === 0) {
+    } else if(length === 0) {
         $('#feedback_title').html('Vous devez donner un titre à votre évenement');
     }
 });
@@ -68,8 +70,7 @@ function checkDate() {
         $('#edit_event_time_begin').removeClass('red-text');
         $('#edit_event_time_end').removeClass('red-text');
         return true;
-    }
-    else {
+    } else {
         $('#edit_event_date_begin').addClass('red-text');
         $('#edit_event_date_end').addClass('red-text');
         $('#edit_event_time_begin').addClass('red-text');
@@ -162,8 +163,6 @@ $('#edit_event_date_end').pickadate({
 });
 
 
-
-
 $('#edit_event_time_begin').pickatime({
     default: 'now', // Set default time: 'now', '1:30AM', '16:30'
     fromnow: 0,       // set default time to * milliseconds from now (using with default = 'now')
@@ -195,75 +194,30 @@ $('#edit_event_time_end').pickatime({
 
 /* ------------------------------------------ GOOGLE API ----------------------------------------------- */
 
+initAutocompletePlace('#edit_input_completeAddress', '#create-location-result', (selected, input, _) => {
+    const props = selected['properties'];
+    const geo = selected['geometry'];
+    const id = props['id'];
+    const postalCode = props['postcode'];
+    const city = props['city'];
+    const country = 'France';
+    const longitude = geo['coordinates'][0];
+    const latitude = geo['coordinates'][1];
 
+    input.val(props.label);
+    $('#edit_input_address').val();
+    $('#edit_input_postalCode').val(postalCode);
+    $('#edit_input_city').val(city);
+    $('#edit_input_placeId').val(id);
+    $('#edit_input_lat').val(latitude);
+    $('#edit_input_lng').val(longitude);
 
-// SETTINGS OF GOOGLE API
-var input = document.getElementById('edit_input_completeAddress');
-var options = {
-    types: ['geocode'],
-    componentRestrictions: {country: 'fr'}
-};
-
-// INITIALIZATION
-autocomplete = new google.maps.places.Autocomplete(input, options);
-geocoder = new google.maps.Geocoder();
-autocomplete.addListener('place_changed', fillInAddress);
-
-// RESET INPUT LOCATION
-input.addEventListener("input", function () {
-    document.getElementById('edit_input_address').value = "";
-    document.getElementById('edit_input_postalCode').value = "";
-    document.getElementById('edit_input_city').value = "";
-    document.getElementById('edit_input_placeId').value = "";
-    document.getElementById('edit_input_lat').value = "";
-    document.getElementById('edit_input_lng').value = "";
+    checkLocation();
 });
-
-
-/**
- * Récupère l'id de la ville séléctionner et l'envoi à geocodeAddress
- */
-function fillInAddress() {
-    var placeId = autocomplete.getPlace().place_id;
-    geocodeAddress(placeId);
-}
-
-/**
- * Récupère les détails concernant un lieu (à partir de son ID)
- * et place les infos dans <input> de formulaire
- * @param place_id ID Google du lieu
- */
-function geocodeAddress(place_id) {
-    geocoder.geocode({'placeId': place_id}, function (results, status) {
-
-        if (status === 'OK') {
-
-            // SEARCH AND SET LOCATION DATA
-            var address = results[0]['address_components'];
-            for (var i = 0; i < address.length; i++) {
-                var numberStreet = "";
-                if (address[i]['types'][0] == "street_number") numberStreet = address['long_name'] + ", ";
-                if (address[i]['types'][0] == "route") document.getElementById('edit_input_address').value = numberStreet + address[i]['long_name'];
-                if (address[i]['types'][0] == "locality") document.getElementById('edit_input_city').value = address[i]['long_name'];
-                if (address[i]['types'][0] == "postal_code") document.getElementById('edit_input_postalCode').value = address[i]['long_name'];
-            }
-
-            // SET GOOGLE DATA
-            document.getElementById('edit_input_placeId').value = results[0]['place_id'];
-            document.getElementById('edit_input_lat').value = results[0]['geometry']['location'].lat();
-            document.getElementById('edit_input_lng').value = results[0]['geometry']['location'].lng();
-
-            checkLocation();
-
-        }
-
-    });
-
-}
 
 // CHECK INPUT LOCATION
 $('#edit_input_completeAddress').change(function() {
-   checkLocation();
+    checkLocation();
 });
 
 function checkLocation() {
@@ -280,8 +234,7 @@ function checkLocation() {
         $('#edit_input_completeAddress').removeClass('green-text');
         $('#edit_input_completeAddress').addClass('red-text');
 
-    }
-    else {
+    } else {
 
         $('#feedback_location').html("L'adresse est valide");
         $('#feedback_location').removeClass('red-text');
