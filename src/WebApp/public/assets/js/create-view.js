@@ -264,7 +264,7 @@ const ViewCreateEvent = {
      * @returns {*|jQuery|boolean}
      */
     is_public: function() {
-        return ($(ViewCreateEvent.idPublic).is(':checked') && $(ViewCreateEvent.idPublic).val() === "1" && !$(ViewCreateEvent.idPrivate).is(':checked'));
+        return ($(ViewCreateEvent.idPublic).is(':checked') && !$(ViewCreateEvent.idPrivate).is(':checked'));
     },
 
     /**
@@ -272,7 +272,7 @@ const ViewCreateEvent = {
      * @returns {boolean|*|jQuery}
      */
     is_private: function() {
-        return (!$(ViewCreateEvent.idPublic).is(':checked') && $(ViewCreateEvent.idPrivate).is(':checked') && $(ViewCreateEvent.idPrivate).val() === "2");
+        return (!$(ViewCreateEvent.idPublic).is(':checked') && $(ViewCreateEvent.idPrivate).is(':checked'));
     },
 
     /**
