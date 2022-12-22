@@ -103,7 +103,7 @@
                         <div class="col s12">
                             <i class="material-icons">location_on</i> à <?= $event->getCity() ?>
                             <?php
-                            $distance = $userLocation->getDistance($event->getLocation());
+                            $distance = $userLocation->getKilometersDistance($event->getLocation());
                             if ($distance < 5) {
                                 echo floor($distance * 100) / 100 . " Km";
                             } else {

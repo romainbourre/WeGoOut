@@ -72,7 +72,7 @@ final class SignUpUseCase
             location: $expectedLocation,
             validationToken: $this->tokenProvider->getNext(),
             genre: $request->genre,
-            createdAt: new FrenchDate($this->dateTimeProvider->getNext()->getTimestamp()),
+            createdAt: new FrenchDate($this->dateTimeProvider->current()->getTimestamp()),
             deletedAt: null
         );
     }
@@ -82,7 +82,7 @@ final class SignUpUseCase
      */
     private function ensureThatUserIsMajor(User $user): void
     {
-        $currentDate = $this->dateTimeProvider->getNext();
+        $currentDate = $this->dateTimeProvider->current();
         $userBirthDate = $user->birthDate->value;
         $interval = $currentDate->diff($userBirthDate);
         if ($interval->y < 18) {

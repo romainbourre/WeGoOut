@@ -1,4 +1,5 @@
 import {getFormData} from "../../assets/js/form.js";
+import {updateParticipantsList} from "../../assets/js/ajax-participants.js";
 
 export function aj_request_update_numb_part() {
     const target = '#sheet_event_part';
@@ -120,7 +121,7 @@ export function aj_request_update_window() {
 
 export function aj_request_change_registration() {
     const url = window.location.href;
-    const id = url.substring(url.lastIndexOf('/') + 1)
+    const id = url.substring(url.lastIndexOf('/') + 1).replace('#!', '');
 
     $.ajax({
         url:  `/events/${id}/register`,

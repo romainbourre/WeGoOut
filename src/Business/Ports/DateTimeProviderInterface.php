@@ -6,5 +6,6 @@ use DateTime;
 
 interface DateTimeProviderInterface
 {
-    public function getNext(): DateTime;
+
+    public function current(): DateTime;
 }

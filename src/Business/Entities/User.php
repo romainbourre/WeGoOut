@@ -109,7 +109,7 @@ namespace Business\Entities
 
         public function getDistance(Event $event): float
         {
-            return $this->location->getDistance($event->getLocation());
+            return $this->location->getKilometersDistance($event->getLocation());
         }
 
         public function equals(User $user): bool

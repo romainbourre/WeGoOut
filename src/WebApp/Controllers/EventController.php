@@ -10,6 +10,8 @@ namespace WebApp\Controllers
     use Business\Ports\EventCategoryRepositoryInterface;
     use Business\Services\EventService\IEventService;
     use Business\Services\EventService\Requests\SearchEventsRequest;
+    use Business\UseCases\SearchEvent\SearchEventsWithCriteriaRequest;
+    use Business\UseCases\SearchEvent\SearchEventsWithCriteriaUseCase;
     use Business\ValueObjects\GeometricCoordinates;
     use Exception;
     use Slim\Psr7\Request;
@@ -30,7 +32,8 @@ namespace WebApp\Controllers
             private readonly AuthenticationContext            $authenticationGateway,
             private readonly EmailSenderInterface             $emailSender,
             private readonly ToasterInterface                 $toaster,
-            private readonly EventCategoryRepositoryInterface $categoryRepository
+            private readonly EventCategoryRepositoryInterface $categoryRepository,
+            private readonly SearchEventsWithCriteriaUseCase  $searchEventWithCriteriaUseCase,
         )
         {
             parent::__construct();
@@ -55,6 +58,12 @@ namespace WebApp\Controllers
 
                 $searchEventsRequest = new SearchEventsRequest();
                 $list = $this->eventService->searchEventsForUser($connectedUser->getID(), $searchEventsRequest);
+                $events = $this->searchEventWithCriteriaUseCase->handle(new SearchEventsWithCriteriaRequest(
+                    latitude: $connectedUser->getLocation()->latitude,
+                    longitude: $connectedUser->getLocation()->longitude,
+                ));
+                var_dump($events);
+
 
                 $location = $connectedUser->getLocation();
                 $contentEvents = $this->render('listevent.view-events', compact('list', 'location', 'connectedUser'));

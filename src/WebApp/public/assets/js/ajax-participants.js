@@ -121,7 +121,7 @@ function updateParticipantsFilter() {
 
 }
 
-function updateParticipantsList(filter) {
+export function updateParticipantsList(filter) {
     const target = '#coll_part_list';
     const action = 'participants.filter.' + filter;
     const currentUrl = window.location.href;

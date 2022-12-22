@@ -1,10 +1,11 @@
 <?php
 
 
-namespace Adapters\MySqlDatabase\Repositories
-{
+namespace Adapters\MySqlDatabase\Repositories {
 
     use Business\Entities\Event;
+    use Business\Entities\EventCategory;
+    use Business\Entities\EventOwner;
     use Business\Entities\EventVisibilities;
     use Business\Entities\NewEvent;
     use Business\Entities\SavedEvent;
@@ -18,6 +19,10 @@ namespace Adapters\MySqlDatabase\Repositories
     use Business\Exceptions\UserSignaledException;
     use Business\Exceptions\ValidationException;
     use Business\Ports\EventRepositoryInterface;
+    use Business\ValueObjects\EventDateRange;
+    use Business\ValueObjects\EventLocation;
+    use DateTime;
+    use Exception;
     use PDO;
     use PhpLinq\Interfaces\ILinq;
     use PhpLinq\PhpLinq;
@@ -52,22 +57,17 @@ namespace Adapters\MySqlDatabase\Repositories
             $request->bindValue(':userId', $userId);
             $request->bindValue(':catId', $cat);
 
-            if (!$request->execute())
-            {
+            if (!$request->execute()) {
                 $errorMessage = self::mapPDOErrorToString($request->errorInfo());
                 throw new DatabaseErrorException($errorMessage);
             }
 
-            while ($resultEvent = $request->fetch())
-            {
-                try
-                {
+            while ($resultEvent = $request->fetch()) {
+                try {
                     $eventId = $resultEvent['event_id'];
                     $event = new Event($eventId);
                     $events->add($event);
-                }
-                catch (EventNotExistException | EventDeletedException | EventCanceledException | EventSignaledException | UserNotExistException | UserDeletedException | UserSignaledException $e)
-                {
+                } catch (EventNotExistException|EventDeletedException|EventCanceledException|EventSignaledException|UserNotExistException|UserDeletedException|UserSignaledException $e) {
                 }
 
             }
@@ -83,8 +83,7 @@ namespace Adapters\MySqlDatabase\Repositories
         private static function mapPDOErrorToString(array $pdoError): string
         {
             $errorString = '';
-            foreach ($pdoError as $error)
-            {
+            foreach ($pdoError as $error) {
                 $errorString .= "$error ";
             }
 
@@ -184,6 +183,73 @@ EOF;
             }
 
             return new SavedEvent((int)$generatedId, $event);
+        }
+
+        /**
+         * @throws DatabaseErrorException|ValidationException
+         * @throws Exception
+         */
+        public function all(): ILinq
+        {
+            $query = $this->databaseContext->prepare(<<<'EOF'
+SELECT 
+    EVENT_ID as id,
+    MUC.USER_ID as ownerId,
+    MUC.CLI_FIRSTNAME as ownerFirstname,
+    MUC.CLI_LASTNAME as ownerLastname,
+    EVENT_CIRCLE as visibility,
+    EVENT_TITLE as title,
+    EVENT_DESCRIPTION as description,
+    C.CAT_ID as categoryId,
+    C.CAT_NAME as categoryName,
+    EVENT_DATETIME_BEGIN as startAt,
+    EVENT_DATETIME_END as endAt,
+    EVENT_PARTICIPANTS_NUMBER as participantsLimit,
+    EVENT_GUEST_ONLY as isGuestsOnly,
+    EVENT_LOCATION_LABEL as address,
+    EVENT_LOCATION_COMPLEMENTS as addressDetails,
+    EVENT_LOCATION_CP as postalCode,
+    EVENT_LOCATION_CITY as city,
+    EVENT_LOCATION_COUNTRY as country,
+    EVENT_LOCATION_LNG as longitude,
+    EVENT_LOCATION_LAT as latitude
+FROM EVENT
+    JOIN META_USER_CLI MUC on EVENT.USER_ID = MUC.USER_ID
+    JOIN CATEGORY C on C.CAT_ID = EVENT.CAT_ID
+EOF
+            );
+            if (!$query->execute()) {
+                $errorMessage = self::mapPDOErrorToString($query->errorInfo());
+                throw new DatabaseErrorException($errorMessage);
+            }
+            $events = new PhpLinq();
+            while ($result = $query->fetch()) {
+                $event = new NewEvent(
+                    visibility: $result['visibility'] == 1 ? EventVisibilities::PUBLIC : EventVisibilities::PRIVATE,
+                    owner: new EventOwner($result['ownerId'], $result['ownerFirstname'], $result['ownerLastname']),
+                    title: $result['title'],
+                    category: new EventCategory($result['categoryId'], $result['categoryName']),
+                    dateRange: new EventDateRange(
+                        startAt: new DateTime($result['startAt']),
+                        endAt: isset($result['endAt']) ? new DateTime($result['endAt']) : null
+                    ),
+                    description: $result['description'],
+                    participantsLimit: $result['participantsLimit'],
+                    isGuestsOnly: $result['isGuestsOnly'] == 1,
+                    location: new EventLocation(
+                        address: $result['address'],
+                        postalCode: $result['postalCode'],
+                        city: $result['city'],
+                        country: $result['country'],
+                        addressDetails: $result['addressDetails'],
+                        latitude: $result['latitude'],
+                        longitude: $result['longitude'],
+                    )
+                );
+                $savedEvent = new SavedEvent(id: $result['id'], event: $event);
+                $events->add($savedEvent);
+            }
+            return $events;
         }
     }
 }

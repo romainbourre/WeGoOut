@@ -3,7 +3,11 @@
 namespace WebApp\Extensions;
 
 use Adapters\MySqlDatabase\Repositories\EventCategoryRepository;
+use Adapters\MySqlDatabase\Repositories\InvitationRepository;
+use Adapters\MySqlDatabase\Repositories\ParticipationRepository;
 use Business\Ports\EventCategoryRepositoryInterface;
+use Business\Ports\InvitationRepositoryInterface;
+use Business\Ports\ParticipationRepositoryInterface;
 use PDO;
 use System\Configuration\ConfigurationInterface;
 use System\DependencyInjection\ContainerBuilderInterface;
@@ -25,5 +29,7 @@ class MySqlExtension
         );
         $services->addService(PDO::class, $databaseContext);
         $services->addService(EventCategoryRepositoryInterface::class, EventCategoryRepository::class);
+        $services->addService(ParticipationRepositoryInterface::class, ParticipationRepository::class);
+        $services->addService(InvitationRepositoryInterface::class, InvitationRepository::class);
     }
 }

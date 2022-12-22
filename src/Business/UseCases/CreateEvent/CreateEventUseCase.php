@@ -3,6 +3,7 @@
 namespace Business\UseCases\CreateEvent;
 
 use Business\Common\Guards\DatetimeGuard;
+use Business\Entities\EventOwner;
 use Business\Entities\EventVisibilities;
 use Business\Entities\NewEvent;
 use Business\Entities\User;
@@ -59,11 +60,11 @@ readonly class CreateEventUseCase
             throw new ValidationException(ValidationErrorMessages::EVENT_CATEGORY_NOT_FOUND);
         }
 
-        DatetimeGuard::from($request->startAt)->isNotBefore($this->dateTimeProvider->getNext(), 'event cannot start before now');
+        DatetimeGuard::from($request->startAt)->isNotBefore($this->dateTimeProvider->current(), 'event cannot start before now');
 
         return new NewEvent(
             $visibility,
-            $owner,
+            new EventOwner($owner->id, $owner->firstname, $owner->lastname),
             $request->title,
             $category,
             new EventDateRange($request->startAt, $request->endAt),

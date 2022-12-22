@@ -142,7 +142,7 @@ use Business\ValueObjects\FrenchDate;
                                     <small>
                                         <i class="material-icons">location_on</i> à <?= $element->getCity() ?>
                                         <?php
-                                        $distance = $location->getDistance($element->getLocation());
+                                        $distance = $location->getKilometersDistance($element->getLocation());
                                         if ($distance < 5) {
                                             echo floor($distance * 100) / 100 . " Km";
                                         } else {

@@ -9,6 +9,7 @@ use Business\Exceptions\ValidationErrorMessages;
 use Business\Exceptions\ValidationException;
 use Business\ValueObjects\EventDateRange;
 use Business\ValueObjects\EventLocation;
+use DateTime;
 
 readonly class NewEvent
 {
@@ -21,7 +22,7 @@ readonly class NewEvent
      */
     public function __construct(
         public EventVisibilities $visibility,
-        public User              $owner,
+        public EventOwner        $owner,
         public string            $title,
         public EventCategory     $category,
         public EventDateRange    $dateRange,
@@ -39,5 +40,23 @@ readonly class NewEvent
             NumberGuard::from($participantsLimit)->isNotUpperThan(self::MAX_PARTICIPANTS_LIMIT, ValidationErrorMessages::TOO_MUCH_PARTICIPANTS);
             NumberGuard::from($participantsLimit)->isNotLowerThan(self::MIN_PARTICIPANTS_LIMIT, ValidationErrorMessages::INSUFFICIENT_PARTICIPANTS);
         }
+    }
+
+    public function isPrivate(): bool
+    {
+        return $this->visibility == EventVisibilities::PRIVATE;
+    }
+
+    public function isNotOwnedBy(User $user): bool
+    {
+        return $this->owner->id !== "$user->id";
+    }
+
+    public function isFinishedForDate(DateTime $date): bool
+    {
+        if ($this->dateRange->endAt == null) {
+            return $this->dateRange->startAt < $date;
+        }
+        return $this->dateRange->endAt < $date;
     }
 }

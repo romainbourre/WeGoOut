@@ -8,7 +8,7 @@ use DateTime;
 class DateTimeProvider implements DateTimeProviderInterface
 {
 
-    public function getNext(): DateTime
+    public function current(): DateTime
     {
         return new DateTime();
     }

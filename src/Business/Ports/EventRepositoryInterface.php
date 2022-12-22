@@ -7,6 +7,7 @@ namespace Business\Ports
 
     use Business\Entities\Event;
     use Business\Entities\NewEvent;
+    use Business\Entities\SavedEvent;
     use Business\Exceptions\DatabaseErrorException;
     use PhpLinq\Interfaces\ILinq;
 
@@ -30,5 +31,10 @@ namespace Business\Ports
         public function searchEventsForUser(int $userId, ?int $cat = null, ?int $date = null): ILinq;
 
         public function add(NewEvent $event);
+
+        /**
+         * @return ILinq<SavedEvent>
+         */
+        public function all(): ILinq;
     }
 }

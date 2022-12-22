@@ -5,6 +5,7 @@ namespace Tests\Unit\Business\UseCases;
 use Adapters\InMemory\Repositories\InMemoryEventCategoryRepository;
 use Adapters\InMemory\Repositories\InMemoryEventRepository;
 use Business\Entities\EventCategory;
+use Business\Entities\EventOwner;
 use Business\Entities\EventVisibilities;
 use Business\Entities\NewEvent;
 use Business\Entities\SavedEvent;
@@ -20,7 +21,6 @@ use DateTime;
 use PhpLinq\Exceptions\InvalidQueryResultException;
 use PHPUnit\Framework\TestCase;
 use Tests\Utils\Builders\CreateEventRequestBuilder;
-use Tests\Utils\Builders\EventBuilder;
 use Tests\Utils\Builders\UserBuilder;
 use Tests\Utils\Contexts\DeterministAuthenticationContext;
 use Tests\Utils\Providers\DeterministDateTimeProvider;
@@ -63,12 +63,13 @@ class CreateEventUseCaseTest extends TestCase
     /**
      * @throws ValidationException
      */
-    private function assertThatSavedEventCorrespondToRequest(CreateEventRequest $request, User $expectedOwner, EventCategory $expectedCategory, SavedEvent $savedEvent): void
+    private function assertThatSavedEventCorrespondToRequest(CreateEventRequest $request, User $expectedUserAsOwner, EventCategory $expectedCategory, SavedEvent $savedEvent): void
     {
         $visibility = match ($request->visibility) {
             CreateEventRequest::VISIBILITY_PUBLIC => EventVisibilities::PUBLIC,
             CreateEventRequest::VISIBILITY_PRIVATE => EventVisibilities::PRIVATE,
         };
+        $expectedOwner = new EventOwner($expectedUserAsOwner->id, $expectedUserAsOwner->firstname, $expectedUserAsOwner->lastname);
         $expectedEvent = new NewEvent(
             visibility: $visibility,
             owner: $expectedOwner,
@@ -100,7 +101,7 @@ class CreateEventUseCaseTest extends TestCase
      */
     public function testThatGivenSavedEventWhenSaveNewEventThenShouldNotBeSameId(): void
     {
-        $this->eventRepository->haveAlreadyEvent(EventBuilder::given()->create());
+        $this->eventRepository->haveAlreadyEvent();
         $connectedUser = UserBuilder::given()->create();
         $this->authenticationContext->setConnectedUser($connectedUser);
         $category = $this->categoryRepository->haveOneCategory('Manger un morceau');

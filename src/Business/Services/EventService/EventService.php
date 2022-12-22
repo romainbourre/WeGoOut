@@ -70,7 +70,7 @@ readonly class EventService implements IEventService
         $location = new Location($user->location->postalCode, $user->location->city, $latitude, $longitude);
         $events = $events->where(function (Event $event) use ($kilometersRadius, $searchEventsRequest, $location) {
             $eventLocation = $event->getLocation();
-            $distance = $location->getDistance($eventLocation);
+            $distance = $location->getKilometersDistance($eventLocation);
             return $distance <= $kilometersRadius;
         });
 
@@ -92,6 +92,7 @@ readonly class EventService implements IEventService
      */
     public function changeRegistrationOfUSerToEvent(int $userId, int $eventId): void
     {
+        echo 'test';
         $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
         $userToChangeRegistration = User::load($userId);
 
@@ -107,8 +108,12 @@ readonly class EventService implements IEventService
             );
         }
 
+        echo '2';
+
         $isParticipantWaitingValidation = $event->isParticipantWait($userToChangeRegistration);
         $isAcceptedParticipant = $event->isParticipantValid($userToChangeRegistration);
+        echo $isAcceptedParticipant ? 'true' : 'false';
+        echo $isParticipantWaitingValidation ? 'true' : 'false';
         if ($isAcceptedParticipant || $isParticipantWaitingValidation) {
             if ($isAcceptedParticipant) {
                 $this->emitter->emit('event.user.unsubscribe', $event, $userToChangeRegistration);
@@ -122,8 +127,10 @@ readonly class EventService implements IEventService
             return;
         }
 
+        echo '3';
         if ($event->isInvited($userToChangeRegistration)) {
-            $event->validateParticipant($connectedUser, $userToChangeRegistration);
+            echo '4';
+            $event->validateGuest($userToChangeRegistration);
             $this->emitter->emit('event.user.subscribe', $event, $userToChangeRegistration);
             return;
         }

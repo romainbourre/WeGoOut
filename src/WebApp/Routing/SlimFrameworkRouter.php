@@ -81,7 +81,11 @@ namespace WebApp\Routing {
                 });
 
                 $group->post('reset-password', function (Request $request) {
-                    return $this->container->get(ForgotPasswordController::class)->resetPassword($request, $this->container->get(AskNewPasswordUseCase::class));
+                    /**
+                     * @var ForgotPasswordController $forgotPasswordController
+                     */
+                    $forgotPasswordController = $this->container->get(ForgotPasswordController::class);
+                    return $forgotPasswordController->resetPassword($request, $this->container->get(AskNewPasswordUseCase::class));
                 });
             })
                 ->addMiddleware($this->container->get(NonAuthenticatedUserGuardMiddleware::class))
@@ -119,7 +123,11 @@ namespace WebApp\Routing {
                         if (is_null($eventId)) {
                             return new BadRequestResponse("uri argument id not found.");
                         }
-                        return $this->container->get(EventController::class)->forEvent($eventId)->subscribeToEvent($eventId);
+                        /**
+                         * @var EventController $eventController
+                         */
+                        $eventController = $this->container->get(EventController::class);
+                        return $eventController->forEvent($eventId)->subscribeToEvent($eventId);
                     }
                 )->add($this->container->get(AccountValidatedGuardMiddleware::class));
 

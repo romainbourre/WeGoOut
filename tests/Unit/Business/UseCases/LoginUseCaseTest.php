@@ -41,7 +41,7 @@ class LoginUseCaseTest extends TestCase
         $loginRequest = new LoginRequestInterface($user->email, $userPassword);
         $loggedUser = $this->useCase->handle($loginRequest);
 
-        $this->assertEquals($user, $loggedUser);
+        $this->assertEquals($loggedUser, $user);
     }
 
     /**

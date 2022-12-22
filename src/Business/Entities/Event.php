@@ -617,8 +617,7 @@ namespace Business\Entities
         {
             $isInvitedUserWhoValidateHimself = $participantToValidateParticipation->getID() == $userThatValidateParticipation->getID()
                 && $this->isInvited($userThatValidateParticipation);
-            if (!$this->isStarted() && ($this->isManagerOfEvent($userThatValidateParticipation) || $isInvitedUserWhoValidateHimself))
-            {
+            if (!$this->isStarted() && ($this->isManagerOfEvent($userThatValidateParticipation) || $isInvitedUserWhoValidateHimself)) {
                 $bdd = Database::getDB();
                 $request = $bdd->prepare('UPDATE PARTICIPATE SET part_datetime_accept = sysdate() WHERE event_id = :eventId AND user_id = :userId AND PART_DATETIME_SEND is not null AND PART_DATETIME_ACCEPT is null AND  PART_DATETIME_DELETE is null ');
                 $request->bindValue(':eventId', $this->id);
@@ -626,6 +625,15 @@ namespace Business\Entities
                 return $request->execute();
             }
             return false;
+        }
+
+        public function validateGuest(User $guest): bool
+        {
+            $bdd = Database::getDB();
+            $request = $bdd->prepare('INSERT INTO PARTICIPATE(event_id, user_id, part_datetime_send, part_datetime_accept) VALUES(:eventId, :userId, sysdate(), sysdate())');
+            $request->bindValue(':eventId', $this->id);
+            $request->bindValue(':userId', $guest->getID());
+            return $request->execute();
         }
 
         private function isManagerOfEvent(User $user): bool

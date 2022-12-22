@@ -14,7 +14,7 @@ class DeterministDateTimeProvider implements DateTimeProviderInterface
         $this->dateTime = $nextDateTime;
     }
 
-    public function getNext(): DateTime
+    public function current(): DateTime
     {
         if ($this->dateTime == null) {
             return new DateTime();

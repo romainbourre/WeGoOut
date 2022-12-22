@@ -9,6 +9,7 @@ use Business\Exceptions\ValidationException;
 use Business\Ports\EventRepositoryInterface;
 use PhpLinq\Interfaces\ILinq;
 use PhpLinq\PhpLinq;
+use Tests\Utils\Builders\EventBuilder;
 
 class InMemoryEventRepository implements EventRepositoryInterface
 {
@@ -33,9 +34,16 @@ class InMemoryEventRepository implements EventRepositoryInterface
     /**
      * @throws ValidationException
      */
-    public function haveAlreadyEvent(NewEvent $event): void
+    public function haveAlreadyEvent(?callable $event = null): SavedEvent
     {
-        $this->add($event);
+        $eventBuilder = EventBuilder::given();
+        if ($event) {
+            $event($eventBuilder);
+        }
+        $eventToSave = $eventBuilder->create();
+        $this->events->add($eventToSave);
+        $this->ids++;
+        return $eventToSave;
     }
 
     /**
@@ -47,5 +55,10 @@ class InMemoryEventRepository implements EventRepositoryInterface
         $savedEvent = new SavedEvent("$nextId", $event);
         $this->events->add($savedEvent);
         return $savedEvent;
+    }
+
+    public function all(): ILinq
+    {
+        return $this->events;
     }
 }

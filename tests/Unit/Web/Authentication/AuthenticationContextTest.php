@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Web\Authentication;
 
+use Business\Exceptions\ValidationException;
 use Business\Ports\AuthenticationContextInterface;
 use PHPUnit\Framework\TestCase;
 use Tests\Utils\Builders\UserBuilder;
@@ -19,6 +20,9 @@ final class AuthenticationContextTest extends TestCase
         $this->authenticationContext = new AuthenticationContext();
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function testThatSavedUserInContextReturned(): void
     {
         $user = UserBuilder::given()->create();

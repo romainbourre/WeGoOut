@@ -10,6 +10,7 @@ use Business\ValueObjects\Email;
 use PhpLinq\Exceptions\InvalidQueryResultException;
 use PhpLinq\Interfaces\ILinq;
 use PhpLinq\PhpLinq;
+use Tests\Utils\Builders\UserBuilder;
 
 class InMemoryUserRepository implements UserRepositoryInterface
 {
@@ -128,5 +129,19 @@ class InMemoryUserRepository implements UserRepositoryInterface
             createdAt: $user->createdAt,
             deletedAt: $user->deletedAt
         );
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function haveAlreadyUser(): User
+    {
+        $user = UserBuilder::given()->create();
+        return $this->addUserWithPassword($user, 'password');
+    }
+
+    public function setNextId(int $nextId): void
+    {
+        $this->currentId = $nextId;
     }
 }

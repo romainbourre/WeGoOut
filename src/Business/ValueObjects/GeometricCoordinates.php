@@ -11,7 +11,7 @@ class GeometricCoordinates
     ) {
     }
 
-    public function getDistance(GeometricCoordinates $coordinates): float
+    public function getKilometersDistance(GeometricCoordinates $coordinates): float
     {
         $earthRayon = 6371;
         $originLatitudeRadian = deg2rad($this->latitude);
