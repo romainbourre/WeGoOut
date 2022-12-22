@@ -19,8 +19,8 @@ readonly class ParametersRequestExtractor
 
     private function extractValue(string $name): ?string
     {
-        $bodyParameters = $this->request->getParsedBody();
-        $queryParameters = $this->request->getQueryParams();
+        $bodyParameters = $this->request->getParsedBody() ?? [];
+        $queryParameters = $this->request->getQueryParams() ?? [];
         $params = array_merge($bodyParameters, $queryParameters);
         if (!isset($params[$name])) {
             return null;

@@ -38,4 +38,9 @@ class InMemoryParticipationRepository implements ParticipationRepositoryInterfac
     {
         return $this->participants->any(fn(Participation $participation) => "{$participation->participant->id}" === $userId && "{$participation->event->id}" === $eventId && is_null($participation->acceptedAt));
     }
+
+    public function numberOfParticipantsOfEvent(string $eventId): int
+    {
+        return $this->participants->where(fn(Participation $participation) => "{$participation->event->id}" === $eventId && !is_null($participation->acceptedAt))->count();
+    }
 }

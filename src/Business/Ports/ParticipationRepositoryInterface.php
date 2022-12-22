@@ -8,4 +8,6 @@ interface ParticipationRepositoryInterface
     public function isUserParticipantOfEvent(string $userId, string $eventId): bool;
 
     public function isUserAwaitingParticipantOfEvent(string $userId, string $eventId): bool;
+
+    public function numberOfParticipantsOfEvent(string $eventId): int;
 }

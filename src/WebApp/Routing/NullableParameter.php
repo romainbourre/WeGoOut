@@ -52,4 +52,12 @@ readonly class NullableParameter
         }
         return $this->value;
     }
+
+    public function asFloat(?float $default = null): ?float
+    {
+        if ($this->isEmpty()) {
+            return $default;
+        }
+        return (float)$this->value;
+    }
 }

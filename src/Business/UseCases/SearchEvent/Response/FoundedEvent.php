@@ -20,6 +20,7 @@ readonly class FoundedEvent
         public ?DateTime         $endAt,
         public string            $city,
         public float             $distance,
+        public int               $numberOfParticipants,
         public ?int              $participantsLimit,
         public bool              $isOwner,
         public bool              $isParticipant,

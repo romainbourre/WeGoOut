@@ -64,6 +64,7 @@ readonly class SearchEventsWithCriteriaUseCase
         return new SearchEventsWithCriteriaResponse(
             count: $filteredEvents->count(),
             events: $filteredEvents->select(function (SavedEvent $event) use ($connectedUser, $baseLocation) {
+                $numberOfParticipantsOfEvent = $this->participationRepository->numberOfParticipantsOfEvent($event->id);
                 $isParticipantOfEvent = $this->participationRepository->isUserParticipantOfEvent($connectedUser->id, $event->id);
                 $isAwaitingParticipantOfEvent = $this->participationRepository->isUserAwaitingParticipantOfEvent($connectedUser->id, $event->id);
                 $isGuestOfEvent = $this->invitationRepository->isGuestOfEvent($connectedUser->id, $event->id);
@@ -80,6 +81,7 @@ readonly class SearchEventsWithCriteriaUseCase
                     endAt: $event->dateRange->endAt,
                     city: $event->location->city,
                     distance: round($event->location->getKilometersDistance($baseLocation), 1),
+                    numberOfParticipants: $numberOfParticipantsOfEvent,
                     participantsLimit: $event->participantsLimit,
                     isOwner: $connectedUser->id == $event->owner->id,
                     isParticipant: $isParticipantOfEvent,

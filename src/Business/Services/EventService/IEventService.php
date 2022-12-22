@@ -5,10 +5,7 @@ namespace Business\Services\EventService;
 
 
 use Business\Entities\Event;
-use Business\Exceptions\DatabaseErrorException;
 use Business\Exceptions\ResourceNotFound;
-use Business\Exceptions\UserNotExistException;
-use Business\Services\EventService\Requests\SearchEventsRequest;
 
 interface IEventService
 {
@@ -27,15 +24,4 @@ interface IEventService
      * @throws ResourceNotFound if event not found
      */
     public function changeRegistrationOfUSerToEvent(int $userId, int $eventId): void;
-
-    /**
-     * Search events for user corresponding to arguments
-     * @param int $userId user id
-     * @param SearchEventsRequest $searchEventsRequest arguments of research request
-     * @return Event[] list of events for user
-     * @throws UserNotExistException
-     * @throws DatabaseErrorException
-     */
-    public function searchEventsForUser(int $userId, SearchEventsRequest $searchEventsRequest): array;
-
 }

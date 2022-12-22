@@ -26,11 +26,6 @@ class InMemoryEventRepository implements EventRepositoryInterface
         // TODO: Implement getEvent() method.
     }
 
-    public function searchEventsForUser(int $userId, ?int $cat = null, ?int $date = null): ILinq
-    {
-        // TODO: Implement searchEventsForUser() method.
-    }
-
     /**
      * @throws ValidationException
      */

@@ -57,4 +57,20 @@ class ParticipationRepository implements ParticipationRepositoryInterface
 
         return ($result = $request->fetch()) && isset($result['exist']) && $result['exist'] > 0;
     }
+
+    /**
+     * @throws DatabaseErrorException
+     */
+    public function numberOfParticipantsOfEvent(string $eventId): int
+    {
+        $request = $this->databaseContext->prepare('SELECT COUNT(*) as count FROM PARTICIPATE WHERE event_id = :eventId AND PART_DATETIME_ACCEPT IS NOT NULL AND PART_DATETIME_DELETE IS NULL');
+        $request->bindValue(':eventId', $eventId);
+
+        if (!$request->execute()) {
+            $errorMessage = self::mapPDOErrorToString($request->errorInfo());
+            throw new DatabaseErrorException($errorMessage);
+        }
+
+        return ($result = $request->fetch()) && isset($result['count']) ? $result['count'] : 0;
+    }
 }

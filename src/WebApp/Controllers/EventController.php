@@ -6,13 +6,14 @@ namespace WebApp\Controllers
 
     use Business\Entities\Event;
     use Business\Exceptions\EventNotExistException;
+    use Business\Exceptions\NonConnectedUserException;
     use Business\Ports\EmailSenderInterface;
     use Business\Ports\EventCategoryRepositoryInterface;
     use Business\Services\EventService\IEventService;
-    use Business\Services\EventService\Requests\SearchEventsRequest;
+    use Business\UseCases\SearchEvent\Response\SearchEventsWithCriteriaResponse;
     use Business\UseCases\SearchEvent\SearchEventsWithCriteriaRequest;
     use Business\UseCases\SearchEvent\SearchEventsWithCriteriaUseCase;
-    use Business\ValueObjects\GeometricCoordinates;
+    use DateTime;
     use Exception;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -20,6 +21,8 @@ namespace WebApp\Controllers
     use System\Logging\LoggerInterface;
     use WebApp\Attributes\Page;
     use WebApp\Authentication\AuthenticationContext;
+    use WebApp\Exceptions\NotConnectedUserException;
+    use WebApp\Routing\ParametersRequestExtractor;
     use WebApp\Services\ToasterService\ToasterInterface;
 
     class EventController extends AppController
@@ -40,7 +43,7 @@ namespace WebApp\Controllers
         }
 
         #[Page("events.css", "events.js")]
-        public function getView(): Response
+        public function getView(Request $request): Response
         {
             try {
                 $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
@@ -55,22 +58,9 @@ namespace WebApp\Controllers
                 $navUserDropDown = $this->render('templates.nav-userdropdown', compact('userMenu', 'connectedUser'));
                 $navAddEvent = $this->render('templates.nav-addevent');
                 $navItems = $this->render('templates.nav-connectmenu', compact('navAddEvent'));
-
-                $searchEventsRequest = new SearchEventsRequest();
-                $list = $this->eventService->searchEventsForUser($connectedUser->getID(), $searchEventsRequest);
-                $events = $this->searchEventWithCriteriaUseCase->handle(new SearchEventsWithCriteriaRequest(
-                    latitude: $connectedUser->getLocation()->latitude,
-                    longitude: $connectedUser->getLocation()->longitude,
-                ));
-                var_dump($events);
-
-
-                $location = $connectedUser->getLocation();
-                $contentEvents = $this->render('listevent.view-events', compact('list', 'location', 'connectedUser'));
+                $contentEvents = $this->getEventListView($request);
                 $categories = $this->categoryRepository->all();
-
                 $content = $this->render('listevent.view-listevent', compact('categories', 'contentEvents'));
-
                 $view = $this->render(
                     'templates.template',
                     compact('titleWebPage', 'userMenu', 'navUserDropDown', 'navAddEvent', 'navItems', 'content', 'connectedUser')
@@ -91,59 +81,50 @@ namespace WebApp\Controllers
         public function searchEvents(Request $request): Response
         {
             try {
-                $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
-                $params = $request->getParsedBody();
-
-                $kilometersRadius = isset($params['dist']) ? (int)$params['dist'] : null;
-                $categoryId = isset($params['cat']) && !empty($params['cat']) ? (int)$params['cat'] : null;
-                $latitude = isset($params['lat']) && !empty($params['lat']) ? (float)$params['lat'] : null;
-                $longitude = isset($params['lng']) && !empty($params['lng']) ? (float)$params['lng'] : null;
-
-                $location = is_null($latitude) || is_null($longitude) ? $connectedUser->getLocation(
-                ) : new GeometricCoordinates(
-                    $latitude,
-                    $longitude
-                );
-
-                if (isset($params['date']) && !empty($params['date'])) {
-                    $temp = $params['date'];
-
-                    if (preg_match('#^([0-9]{2})([/-])([0-9]{2})\2([0-9]{4})$#', $temp, $d) && checkdate(
-                            $d[3],
-                            $d[1],
-                            $d[4]
-                        )) {
-                        $temp = mktime(0, 0, 0, $d[3], $d[1], $d[4]);
-                        $today = mktime(0, 0, 0, date('m', time()), date('d', time()), date('Y', time()));
-
-                        if ($temp >= $today) {
-                            $date = $temp;
-                        } else {
-                            $date = null;
-                        }
-                    } else {
-                        $date = null;
-                    }
-                } else {
-                    $date = null;
-                }
-
-                $searchEventsRequest = new SearchEventsRequest(
-                    $kilometersRadius,
-                    $latitude,
-                    $longitude,
-                    $categoryId,
-                    $date
-                );
-                $list = $this->eventService->searchEventsForUser($connectedUser->getID(), $searchEventsRequest);
-
-                $view = $this->render('listevent.view-events', compact('list', 'location', 'connectedUser'));
-
+                $view = $this->getEventListView($request);
                 return $this->ok($view);
             } catch (Exception $exception) {
                 $this->logger->logCritical($exception->getMessage(), $exception);
                 return $this->internalServerError();
             }
+        }
+
+        /**
+         * @throws NotConnectedUserException
+         * @throws NonConnectedUserException
+         * @throws Exception
+         */
+        private function getEventListView(Request $request): string
+        {
+            $connectedUser = $this->authenticationGateway->getConnectedUserOrThrow();
+            $searchEventsRequest = $this->extractSearchEventRequest($request);
+            $researchEventsResult = $this->searchEventWithCriteriaUseCase->handle($searchEventsRequest);
+            $list = $this->extractEventsAndGroupByDate($researchEventsResult);
+            return $this->render('listevent.view-events', compact('list', 'connectedUser'));
+        }
+
+        private function extractSearchEventRequest(Request $request): SearchEventsWithCriteriaRequest
+        {
+            $params = new ParametersRequestExtractor($request);
+            return new SearchEventsWithCriteriaRequest(
+                latitude: $params->get('lat')->asFloat(),
+                longitude: $params->get('lng')->asFloat(),
+                categoryId: $params->get('cat')->asInt(),
+                distance: $params->get('dist')->asInt(),
+                from: $params->get('date')->asDatetime(),
+            );
+        }
+
+        private function extractEventsAndGroupByDate(SearchEventsWithCriteriaResponse $researchResponse): array
+        {
+            $eventsByDate = [];
+            foreach ($researchResponse->events as $event) {
+                $startDay = new DateTime();
+                $startDay->setTimestamp($event->startAt->getTimestamp());
+                $startDay->setTime(0, 0);
+                $eventsByDate[$startDay->getTimestamp()][] = $event;
+            }
+            return $eventsByDate;
         }
 
         /**

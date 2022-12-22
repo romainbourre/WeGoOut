@@ -113,7 +113,7 @@ namespace WebApp\Routing {
                     if (!is_null($eventId)) {
                         return $eventController->forEvent($eventId)->getView($eventId);
                     }
-                    return $eventController->getView();
+                    return $eventController->getView($request);
                 })->add($this->container->get(AccountValidatedGuardMiddleware::class));
 
                 $group->put(
@@ -148,7 +148,11 @@ namespace WebApp\Routing {
                 })->add($this->container->get(AccountValidatedGuardMiddlewareAsUnauthorized::class));
 
                 $group->post('events/view', function (Request $request) {
-                    return $this->container->get(EventController::class)->searchEvents($request);
+                    /**
+                     * @var EventController $eventController
+                     */
+                    $eventController = $this->container->get(EventController::class);
+                    return $eventController->searchEvents($request);
                 })->add($this->container->get(AccountValidatedGuardMiddleware::class));
 
                 $group->any('profile[/{id}]', function (Request $request, Response $response, array $args) {

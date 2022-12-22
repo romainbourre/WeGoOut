@@ -10,13 +10,7 @@ namespace Adapters\MySqlDatabase\Repositories {
     use Business\Entities\NewEvent;
     use Business\Entities\SavedEvent;
     use Business\Exceptions\DatabaseErrorException;
-    use Business\Exceptions\EventCanceledException;
-    use Business\Exceptions\EventDeletedException;
     use Business\Exceptions\EventNotExistException;
-    use Business\Exceptions\EventSignaledException;
-    use Business\Exceptions\UserDeletedException;
-    use Business\Exceptions\UserNotExistException;
-    use Business\Exceptions\UserSignaledException;
     use Business\Exceptions\ValidationException;
     use Business\Ports\EventRepositoryInterface;
     use Business\ValueObjects\EventDateRange;
@@ -38,41 +32,6 @@ namespace Adapters\MySqlDatabase\Repositories {
         public function __construct(PDO $databaseContext)
         {
             $this->databaseContext = $databaseContext;
-        }
-
-        /**
-         * @inheritDoc
-         */
-        public function searchEventsForUser(int $userId, ?int $cat = null, ?int $date = null): ILinq
-        {
-            $events = new PhpLinq();
-
-            if (!is_null($cat)) $requestInter = 'tab1.cat_id = :catId AND';
-            else $requestInter = '';
-            if (!is_null($date)) $requestDate = 'date(event_datetime_begin) = :dateEvent';
-            else $requestDate = 'date(event_datetime_begin) >= date(sysdate())';
-
-            $request = $this->databaseContext->prepare('SELECT distinct tab1.event_id, tab1.event_datetime_begin FROM EVENT tab1 LEFT JOIN USER USING(user_id) LEFT JOIN GUEST tab2 ON tab1.event_id = tab2.event_id LEFT JOIN FRIENDS tab3 ON tab1.user_id = tab3.user_id OR tab1.user_id = tab3.user_id_1 WHERE EVENT_DATETIME_CANCEL is null AND EVENT_DATETIME_DELETE is null AND EVENT_VALID = 1 AND USER_DATETIME_DELETE is null AND USER_VALID = 1 AND ' . $requestDate . ' AND ' . $requestInter . ' ( tab1.user_id = :userId OR tab1.event_circle = 1 OR ( tab1.event_circle = 2 AND (tab1.event_guest_only != 1 OR tab1.event_guest_only is null ) AND ( tab3.user_id = :userId OR tab3.user_id_1 = :userId ) AND tab3.fri_datetime_demand is not null AND tab3.fri_datetime_accept is not null AND tab3.fri_datetime_delete is null  ) OR ( tab1.event_circle = 2 AND tab1.event_guest_only = 1 AND tab2.user_id = :userId AND tab2.guest_datetime_send is not null AND tab2.guest_datetime_delete is null ) ) order by EVENT_DATETIME_BEGIN ASC');
-            $request->bindValue(':dateEvent', date('Y-m-d', $date));
-            $request->bindValue(':userId', $userId);
-            $request->bindValue(':catId', $cat);
-
-            if (!$request->execute()) {
-                $errorMessage = self::mapPDOErrorToString($request->errorInfo());
-                throw new DatabaseErrorException($errorMessage);
-            }
-
-            while ($resultEvent = $request->fetch()) {
-                try {
-                    $eventId = $resultEvent['event_id'];
-                    $event = new Event($eventId);
-                    $events->add($event);
-                } catch (EventNotExistException|EventDeletedException|EventCanceledException|EventSignaledException|UserNotExistException|UserDeletedException|UserSignaledException $e) {
-                }
-
-            }
-
-            return $events;
         }
 
         /**

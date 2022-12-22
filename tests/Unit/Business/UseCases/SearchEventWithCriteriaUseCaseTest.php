@@ -82,7 +82,7 @@ class SearchEventWithCriteriaUseCaseTest extends TestCase
         $this->assertThatOneEventIsFound($result, $nearExpectedEvent, 3.4);
     }
 
-    private function assertThatOneEventIsFound(SearchEventsWithCriteriaResponse $result, SavedEvent $savedEvent, float $distance, bool $isOwner = false, bool $isParticipant = false, bool $isAwaitingParticipant = false, bool $isGuest = false): void
+    private function assertThatOneEventIsFound(SearchEventsWithCriteriaResponse $result, SavedEvent $savedEvent, float $distance, int $numberOfParticipants = 0, bool $isOwner = false, bool $isParticipant = false, bool $isAwaitingParticipant = false, bool $isGuest = false): void
     {
         $visibility = $savedEvent->visibility === EventVisibilities::PUBLIC ? FoundedEvent::VISIBILITY_PUBLIC : FoundedEvent::VISIBILITY_PRIVATE;
         $this->assertEquals(new SearchEventsWithCriteriaResponse(
@@ -101,6 +101,7 @@ class SearchEventWithCriteriaUseCaseTest extends TestCase
                     endAt: $savedEvent->dateRange->endAt,
                     city: $savedEvent->location->city,
                     distance: $distance,
+                    numberOfParticipants: $numberOfParticipants,
                     participantsLimit: $savedEvent->participantsLimit,
                     isOwner: $isOwner,
                     isParticipant: $isParticipant,
@@ -184,7 +185,7 @@ class SearchEventWithCriteriaUseCaseTest extends TestCase
         $request = new SearchEventsWithCriteriaRequest(latitude: 48.811898, longitude: 2.271534);
         $result = $this->useCase->handle($request);
 
-        $this->assertThatOneEventIsFound($result, $nearExpectedEvent, 3.4, true);
+        $this->assertThatOneEventIsFound($result, $nearExpectedEvent, 3.4, 0, true);
     }
 
     /**
@@ -275,7 +276,7 @@ class SearchEventWithCriteriaUseCaseTest extends TestCase
         $request = new SearchEventsWithCriteriaRequest(latitude: $privateEvent->location->latitude, longitude: $privateEvent->location->longitude);
         $result = $this->useCase->handle($request);
 
-        $this->assertThatOneEventIsFound($result, $privateEvent, 0, true);
+        $this->assertThatOneEventIsFound($result, $privateEvent, 0, 0, true);
     }
 
     /**
@@ -296,7 +297,7 @@ class SearchEventWithCriteriaUseCaseTest extends TestCase
         $request = new SearchEventsWithCriteriaRequest(latitude: $privateEvent->location->latitude, longitude: $privateEvent->location->longitude);
         $result = $this->useCase->handle($request);
 
-        $this->assertThatOneEventIsFound($result, $privateEvent, 0, false, true);
+        $this->assertThatOneEventIsFound($result, $privateEvent, 0, 1, false, true);
     }
 
     /**
@@ -312,7 +313,7 @@ class SearchEventWithCriteriaUseCaseTest extends TestCase
         $request = new SearchEventsWithCriteriaRequest(latitude: $privateEvent->location->latitude, longitude: $privateEvent->location->longitude);
         $result = $this->useCase->handle($request);
 
-        $this->assertThatOneEventIsFound($result, $privateEvent, 0, false, false, true);
+        $this->assertThatOneEventIsFound($result, $privateEvent, 0, 0, false, false, true);
     }
 
     /**
@@ -333,7 +334,7 @@ class SearchEventWithCriteriaUseCaseTest extends TestCase
         $request = new SearchEventsWithCriteriaRequest(latitude: $privateEvent->location->latitude, longitude: $privateEvent->location->longitude);
         $result = $this->useCase->handle($request);
 
-        $this->assertThatOneEventIsFound($result, $privateEvent, 0, false, false, false, true);
+        $this->assertThatOneEventIsFound($result, $privateEvent, 0, 0, false, false, false, true);
     }
 
     /**

@@ -6,18 +6,11 @@ namespace Business\Services\EventService;
 
 use Business\Entities\Event;
 use Business\Entities\User;
-use Business\Exceptions\DatabaseErrorException;
 use Business\Exceptions\NotAuthorizedException;
 use Business\Exceptions\ResourceNotFound;
-use Business\Exceptions\UserNotExistException;
-use Business\Exceptions\ValidationException;
 use Business\Ports\EventRepositoryInterface;
-use Business\Services\EventService\Requests\SearchEventsRequest;
-use Business\ValueObjects\Location;
-use DateTime;
 use Exception;
 use WebApp\Authentication\AuthenticationContext;
-use WebApp\Librairies\AppSettings;
 use WebApp\Librairies\Emitter;
 
 readonly class EventService implements IEventService
@@ -44,45 +37,6 @@ readonly class EventService implements IEventService
         }
 
         return $event;
-    }
-
-    /**
-     * @inheritDoc
-     * @param int $userId
-     * @param SearchEventsRequest $searchEventsRequest
-     * @return array
-     * @throws DatabaseErrorException
-     * @throws UserNotExistException
-     * @throws ValidationException
-     */
-    public function searchEventsForUser(int $userId, SearchEventsRequest $searchEventsRequest): array
-    {
-        $user = User::load($userId);
-        $kilometersRadius = $searchEventsRequest->kilometersRadius ?? (new AppSettings())->getDefaultDistance();
-        $latitude = $searchEventsRequest->latitude ?? $user->getLocation()->latitude;
-        $longitude = $searchEventsRequest->longitude ?? $user->getLocation()->longitude;
-        $events = $this->eventRepository->searchEventsForUser(
-            $userId,
-            $searchEventsRequest->categoryId,
-            $searchEventsRequest->fromDate
-        );
-
-        $location = new Location($user->location->postalCode, $user->location->city, $latitude, $longitude);
-        $events = $events->where(function (Event $event) use ($kilometersRadius, $searchEventsRequest, $location) {
-            $eventLocation = $event->getLocation();
-            $distance = $location->getKilometersDistance($eventLocation);
-            return $distance <= $kilometersRadius;
-        });
-
-        $eventsByDate = [];
-        $events->forEach(function (Event $event) use (&$eventsByDate) {
-            $startDay = new DateTime();
-            $startDay->setTimestamp($event->getDatetimeBegin());
-            $startDay->setTime(0, 0, 0);
-            $eventsByDate[$startDay->getTimestamp()][] = $event;
-        });
-
-        return $eventsByDate;
     }
 
     /**
