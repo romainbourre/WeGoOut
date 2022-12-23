@@ -7,6 +7,7 @@ use Business\Entities\NewEvent;
 use Business\Entities\SavedEvent;
 use Business\Exceptions\ValidationException;
 use Business\Ports\EventRepositoryInterface;
+use DateTime;
 use PhpLinq\Interfaces\ILinq;
 use PhpLinq\PhpLinq;
 use Tests\Utils\Builders\EventBuilder;
@@ -52,8 +53,10 @@ class InMemoryEventRepository implements EventRepositoryInterface
         return $savedEvent;
     }
 
-    public function all(): ILinq
+    public function getSortedEventsByStartDateFromDate(DateTime $fromDate): ILinq
     {
-        return $this->events;
+        return $this->events
+            ->where(fn(SavedEvent $event) => $event->dateRange->startAt >= $fromDate)
+            ->orderBy(fn(SavedEvent $event) => $event->dateRange->startAt);
     }
 }

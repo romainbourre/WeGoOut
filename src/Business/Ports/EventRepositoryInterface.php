@@ -8,6 +8,7 @@ namespace Business\Ports
     use Business\Entities\Event;
     use Business\Entities\NewEvent;
     use Business\Entities\SavedEvent;
+    use DateTime;
     use PhpLinq\Interfaces\ILinq;
 
     interface EventRepositoryInterface
@@ -22,8 +23,9 @@ namespace Business\Ports
         public function add(NewEvent $event);
 
         /**
+         * @param DateTime $fromDate
          * @return ILinq<SavedEvent>
          */
-        public function all(): ILinq;
+        public function getSortedEventsByStartDateFromDate(DateTime $fromDate): ILinq;
     }
 }

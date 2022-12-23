@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e7ed97a38737293156bb09e9e3c1328e",
+    "content-hash": "51fe28b36a07b78dfb185a3bd81906bf",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -1720,16 +1720,16 @@
         },
         {
             "name": "romainbourre/php-linq",
-            "version": "0.2.2",
+            "version": "0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/romainbourre/PHPLinq.git",
-                "reference": "b3ae98ba0b009c688d3467e294897a4bd25aae1a"
+                "reference": "4cdd7bf1669fa7bacd80c47601c1acf0af15fc79"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/romainbourre/PHPLinq/zipball/b3ae98ba0b009c688d3467e294897a4bd25aae1a",
-                "reference": "b3ae98ba0b009c688d3467e294897a4bd25aae1a",
+                "url": "https://api.github.com/repos/romainbourre/PHPLinq/zipball/4cdd7bf1669fa7bacd80c47601c1acf0af15fc79",
+                "reference": "4cdd7bf1669fa7bacd80c47601c1acf0af15fc79",
                 "shasum": ""
             },
             "require": {
@@ -1756,9 +1756,9 @@
             "description": "Provide a syntax request to browse list with LINQ concept",
             "support": {
                 "issues": "https://github.com/romainbourre/PHPLinq/issues",
-                "source": "https://github.com/romainbourre/PHPLinq/tree/0.2.2"
+                "source": "https://github.com/romainbourre/PHPLinq/tree/0.3"
             },
-            "time": "2022-09-07T21:22:31+00:00"
+            "time": "2022-12-23T16:18:36+00:00"
         },
         {
             "name": "sendgrid/php-http-client",

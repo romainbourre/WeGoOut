@@ -148,7 +148,7 @@ EOF;
          * @throws DatabaseErrorException|ValidationException
          * @throws Exception
          */
-        public function all(): ILinq
+        public function getSortedEventsByStartDateFromDate(DateTime $fromDate): ILinq
         {
             $query = $this->databaseContext->prepare(<<<'EOF'
 SELECT 
@@ -175,9 +175,13 @@ SELECT
 FROM EVENT
     JOIN META_USER_CLI MUC on EVENT.USER_ID = MUC.USER_ID
     JOIN CATEGORY C on C.CAT_ID = EVENT.CAT_ID
+WHERE
+    EVENT_DATETIME_BEGIN >= :fromDate
+ORDER BY
+    EVENT_DATETIME_BEGIN
 EOF
             );
-            if (!$query->execute()) {
+            if (!$query->execute([':fromDate' => $fromDate->format('Y-m-d H:i:s')])) {
                 $errorMessage = self::mapPDOErrorToString($query->errorInfo());
                 throw new DatabaseErrorException($errorMessage);
             }

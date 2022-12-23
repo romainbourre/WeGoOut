@@ -44,8 +44,9 @@ readonly class SearchEventsWithCriteriaUseCase
             $baseLocation = new GeometricCoordinates($request->latitude, $request->longitude);
         }
 
-        $events = $this->eventRepository->all();
-        $filteredEvents = $events->where(function (SavedEvent $event) use ($connectedUser, $request, $baseLocation) {
+        $fromDate = $request->from ?? $this->dateTimeProvider->current();
+        $events = $this->eventRepository->getSortedEventsByStartDateFromDate($fromDate);
+        $filteredEvents = $events->where(function (SavedEvent $event) use ($connectedUser, $request, $baseLocation, $fromDate) {
             if (!is_null($request->categoryId) && $event->category->id != $request->categoryId) {
                 return false;
             }
@@ -54,7 +55,6 @@ readonly class SearchEventsWithCriteriaUseCase
             if ($event->isPrivate() && $event->isNotOwnedBy($connectedUser) && !$isParticipantOfEvent && !$isGuestOfEvent) {
                 return false;
             }
-            $fromDate = $request->from ?? $this->dateTimeProvider->current();
             if ($event->isFinishedForDate($fromDate)) {
                 return false;
             }
